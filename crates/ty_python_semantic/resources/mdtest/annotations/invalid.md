@@ -97,7 +97,9 @@ async def outer_async():  # avoid unrelated syntax errors on `yield` and `await`
         m: (yield 1),  # error: [invalid-type-form] "`yield` expressions are not allowed in type expressions"
         n: 1 < 2,  # error: [invalid-type-form] "Comparison expressions are not allowed in type expressions"
         o: bar(),  # error: [invalid-type-form] "Function calls are not allowed in type expressions"
-        p: int | f"foo",  # error: [invalid-type-form] "F-strings are not allowed in type expressions"
+        # error: [unsupported-operator]
+        # error: [invalid-type-form] "F-strings are not allowed in type expressions"
+        p: int | f"foo",
         # error: [invalid-type-form] "Slices are not allowed in type expressions"
         # error: [invalid-type-form] "Invalid subscript"
         q: [1, 2, 3][1:2],
