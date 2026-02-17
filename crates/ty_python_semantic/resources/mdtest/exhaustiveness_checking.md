@@ -471,8 +471,9 @@ def i[T: (int, str)](x: T) -> T:
         case str():
             pass
         case _:
-            reveal_type(x)  # revealed: Never
             assert_never(x)
 
+    # TODO: no error here
+    # error: [invalid-return-type] "Return type does not match returned value: expected `T@i`, found `str | int`"
     return x
 ```
