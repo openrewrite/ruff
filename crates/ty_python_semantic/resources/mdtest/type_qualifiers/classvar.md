@@ -172,6 +172,80 @@ class D[T]:
     y: ClassVar[dict[str, T]]
 ```
 
+## `ClassVar` nested inside other special forms
+
+The typing spec says that variables should not be annotated with both `ClassVar` and `Final`. The
+conformance suite flags both `ClassVar[Final[...]]` and `Final[ClassVar[...]]` in non-dataclass
+contexts. `Annotated[ClassVar[int], ...]` is fine since `Annotated` is not a type qualifier in the
+same sense.
+
+```py
+from typing import ClassVar, Final, Annotated
+
+class C:
+    b: Annotated[ClassVar[int], "metadata"] = 1
+
+    # error: [redundant-final-classvar] "Combining `ClassVar` and `Final` is redundant"
+    a: ClassVar[Final[int]] = 1
+
+    # error: [redundant-final-classvar] "Combining `ClassVar` and `Final` is redundant"
+    c: Final[ClassVar[int]] = 1
+
+    # error: [redundant-final-classvar] "Combining `ClassVar` and `Final` is redundant"
+    d: Final[ClassVar] = 1
+
+    # error: [redundant-final-classvar] "Combining `ClassVar` and `Final` is redundant"
+    e: Annotated[Final[ClassVar[int]], "metadata"] = 1
+
+    # error: [redundant-final-classvar] "Combining `ClassVar` and `Final` is redundant"
+    f: ClassVar[Final] = 1
+
+reveal_type(C.a)  # revealed: int
+reveal_type(C.b)  # revealed: int
+reveal_type(C.c)  # revealed: int
+reveal_type(C.d)  # revealed: Literal[1]
+reveal_type(C.e)  # revealed: int
+reveal_type(C.f)  # revealed: Literal[1]
+```
+
+## Combining `ClassVar` and `Final` in dataclasses
+
+In dataclasses, `ClassVar[Final[int]]` has distinct meaning from `Final[int]` (the former is a final
+class variable, the latter is a final instance field). So the redundancy warning is not emitted for
+dataclasses.
+
+```py
+from dataclasses import dataclass
+from typing import ClassVar, Final
+
+@dataclass
+class D:
+    # No warning: in dataclasses, ClassVar[Final[int]] means "final class variable"
+    x: ClassVar[Final[int]] = 1
+
+    # No warning: dataclass exception applies to both directions
+    y: Final[ClassVar[int]] = 2
+
+reveal_type(D.x)  # revealed: int
+reveal_type(D.y)  # revealed: int
+```
+
+## `ClassVar` in type alias definitions
+
+Type alias definitions use type expressions, not annotation expressions. Type qualifiers like
+`ClassVar` are only valid in annotation expressions, so they cannot appear in type alias
+definitions.
+
+```py
+from typing import ClassVar, TypeAlias
+
+# error: [invalid-type-form] "`ClassVar` is not allowed in type alias definitions"
+bad1: TypeAlias = ClassVar[str]
+
+# error: [invalid-type-form] "`ClassVar` is not allowed in type alias definitions"
+bad2: TypeAlias = ClassVar
+```
+
 ## Illegal `ClassVar` in type expression
 
 ```py

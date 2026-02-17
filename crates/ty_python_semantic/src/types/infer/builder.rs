@@ -510,6 +510,21 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
+    /// Returns `true` if the current scope is a class body of a dataclass-like class.
+    fn is_dataclass_scope(&self) -> bool {
+        let enclosing_scope = self.index.scope(self.scope().file_scope_id(self.db()));
+        let Some(class_node) = enclosing_scope.node().as_class() else {
+            return false;
+        };
+        let class_definition = self.index.expect_single_definition(class_node);
+        infer_definition_types(self.db(), class_definition)
+            .declaration_type(class_definition)
+            .inner_type()
+            .as_class_literal()
+            .and_then(ClassLiteral::as_static)
+            .is_some_and(|class| class.dataclass_params(self.db()).is_some())
+    }
+
     /// Set the multi-inference state, returning the previous value.
     fn set_multi_inference_state(&mut self, state: MultiInferenceState) -> MultiInferenceState {
         std::mem::replace(&mut self.multi_inference_state, state)
@@ -9088,6 +9103,27 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
             } else {
                 inferred_ty
             };
+
+            // Type alias definitions use type expressions, not annotation expressions.
+            // Type qualifiers like `ClassVar` are only valid in annotation expressions,
+            // so they cannot appear in the right-hand side of a type alias.
+            if is_pep_613_type_alias {
+                let is_classvar_form = match value {
+                    ast::Expr::Subscript(sub) => matches!(
+                        self.expression_type(&sub.value),
+                        Type::SpecialForm(SpecialFormType::ClassVar)
+                    ),
+                    _ => matches!(
+                        self.expression_type(value),
+                        Type::SpecialForm(SpecialFormType::ClassVar)
+                    ),
+                };
+                if is_classvar_form
+                    && let Some(builder) = self.context.report_lint(&INVALID_TYPE_FORM, value)
+                {
+                    builder.into_diagnostic("`ClassVar` is not allowed in type alias definitions");
+                }
+            }
 
             if is_pep_613_type_alias {
                 let inferred_ty =

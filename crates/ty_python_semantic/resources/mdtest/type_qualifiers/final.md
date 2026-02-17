@@ -460,6 +460,7 @@ class C(B):
 from typing import Final, ClassVar, Annotated
 
 class Base:
+    # error: [redundant-final-classvar] "Combining `ClassVar` and `Final` is redundant"
     X: ClassVar[Final[int]] = 1
     Y: Annotated[Final[int], "metadata"] = 2
 
@@ -581,14 +582,13 @@ LEGAL_D: Final
 LEGAL_D = 1
 
 class C:
+    # error: [redundant-final-classvar] "Combining `ClassVar` and `Final` is redundant"
     LEGAL_E: ClassVar[Final[int]] = 1
-    LEGAL_F: Final[ClassVar[int]] = 1
-    LEGAL_G: Annotated[Final[ClassVar[int]], "metadata"] = 1
 
     def __init__(self):
-        self.LEGAL_H: Final[int] = 1
-        self.LEGAL_I: Final[int]
-        self.LEGAL_I = 1
+        self.LEGAL_F: Final[int] = 1
+        self.LEGAL_G: Final[int]
+        self.LEGAL_G = 1
 
 # error: [invalid-type-form] "`Final` is not allowed in function parameter annotations"
 def f(ILLEGAL: Final[int]) -> None:
@@ -611,6 +611,22 @@ class Foo(Final[tuple[int]]): ...
 # TODO: Show `Unknown` instead of `@Todo` type in the MRO; or ignore `Final` and show the MRO as if `Final` was not there
 # revealed: (<class 'Foo'>, @Todo(Inference of subscript on special form), <class 'object'>)
 reveal_mro(Foo)
+```
+
+### Redundant combination with `ClassVar`
+
+The typing spec says variables should not be annotated with both `ClassVar` and `Final`. Both
+nesting directions are flagged:
+
+```py
+from typing import Final, ClassVar, Annotated
+
+class C:
+    # error: [redundant-final-classvar] "Combining `ClassVar` and `Final` is redundant"
+    a: Final[ClassVar[int]] = 1
+
+    # error: [redundant-final-classvar] "Combining `ClassVar` and `Final` is redundant"
+    b: Annotated[Final[ClassVar[int]], "metadata"] = 1
 ```
 
 ### Attribute assignment outside `__init__`

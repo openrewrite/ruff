@@ -141,6 +141,7 @@ pub(crate) fn register_lints(registry: &mut LintRegistryBuilder) {
     registry.register_lint(&STATIC_ASSERT_ERROR);
     registry.register_lint(&INVALID_ATTRIBUTE_ACCESS);
     registry.register_lint(&REDUNDANT_CAST);
+    registry.register_lint(&REDUNDANT_FINAL_CLASSVAR);
     registry.register_lint(&UNRESOLVED_GLOBAL);
     registry.register_lint(&MISSING_TYPED_DICT_KEY);
     registry.register_lint(&INVALID_TYPED_DICT_STATEMENT);
@@ -2672,6 +2673,33 @@ declare_lint! {
     /// ```
     pub(crate) static REDUNDANT_CAST = {
         summary: "detects redundant `cast` calls",
+        status: LintStatus::stable("0.0.1-alpha.1"),
+        default_level: Level::Warn,
+    }
+}
+
+declare_lint! {
+    /// ## What it does
+    /// Checks for redundant combinations of `ClassVar` and `Final` type qualifiers.
+    ///
+    /// ## Why is this bad?
+    /// The typing spec says that variables should not be annotated with both
+    /// `ClassVar` and `Final`. A final attribute initialized in a class body is
+    /// already inferred as a class variable, making the combination redundant.
+    ///
+    /// This diagnostic is not emitted for dataclass fields, where
+    /// `ClassVar[Final[int]]` has distinct meaning from `Final[int]`.
+    ///
+    /// ## Examples
+    /// ```python
+    /// from typing import ClassVar, Final
+    ///
+    /// class C:
+    ///     x: ClassVar[Final[int]] = 1  # Redundant
+    ///     y: Final[ClassVar[int]] = 1  # Redundant
+    /// ```
+    pub(crate) static REDUNDANT_FINAL_CLASSVAR = {
+        summary: "detects redundant combinations of `ClassVar` and `Final`",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Warn,
     }
