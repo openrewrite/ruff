@@ -314,6 +314,12 @@ const AMBIGUOUS: ScopedReachabilityConstraintId = ScopedReachabilityConstraintId
 const ALWAYS_FALSE: ScopedReachabilityConstraintId = ScopedReachabilityConstraintId::ALWAYS_FALSE;
 const SMALLEST_TERMINAL: ScopedReachabilityConstraintId = ALWAYS_FALSE;
 
+/// Maximum number of interior TDD nodes per scope. When exceeded, new constraint
+/// operations return `AMBIGUOUS` to prevent exponential blowup on pathological inputs
+/// (e.g., a 5000-line while loop with hundreds of if-branches). This is sound: we lose
+/// precision about what's definitely reachable/unreachable but never report incorrect results.
+const MAX_INTERIOR_NODES: usize = 512 * 1024;
+
 fn singleton_to_type(db: &dyn Db, singleton: ruff_python_ast::Singleton) -> Type<'_> {
     let ty = match singleton {
         ruff_python_ast::Singleton::None => Type::none(db),
@@ -585,6 +591,10 @@ impl ReachabilityConstraintsBuilder {
             return ALWAYS_TRUE;
         }
 
+        if self.interiors.len() >= MAX_INTERIOR_NODES {
+            return AMBIGUOUS;
+        }
+
         if let Some(cached) = self.not_cache.get(&a) {
             return *cached;
         }
@@ -613,6 +623,10 @@ impl ReachabilityConstraintsBuilder {
             (ALWAYS_FALSE, other) | (other, ALWAYS_FALSE) => return other,
             (AMBIGUOUS, AMBIGUOUS) => return AMBIGUOUS,
             _ => {}
+        }
+
+        if self.interiors.len() >= MAX_INTERIOR_NODES {
+            return AMBIGUOUS;
         }
 
         // OR is commutative, which lets us halve the cache requirements
@@ -679,6 +693,10 @@ impl ReachabilityConstraintsBuilder {
             (ALWAYS_TRUE, other) | (other, ALWAYS_TRUE) => return other,
             (AMBIGUOUS, AMBIGUOUS) => return AMBIGUOUS,
             _ => {}
+        }
+
+        if self.interiors.len() >= MAX_INTERIOR_NODES {
+            return AMBIGUOUS;
         }
 
         // AND is commutative, which lets us halve the cache requirements
