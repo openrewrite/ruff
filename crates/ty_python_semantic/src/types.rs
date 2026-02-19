@@ -6382,14 +6382,14 @@ impl<'db> Type<'db> {
                 },
             }
 
-            Type::FunctionLiteral(function) => {
+            Type::FunctionLiteral(function) => visitor.visit(self, || {
                 let function = Type::FunctionLiteral(function.apply_type_mapping_impl(db, type_mapping, tcx, visitor));
 
                 match type_mapping {
                     TypeMapping::PromoteLiterals(PromoteLiteralsMode::On) => function.promote_literals_impl(db, tcx),
                     _ => function
                 }
-            }
+            }),
 
             Type::BoundMethod(method) => Type::BoundMethod(BoundMethodType::new(
                 db,
@@ -6647,7 +6647,9 @@ impl<'db> Type<'db> {
             }
 
             Type::FunctionLiteral(function) => {
-                function.find_legacy_typevars_impl(db, binding_context, typevars, visitor);
+                visitor.visit(self, || {
+                    function.find_legacy_typevars_impl(db, binding_context, typevars, visitor);
+                });
             }
 
             Type::BoundMethod(method) => {
