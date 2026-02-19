@@ -1102,7 +1102,7 @@ impl<'db> Node<'db> {
     }
 
     /// Returns the BDD variable of the root node of this BDD, or `None` if this BDD is a terminal
-    /// node.
+    /// node
     fn root_constraint(self, db: &'db dyn Db) -> Option<ConstrainedTypeVar<'db>> {
         match self {
             Node::Interior(interior) => Some(interior.constraint(db)),
