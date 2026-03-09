@@ -22,7 +22,7 @@ use crate::{
 ///
 /// The `inherited_generic_context` parameter is used for declarative namedtuples to preserve
 /// generic context in the synthesized `__new__` signature.
-pub(super) fn synthesize_namedtuple_class_member<'db>(
+pub fn synthesize_namedtuple_class_member<'db>(
     db: &'db dyn Db,
     name: &str,
     instance_ty: Type<'db>,
@@ -110,9 +110,9 @@ pub(super) fn synthesize_namedtuple_class_member<'db>(
 
 #[derive(Debug, salsa::Update, get_size2::GetSize, Clone, PartialEq, Eq, Hash)]
 pub struct NamedTupleField<'db> {
-    pub(crate) name: Name,
-    pub(crate) ty: Type<'db>,
-    pub(crate) default: Option<Type<'db>>,
+    pub name: Name,
+    pub ty: Type<'db>,
+    pub default: Option<Type<'db>>,
 }
 
 /// A namedtuple created via the functional form `namedtuple(name, fields)` or
@@ -149,7 +149,7 @@ impl get_size2::GetSize for DynamicNamedTupleLiteral<'_> {}
 #[salsa::tracked]
 impl<'db> DynamicNamedTupleLiteral<'db> {
     /// Returns the definition where this namedtuple is created, if it was assigned to a variable.
-    pub(crate) fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
+    pub fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
         match self.anchor(db) {
             DynamicNamedTupleAnchor::CollectionsDefinition { definition, .. }
             | DynamicNamedTupleAnchor::TypingDefinition(definition) => Some(*definition),
@@ -158,7 +158,7 @@ impl<'db> DynamicNamedTupleLiteral<'db> {
     }
 
     /// Returns the scope in which this dynamic class was created.
-    pub(crate) fn scope(self, db: &'db dyn Db) -> ScopeId<'db> {
+    pub fn scope(self, db: &'db dyn Db) -> ScopeId<'db> {
         match self.anchor(db) {
             DynamicNamedTupleAnchor::CollectionsDefinition { definition, .. }
             | DynamicNamedTupleAnchor::TypingDefinition(definition) => definition.scope(db),
@@ -167,12 +167,12 @@ impl<'db> DynamicNamedTupleLiteral<'db> {
     }
 
     /// Returns an instance type for this dynamic namedtuple.
-    pub(crate) fn to_instance(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn to_instance(self, db: &'db dyn Db) -> Type<'db> {
         Type::instance(db, ClassType::NonGeneric(self.into()))
     }
 
     /// Returns the range of the namedtuple call expression.
-    pub(crate) fn header_range(self, db: &'db dyn Db) -> TextRange {
+    pub fn header_range(self, db: &'db dyn Db) -> TextRange {
         let scope = self.scope(db);
         let file = scope.file(db);
         let module = parsed_module(db, file).load(db);
@@ -207,7 +207,7 @@ impl<'db> DynamicNamedTupleLiteral<'db> {
     }
 
     /// Returns a [`Span`] pointing to the namedtuple call expression.
-    pub(super) fn header_span(self, db: &'db dyn Db) -> Span {
+    pub fn header_span(self, db: &'db dyn Db) -> Span {
         Span::from(self.scope(db).file(db)).with_range(self.header_range(db))
     }
 
@@ -231,7 +231,7 @@ impl<'db> DynamicNamedTupleLiteral<'db> {
         heap_size=ruff_memory_usage::heap_size,
         cycle_initial=dynamic_namedtuple_mro_cycle_initial
     )]
-    pub(crate) fn mro(self, db: &'db dyn Db) -> Mro<'db> {
+    pub fn mro(self, db: &'db dyn Db) -> Mro<'db> {
         let self_base = ClassBase::Class(ClassType::NonGeneric(self.into()));
         let tuple_class = self.tuple_base_class(db);
         std::iter::once(self_base)
@@ -242,7 +242,7 @@ impl<'db> DynamicNamedTupleLiteral<'db> {
     /// Get the metaclass of this dynamic namedtuple.
     ///
     /// Namedtuples always have `type` as their metaclass.
-    pub(crate) fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
         let _ = self;
         KnownClass::Type.to_class_literal(db)
     }
@@ -250,7 +250,7 @@ impl<'db> DynamicNamedTupleLiteral<'db> {
     /// Compute the specialized tuple class that this namedtuple inherits from.
     ///
     /// For example, `namedtuple("Point", [("x", int), ("y", int)])` inherits from `tuple[int, int]`.
-    pub(crate) fn tuple_base_class(self, db: &'db dyn Db) -> ClassType<'db> {
+    pub fn tuple_base_class(self, db: &'db dyn Db) -> ClassType<'db> {
         // If fields are unknown, return `tuple[Unknown, ...]` to avoid false positives
         // like index-out-of-bounds errors.
         if !self.has_known_fields(db) {
@@ -273,7 +273,7 @@ impl<'db> DynamicNamedTupleLiteral<'db> {
     ///
     /// For dynamic namedtuples, instance members are the field names.
     /// If fields are unknown (dynamic), returns `Any` for any attribute.
-    pub(super) fn own_instance_member(self, db: &'db dyn Db, name: &str) -> Member<'db> {
+    pub fn own_instance_member(self, db: &'db dyn Db, name: &str) -> Member<'db> {
         for field in self.fields(db) {
             if field.name == name {
                 return Member::definitely_declared(field.ty);
@@ -288,7 +288,7 @@ impl<'db> DynamicNamedTupleLiteral<'db> {
     }
 
     /// Look up an instance member by name (including superclasses).
-    pub(crate) fn instance_member(self, db: &'db dyn Db, name: &str) -> PlaceAndQualifiers<'db> {
+    pub fn instance_member(self, db: &'db dyn Db, name: &str) -> PlaceAndQualifiers<'db> {
         // First check own instance members.
         let result = self.own_instance_member(db, name);
         if !result.is_undefined() {
@@ -300,7 +300,7 @@ impl<'db> DynamicNamedTupleLiteral<'db> {
     }
 
     /// Look up a class-level member by name.
-    pub(crate) fn class_member(
+    pub fn class_member(
         self,
         db: &'db dyn Db,
         name: &str,
@@ -331,7 +331,7 @@ impl<'db> DynamicNamedTupleLiteral<'db> {
     ///
     /// This only checks synthesized members and field properties, without falling
     /// back to tuple or other base classes.
-    pub(super) fn own_class_member(self, db: &'db dyn Db, name: &str) -> Member<'db> {
+    pub fn own_class_member(self, db: &'db dyn Db, name: &str) -> Member<'db> {
         // Handle synthesized namedtuple attributes.
         if let Some(ty) = self.synthesized_class_member(db, name) {
             return Member::definitely_declared(ty);
@@ -444,7 +444,7 @@ impl<'db> DynamicNamedTupleLiteral<'db> {
         self.spec(db).fields(db)
     }
 
-    pub(super) fn has_known_fields(self, db: &'db dyn Db) -> bool {
+    pub fn has_known_fields(self, db: &'db dyn Db) -> bool {
         self.spec(db).has_known_fields(db)
     }
 }
@@ -522,23 +522,23 @@ pub enum DynamicNamedTupleAnchor<'db> {
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct NamedTupleSpec<'db> {
     #[returns(deref)]
-    pub(crate) fields: Box<[NamedTupleField<'db>]>,
+    pub fields: Box<[NamedTupleField<'db>]>,
 
-    pub(crate) has_known_fields: bool,
+    pub has_known_fields: bool,
 }
 
 impl<'db> NamedTupleSpec<'db> {
     /// Create a [`NamedTupleSpec`] with the given fields.
-    pub(crate) fn known(db: &'db dyn Db, fields: Box<[NamedTupleField<'db>]>) -> Self {
+    pub fn known(db: &'db dyn Db, fields: Box<[NamedTupleField<'db>]>) -> Self {
         Self::new(db, fields, true)
     }
 
     /// Create a [`NamedTupleSpec`] that indicates a namedtuple class has unknown fields.
-    pub(crate) fn unknown(db: &'db dyn Db) -> Self {
+    pub fn unknown(db: &'db dyn Db) -> Self {
         Self::new(db, Box::default(), false)
     }
 
-    pub(crate) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         div: Type<'db>,

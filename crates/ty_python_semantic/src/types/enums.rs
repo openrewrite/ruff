@@ -16,21 +16,21 @@ use crate::{
 };
 
 #[derive(Debug, PartialEq, Eq, salsa::Update)]
-pub(crate) struct EnumMetadata<'db> {
-    pub(crate) members: FxIndexMap<Name, Type<'db>>,
-    pub(crate) aliases: FxHashMap<Name, Name>,
+pub struct EnumMetadata<'db> {
+    pub members: FxIndexMap<Name, Type<'db>>,
+    pub aliases: FxHashMap<Name, Name>,
 
     /// Members whose values were defined using `auto()`.
-    pub(crate) auto_members: FxHashSet<Name>,
+    pub auto_members: FxHashSet<Name>,
 
     /// The explicit `_value_` annotation type, if declared.
-    pub(crate) value_annotation: Option<Type<'db>>,
+    pub value_annotation: Option<Type<'db>>,
 
     /// The custom `__init__` function, if defined on this enum.
     ///
     /// When present, member values are validated by synthesizing a call to
     /// `__init__` rather than by simple type assignability.
-    pub(crate) init_function: Option<FunctionType<'db>>,
+    pub init_function: Option<FunctionType<'db>>,
 }
 
 impl get_size2::GetSize for EnumMetadata<'_> {}
@@ -50,7 +50,7 @@ impl<'db> EnumMetadata<'db> {
     ///
     /// Priority: explicit `_value_` annotation, then `__init__` → `Any`,
     /// then the inferred member value type.
-    pub(crate) fn value_type(&self, member_name: &Name) -> Option<Type<'db>> {
+    pub fn value_type(&self, member_name: &Name) -> Option<Type<'db>> {
         if !self.members.contains_key(member_name) {
             return None;
         }
@@ -66,7 +66,7 @@ impl<'db> EnumMetadata<'db> {
     /// Returns the type of `.name`/`._name_` for a given enum member.
     ///
     /// This is always a string literal of the member name.
-    pub(crate) fn name_type(&self, db: &'db dyn Db, member_name: &Name) -> Option<Type<'db>> {
+    pub fn name_type(&self, db: &'db dyn Db, member_name: &Name) -> Option<Type<'db>> {
         self.members
             .contains_key(member_name)
             .then(|| Type::string_literal(db, member_name.as_str()))
@@ -78,7 +78,7 @@ impl<'db> EnumMetadata<'db> {
     /// If there is an explicit `_value_` annotation, returns that.
     /// If there is a custom `__init__`, returns `Any`.
     /// Otherwise, returns the union of all member value types.
-    pub(crate) fn instance_value_type(&self, db: &'db dyn Db) -> Option<Type<'db>> {
+    pub fn instance_value_type(&self, db: &'db dyn Db) -> Option<Type<'db>> {
         if self.members.is_empty() {
             return None;
         }
@@ -101,7 +101,7 @@ impl<'db> EnumMetadata<'db> {
     /// narrowed to a specific member (e.g. `x: MyEnum` where `MyEnum` has multiple members).
     ///
     /// Returns the union of all member name string literals.
-    pub(crate) fn instance_name_type(&self, db: &'db dyn Db) -> Option<Type<'db>> {
+    pub fn instance_name_type(&self, db: &'db dyn Db) -> Option<Type<'db>> {
         if self.members.is_empty() {
             return None;
         }
@@ -114,7 +114,7 @@ impl<'db> EnumMetadata<'db> {
         Some(union)
     }
 
-    pub(crate) fn resolve_member<'a>(&'a self, name: &'a Name) -> Option<&'a Name> {
+    pub fn resolve_member<'a>(&'a self, name: &'a Name) -> Option<&'a Name> {
         if self.members.contains_key(name) {
             Some(name)
         } else {
@@ -125,7 +125,7 @@ impl<'db> EnumMetadata<'db> {
 
 /// Returns the set of names listed in an enum's `_ignore_` attribute.
 #[salsa::tracked(returns(ref), heap_size=ruff_memory_usage::heap_size)]
-pub(crate) fn enum_ignored_names<'db>(db: &'db dyn Db, scope_id: ScopeId<'db>) -> FxHashSet<Name> {
+pub fn enum_ignored_names<'db>(db: &'db dyn Db, scope_id: ScopeId<'db>) -> FxHashSet<Name> {
     let use_def_map = use_def_map(db, scope_id);
     let table = place_table(db, scope_id);
 
@@ -156,10 +156,7 @@ pub(crate) fn enum_ignored_names<'db>(db: &'db dyn Db, scope_id: ScopeId<'db>) -
 /// List all members of an enum.
 #[allow(clippy::ref_option, clippy::unnecessary_wraps)]
 #[salsa::tracked(returns(as_ref), cycle_initial=|_, _, _| Some(EnumMetadata::empty()), heap_size=ruff_memory_usage::heap_size)]
-pub(crate) fn enum_metadata<'db>(
-    db: &'db dyn Db,
-    class: ClassLiteral<'db>,
-) -> Option<EnumMetadata<'db>> {
+pub fn enum_metadata<'db>(db: &'db dyn Db, class: ClassLiteral<'db>) -> Option<EnumMetadata<'db>> {
     let class = match class {
         ClassLiteral::Static(class) => class,
         ClassLiteral::Dynamic(..) => {
@@ -460,7 +457,7 @@ fn custom_init<'db>(db: &'db dyn Db, scope: ScopeId<'db>) -> Option<FunctionType
     }
 }
 
-pub(crate) fn enum_member_literals<'a, 'db: 'a>(
+pub fn enum_member_literals<'a, 'db: 'a>(
     db: &'db dyn Db,
     class: ClassLiteral<'db>,
     exclude_member: Option<&'a Name>,
@@ -474,11 +471,11 @@ pub(crate) fn enum_member_literals<'a, 'db: 'a>(
     })
 }
 
-pub(crate) fn is_single_member_enum<'db>(db: &'db dyn Db, class: ClassLiteral<'db>) -> bool {
+pub fn is_single_member_enum<'db>(db: &'db dyn Db, class: ClassLiteral<'db>) -> bool {
     enum_metadata(db, class).is_some_and(|metadata| metadata.members.len() == 1)
 }
 
-pub(crate) fn is_enum_class<'db>(db: &'db dyn Db, ty: Type<'db>) -> bool {
+pub fn is_enum_class<'db>(db: &'db dyn Db, ty: Type<'db>) -> bool {
     match ty {
         Type::ClassLiteral(class_literal) => enum_metadata(db, class_literal).is_some(),
         _ => false,
@@ -490,10 +487,7 @@ pub(crate) fn is_enum_class<'db>(db: &'db dyn Db, ty: Type<'db>) -> bool {
 ///
 /// This is a lighter-weight check than `enum_metadata`, which additionally
 /// verifies that the class has members.
-pub(crate) fn is_enum_class_by_inheritance<'db>(
-    db: &'db dyn Db,
-    class: StaticClassLiteral<'db>,
-) -> bool {
+pub fn is_enum_class_by_inheritance<'db>(db: &'db dyn Db, class: StaticClassLiteral<'db>) -> bool {
     Type::ClassLiteral(ClassLiteral::Static(class))
         .is_subtype_of(db, KnownClass::Enum.to_subclass_of(db))
         || class
@@ -507,7 +501,7 @@ pub(crate) fn is_enum_class_by_inheritance<'db>(
 /// returns the inner value, not the `nonmember` wrapper.
 ///
 /// Returns `Some(value_type)` if the type is a `nonmember[T]`, otherwise `None`.
-pub(crate) fn try_unwrap_nonmember_value<'db>(db: &'db dyn Db, ty: Type<'db>) -> Option<Type<'db>> {
+pub fn try_unwrap_nonmember_value<'db>(db: &'db dyn Db, ty: Type<'db>) -> Option<Type<'db>> {
     match ty {
         Type::NominalInstance(instance) if instance.has_known_class(db, KnownClass::Nonmember) => {
             Some(

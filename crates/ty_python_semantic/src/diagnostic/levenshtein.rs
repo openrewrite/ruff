@@ -12,7 +12,7 @@ use std::collections::BTreeSet;
 ///
 /// If the typo itself starts with an underscore, this policy is ignored.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(super) enum HideUnderscoredSuggestions {
+pub enum HideUnderscoredSuggestions {
     Yes,
     #[cfg_attr(not(test), expect(dead_code))]
     No,
@@ -24,7 +24,7 @@ impl HideUnderscoredSuggestions {
     }
 }
 
-pub(super) fn find_best_suggestion<'a, O, I>(
+pub fn find_best_suggestion<'a, O, I>(
     options: O,
     typo: &str,
     hide_underscored_suggestions: HideUnderscoredSuggestions,

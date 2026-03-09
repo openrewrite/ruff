@@ -26,16 +26,16 @@ pub struct ScopeId<'db> {
 impl get_size2::GetSize for ScopeId<'_> {}
 
 impl<'db> ScopeId<'db> {
-    pub(crate) fn is_annotation(self, db: &'db dyn Db) -> bool {
+    pub fn is_annotation(self, db: &'db dyn Db) -> bool {
         self.node(db).scope_kind().is_annotation()
     }
 
-    pub(crate) fn node(self, db: &dyn Db) -> &NodeWithScopeKind {
+    pub fn node(self, db: &dyn Db) -> &NodeWithScopeKind {
         self.scope(db).node()
     }
 
     /// Returns `true` if this scope may require type context from its parent scope.
-    pub(crate) fn accepts_type_context(self, db: &dyn Db) -> bool {
+    pub fn accepts_type_context(self, db: &dyn Db) -> bool {
         matches!(
             self.node(db),
             NodeWithScopeKind::ListComprehension(_)
@@ -44,12 +44,12 @@ impl<'db> ScopeId<'db> {
         )
     }
 
-    pub(crate) fn scope(self, db: &dyn Db) -> &Scope {
+    pub fn scope(self, db: &dyn Db) -> &Scope {
         semantic_index(db, self.file(db)).scope(self.file_scope_id(db))
     }
 
     #[cfg(test)]
-    pub(crate) fn name<'ast>(self, db: &'db dyn Db, module: &'ast ParsedModuleRef) -> &'ast str {
+    pub fn name<'ast>(self, db: &'db dyn Db, module: &'ast ParsedModuleRef) -> &'ast str {
         match self.node(db) {
             NodeWithScopeKind::Module => "<module>",
             NodeWithScopeKind::Class(class) | NodeWithScopeKind::ClassTypeParameters(class) => {
@@ -95,13 +95,13 @@ impl FileScopeId {
         index.scope_ids_by_scope[self]
     }
 
-    pub(crate) fn is_generator_function(self, index: &SemanticIndex) -> bool {
+    pub fn is_generator_function(self, index: &SemanticIndex) -> bool {
         index.generator_functions.contains(&self)
     }
 }
 
 #[derive(Debug, salsa::Update, get_size2::GetSize)]
-pub(crate) struct Scope {
+pub struct Scope {
     /// The parent scope, if any.
     parent: Option<FileScopeId>,
 
@@ -119,7 +119,7 @@ pub(crate) struct Scope {
 }
 
 impl Scope {
-    pub(super) fn new(
+    pub fn new(
         parent: Option<FileScopeId>,
         node: NodeWithScopeKind,
         descendants: Range<FileScopeId>,
@@ -135,45 +135,45 @@ impl Scope {
         }
     }
 
-    pub(crate) fn parent(&self) -> Option<FileScopeId> {
+    pub fn parent(&self) -> Option<FileScopeId> {
         self.parent
     }
 
-    pub(crate) fn node(&self) -> &NodeWithScopeKind {
+    pub fn node(&self) -> &NodeWithScopeKind {
         &self.node
     }
 
-    pub(crate) fn kind(&self) -> ScopeKind {
+    pub fn kind(&self) -> ScopeKind {
         self.node().scope_kind()
     }
 
-    pub(crate) fn visibility(&self) -> ScopeVisibility {
+    pub fn visibility(&self) -> ScopeVisibility {
         self.kind().visibility()
     }
 
-    pub(crate) fn descendants(&self) -> Range<FileScopeId> {
+    pub fn descendants(&self) -> Range<FileScopeId> {
         self.descendants.clone()
     }
 
-    pub(super) fn extend_descendants(&mut self, children_end: FileScopeId) {
+    pub fn extend_descendants(&mut self, children_end: FileScopeId) {
         self.descendants = self.descendants.start..children_end;
     }
 
-    pub(crate) fn is_eager(&self) -> bool {
+    pub fn is_eager(&self) -> bool {
         self.kind().is_eager()
     }
 
-    pub(crate) fn reachability(&self) -> ScopedReachabilityConstraintId {
+    pub fn reachability(&self) -> ScopedReachabilityConstraintId {
         self.reachability
     }
 
-    pub(crate) fn in_type_checking_block(&self) -> bool {
+    pub fn in_type_checking_block(&self) -> bool {
         self.in_type_checking_block
     }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, get_size2::GetSize)]
-pub(crate) enum ScopeVisibility {
+pub enum ScopeVisibility {
     /// The scope is private (e.g. function, type alias, comprehension scope).
     Private,
     /// The scope is public (e.g. module, class scope).
@@ -181,17 +181,17 @@ pub(crate) enum ScopeVisibility {
 }
 
 impl ScopeVisibility {
-    pub(crate) const fn is_public(self) -> bool {
+    pub const fn is_public(self) -> bool {
         matches!(self, ScopeVisibility::Public)
     }
 
-    pub(crate) const fn is_private(self) -> bool {
+    pub const fn is_private(self) -> bool {
         matches!(self, ScopeVisibility::Private)
     }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, get_size2::GetSize)]
-pub(crate) enum ScopeLaziness {
+pub enum ScopeLaziness {
     /// The scope is evaluated lazily (e.g. function, type alias scope).
     Lazy,
     /// The scope is evaluated eagerly (e.g. module, class, comprehension scope).
@@ -199,17 +199,17 @@ pub(crate) enum ScopeLaziness {
 }
 
 impl ScopeLaziness {
-    pub(crate) const fn is_eager(self) -> bool {
+    pub const fn is_eager(self) -> bool {
         matches!(self, ScopeLaziness::Eager)
     }
 
-    pub(crate) const fn is_lazy(self) -> bool {
+    pub const fn is_lazy(self) -> bool {
         matches!(self, ScopeLaziness::Lazy)
     }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub(crate) enum ScopeKind {
+pub enum ScopeKind {
     Module,
     TypeParams,
     Class,
@@ -220,11 +220,11 @@ pub(crate) enum ScopeKind {
 }
 
 impl ScopeKind {
-    pub(crate) const fn is_eager(self) -> bool {
+    pub const fn is_eager(self) -> bool {
         self.laziness().is_eager()
     }
 
-    pub(crate) const fn laziness(self) -> ScopeLaziness {
+    pub const fn laziness(self) -> ScopeLaziness {
         match self {
             ScopeKind::Module
             | ScopeKind::Class
@@ -234,7 +234,7 @@ impl ScopeKind {
         }
     }
 
-    pub(crate) const fn visibility(self) -> ScopeVisibility {
+    pub const fn visibility(self) -> ScopeVisibility {
         match self {
             ScopeKind::Module | ScopeKind::Class => ScopeVisibility::Public,
             ScopeKind::TypeParams
@@ -245,7 +245,7 @@ impl ScopeKind {
         }
     }
 
-    pub(crate) const fn is_function_like(self) -> bool {
+    pub const fn is_function_like(self) -> bool {
         // Type parameter scopes behave like function scopes in terms of name resolution; CPython
         // symbol table also uses the term "function-like" for these scopes.
         matches!(
@@ -258,26 +258,26 @@ impl ScopeKind {
         )
     }
 
-    pub(crate) const fn is_class(self) -> bool {
+    pub const fn is_class(self) -> bool {
         matches!(self, ScopeKind::Class)
     }
 
-    pub(crate) const fn is_module(self) -> bool {
+    pub const fn is_module(self) -> bool {
         matches!(self, ScopeKind::Module)
     }
 
-    pub(crate) const fn is_annotation(self) -> bool {
+    pub const fn is_annotation(self) -> bool {
         matches!(self, ScopeKind::TypeParams | ScopeKind::TypeAlias)
     }
 
-    pub(crate) const fn is_non_lambda_function(self) -> bool {
+    pub const fn is_non_lambda_function(self) -> bool {
         matches!(self, ScopeKind::Function)
     }
 }
 
 /// Reference to a node that introduces a new scope.
 #[derive(Copy, Clone, Debug)]
-pub(crate) enum NodeWithScopeRef<'a> {
+pub enum NodeWithScopeRef<'a> {
     Module,
     Class(&'a ast::StmtClassDef),
     Function(&'a ast::StmtFunctionDef),
@@ -296,7 +296,7 @@ impl NodeWithScopeRef<'_> {
     /// Converts the unowned reference to an owned [`NodeWithScopeKind`].
     ///
     /// Note that node wrapped by `self` must be a child of `module`.
-    pub(super) fn to_kind(self, module: &ParsedModuleRef) -> NodeWithScopeKind {
+    pub fn to_kind(self, module: &ParsedModuleRef) -> NodeWithScopeKind {
         match self {
             NodeWithScopeRef::Module => NodeWithScopeKind::Module,
             NodeWithScopeRef::Class(class) => {
@@ -335,7 +335,7 @@ impl NodeWithScopeRef<'_> {
         }
     }
 
-    pub(crate) fn node_key(self) -> NodeWithScopeKey {
+    pub fn node_key(self) -> NodeWithScopeKey {
         match self {
             NodeWithScopeRef::Module => NodeWithScopeKey::Module,
             NodeWithScopeRef::Class(class) => NodeWithScopeKey::Class(NodeKey::from_node(class)),
@@ -375,7 +375,7 @@ impl NodeWithScopeRef<'_> {
 
 /// Node that introduces a new scope.
 #[derive(Clone, Debug, salsa::Update, get_size2::GetSize)]
-pub(crate) enum NodeWithScopeKind {
+pub enum NodeWithScopeKind {
     Module,
     Class(AstNodeRef<ast::StmtClassDef>),
     ClassTypeParameters(AstNodeRef<ast::StmtClassDef>),
@@ -391,7 +391,7 @@ pub(crate) enum NodeWithScopeKind {
 }
 
 impl NodeWithScopeKind {
-    pub(crate) const fn scope_kind(&self) -> ScopeKind {
+    pub const fn scope_kind(&self) -> ScopeKind {
         match self {
             Self::Module => ScopeKind::Module,
             Self::Class(_) => ScopeKind::Class,
@@ -408,40 +408,40 @@ impl NodeWithScopeKind {
         }
     }
 
-    pub(crate) fn as_class(&self) -> Option<&AstNodeRef<ast::StmtClassDef>> {
+    pub fn as_class(&self) -> Option<&AstNodeRef<ast::StmtClassDef>> {
         match self {
             Self::Class(class) => Some(class),
             _ => None,
         }
     }
 
-    pub(crate) fn expect_class(&self) -> &AstNodeRef<ast::StmtClassDef> {
+    pub fn expect_class(&self) -> &AstNodeRef<ast::StmtClassDef> {
         self.as_class().expect("expected class")
     }
 
-    pub(crate) fn as_function(&self) -> Option<&AstNodeRef<ast::StmtFunctionDef>> {
+    pub fn as_function(&self) -> Option<&AstNodeRef<ast::StmtFunctionDef>> {
         match self {
             Self::Function(function) => Some(function),
             _ => None,
         }
     }
 
-    pub(crate) fn expect_function(&self) -> &AstNodeRef<ast::StmtFunctionDef> {
+    pub fn expect_function(&self) -> &AstNodeRef<ast::StmtFunctionDef> {
         self.as_function().expect("expected function")
     }
 
-    pub(crate) fn as_type_alias(&self) -> Option<&AstNodeRef<ast::StmtTypeAlias>> {
+    pub fn as_type_alias(&self) -> Option<&AstNodeRef<ast::StmtTypeAlias>> {
         match self {
             Self::TypeAlias(type_alias) => Some(type_alias),
             _ => None,
         }
     }
 
-    pub(crate) fn expect_type_alias(&self) -> &AstNodeRef<ast::StmtTypeAlias> {
+    pub fn expect_type_alias(&self) -> &AstNodeRef<ast::StmtTypeAlias> {
         self.as_type_alias().expect("expected type alias")
     }
 
-    pub(crate) fn generic_context<'db>(
+    pub fn generic_context<'db>(
         &self,
         db: &'db dyn Db,
         index: &SemanticIndex<'db>,
@@ -477,7 +477,7 @@ impl NodeWithScopeKind {
     ///
     /// This is used to compute relative node indices for expressions within the scope,
     /// providing a stable anchor that only changes when the scope-introducing node changes.
-    pub(crate) fn node_index(&self) -> Option<NodeIndex> {
+    pub fn node_index(&self) -> Option<NodeIndex> {
         match self {
             Self::Module => None,
             Self::Class(class) => Some(class.index()),
@@ -496,7 +496,7 @@ impl NodeWithScopeKind {
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, get_size2::GetSize)]
-pub(crate) enum NodeWithScopeKey {
+pub enum NodeWithScopeKey {
     Module,
     Class(NodeKey),
     ClassTypeParameters(NodeKey),

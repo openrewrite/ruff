@@ -45,7 +45,7 @@ use crate::types::Type;
 /// ensures we bail out before hitting a stack overflow.
 const MAX_RECURSION_DEPTH: u32 = 64;
 
-pub(crate) type TypeTransformer<'db, Tag> = CycleDetector<Tag, Type<'db>, Type<'db>>;
+pub type TypeTransformer<'db, Tag> = CycleDetector<Tag, Type<'db>, Type<'db>>;
 
 impl<Tag> Default for TypeTransformer<'_, Tag> {
     fn default() -> Self {
@@ -57,7 +57,7 @@ impl<Tag> Default for TypeTransformer<'_, Tag> {
     }
 }
 
-pub(crate) type PairVisitor<'db, Tag, C> = CycleDetector<Tag, (Type<'db>, Type<'db>), C>;
+pub type PairVisitor<'db, Tag, C> = CycleDetector<Tag, (Type<'db>, Type<'db>), C>;
 
 #[derive(Debug)]
 pub struct CycleDetector<Tag, T, R, Extra = ()> {
@@ -80,7 +80,7 @@ pub struct CycleDetector<Tag, T, R, Extra = ()> {
 
     fallback: R,
 
-    pub(crate) extra: Extra,
+    pub extra: Extra,
 
     _tag: PhantomData<Tag>,
 }
@@ -92,7 +92,7 @@ impl<Tag, T: Hash + Eq + Clone, R: Clone, Extra: Default> CycleDetector<Tag, T, 
 }
 
 impl<Tag, T: Hash + Eq + Clone, R: Clone, Extra> CycleDetector<Tag, T, R, Extra> {
-    pub(crate) fn with_extra(fallback: R, extra: Extra) -> Self {
+    pub fn with_extra(fallback: R, extra: Extra) -> Self {
         CycleDetector {
             seen: RefCell::new(FxIndexSet::default()),
             cache: RefCell::new(FxHashMap::default()),

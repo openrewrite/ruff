@@ -23,7 +23,7 @@ use crate::{
 
 /// Enumeration of ways in which a `super()` call can cause us to emit a diagnostic.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum BoundSuperError<'db> {
+pub enum BoundSuperError<'db> {
     /// The second argument to `super()` (which may have been implicitly provided by
     /// the Python interpreter) has an abstract or structural type.
     /// It's impossible to determine whether a `Callable` type or a synthesized protocol
@@ -51,7 +51,7 @@ pub(crate) enum BoundSuperError<'db> {
 }
 
 impl<'db> BoundSuperError<'db> {
-    pub(super) fn report_diagnostic(&self, context: &'db InferContext<'db, '_>, node: AnyNodeRef) {
+    pub fn report_diagnostic(&self, context: &'db InferContext<'db, '_>, node: AnyNodeRef) {
         match self {
             BoundSuperError::AbstractOwnerType {
                 owner_type,
@@ -255,7 +255,7 @@ impl<'db> SuperOwnerKind<'db> {
     }
 
     /// Returns the type representation of this owner.
-    pub(super) fn owner_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn owner_type(self, db: &'db dyn Db) -> Type<'db> {
         match self {
             SuperOwnerKind::Dynamic(dynamic) => Type::Dynamic(dynamic),
             SuperOwnerKind::Class(class) => class.into(),
@@ -278,7 +278,7 @@ pub struct BoundSuperType<'db> {
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for BoundSuperType<'_> {}
 
-pub(super) fn walk_bound_super_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_bound_super_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     bound_super: BoundSuperType<'db>,
     visitor: &V,
@@ -295,7 +295,7 @@ impl<'db> BoundSuperType<'db> {
     /// - `super(pivot, owner_instance)` is valid only if `isinstance(owner_instance, pivot)`
     ///
     /// However, the checking is skipped when any of the arguments is a dynamic type.
-    pub(super) fn build(
+    pub fn build(
         db: &'db dyn Db,
         pivot_class_type: Type<'db>,
         owner_type: Type<'db>,
@@ -649,7 +649,7 @@ impl<'db> BoundSuperType<'db> {
     /// The arguments passed to `__get__` depend on whether the owner is an instance or a class.
     /// See the `CPython` implementation for reference:
     /// <https://github.com/python/cpython/blob/3b3720f1a26ab34377542b48eb6a6565f78ff892/Objects/typeobject.c#L11690-L11693>
-    pub(super) fn try_call_dunder_get_on_attribute(
+    pub fn try_call_dunder_get_on_attribute(
         self,
         db: &'db dyn Db,
         attribute: PlaceAndQualifiers<'db>,
@@ -684,7 +684,7 @@ impl<'db> BoundSuperType<'db> {
 
     /// Similar to `Type::find_name_in_mro_with_policy`, but performs lookup starting *after* the
     /// pivot class in the MRO, based on the `owner` type instead of the `super` type.
-    pub(super) fn find_name_in_mro_after_pivot(
+    pub fn find_name_in_mro_after_pivot(
         self,
         db: &'db dyn Db,
         name: &str,
@@ -726,7 +726,7 @@ impl<'db> BoundSuperType<'db> {
         }
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -749,7 +749,7 @@ impl<'db> BoundSuperType<'db> {
     /// cannot simply delegate to `Type::is_equivalent_to_impl` for this
     /// case, because `Type::is_equivalent_to_impl` itself delegates back to
     /// `Type::has_relation_to_impl`, which would cause an infinite loop.
-    pub(crate) fn is_equivalent_to_impl<'c>(
+    pub fn is_equivalent_to_impl<'c>(
         self,
         db: &'db dyn Db,
         other: Self,

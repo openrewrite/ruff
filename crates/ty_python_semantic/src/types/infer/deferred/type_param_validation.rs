@@ -9,7 +9,7 @@ use crate::types::{context::InferContext, diagnostic::INVALID_TYPE_VARIABLE_DEFA
 /// consumes all remaining positional type arguments.
 ///
 /// This check is used for both classes and type aliases with PEP 695 type parameters.
-pub(crate) fn check_no_default_after_typevar_tuple_pep695(
+pub fn check_no_default_after_typevar_tuple_pep695(
     context: &InferContext<'_, '_>,
     type_params: &ast::TypeParams,
 ) {

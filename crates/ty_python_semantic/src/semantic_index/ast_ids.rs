@@ -25,7 +25,7 @@ use crate::semantic_index::semantic_index;
 /// x = foo()
 /// ```
 #[derive(Debug, salsa::Update, get_size2::GetSize)]
-pub(crate) struct AstIds {
+pub struct AstIds {
     /// Maps expressions which "use" a place (that is, [`ast::ExprName`], [`ast::ExprAttribute`] or [`ast::ExprSubscript`]) to a use id.
     uses_map: FxHashMap<ExpressionNodeKey, ScopedUseId>,
 }
@@ -86,13 +86,13 @@ impl HasScopedUseId for ast::ExprRef<'_> {
 }
 
 #[derive(Debug, Default)]
-pub(super) struct AstIdsBuilder {
+pub struct AstIdsBuilder {
     uses_map: FxHashMap<ExpressionNodeKey, ScopedUseId>,
 }
 
 impl AstIdsBuilder {
     /// Adds `expr` to the use ids map and returns its id.
-    pub(super) fn record_use(&mut self, expr: impl Into<ExpressionNodeKey>) -> ScopedUseId {
+    pub fn record_use(&mut self, expr: impl Into<ExpressionNodeKey>) -> ScopedUseId {
         let use_id = self.uses_map.len().into();
 
         self.uses_map.insert(expr.into(), use_id);
@@ -100,7 +100,7 @@ impl AstIdsBuilder {
         use_id
     }
 
-    pub(super) fn finish(mut self) -> AstIds {
+    pub fn finish(mut self) -> AstIds {
         self.uses_map.shrink_to_fit();
 
         AstIds {
@@ -110,13 +110,13 @@ impl AstIdsBuilder {
 }
 
 /// Node key that can only be constructed for expressions.
-pub(crate) mod node_key {
+pub mod node_key {
     use ruff_python_ast as ast;
 
     use crate::node_key::NodeKey;
 
     #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, salsa::Update, get_size2::GetSize)]
-    pub(crate) struct ExpressionNodeKey(NodeKey);
+    pub struct ExpressionNodeKey(NodeKey);
 
     impl From<ast::ExprRef<'_>> for ExpressionNodeKey {
         fn from(value: ast::ExprRef<'_>) -> Self {

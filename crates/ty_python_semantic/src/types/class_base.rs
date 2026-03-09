@@ -32,11 +32,11 @@ pub enum ClassBase<'db> {
 }
 
 impl<'db> ClassBase<'db> {
-    pub(crate) const fn unknown() -> Self {
+    pub const fn unknown() -> Self {
         Self::Dynamic(DynamicType::Unknown)
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -51,7 +51,7 @@ impl<'db> ClassBase<'db> {
         }
     }
 
-    pub(crate) fn name(self, db: &'db dyn Db) -> &'db str {
+    pub fn name(self, db: &'db dyn Db) -> &'db str {
         match self {
             ClassBase::Class(class) => class.name(db),
             ClassBase::Dynamic(DynamicType::Any) => "Any",
@@ -72,18 +72,18 @@ impl<'db> ClassBase<'db> {
     }
 
     /// Return a `ClassBase` representing the class `builtins.object`
-    pub(super) fn object(db: &'db dyn Db) -> Self {
+    pub fn object(db: &'db dyn Db) -> Self {
         Self::Class(ClassType::object(db))
     }
 
-    pub(super) const fn is_typed_dict(self) -> bool {
+    pub const fn is_typed_dict(self) -> bool {
         matches!(self, ClassBase::TypedDict)
     }
 
     /// Attempt to resolve `ty` into a `ClassBase`.
     ///
     /// Return `None` if `ty` is not an acceptable type for a class base.
-    pub(super) fn try_from_type(
+    pub fn try_from_type(
         db: &'db dyn Db,
         ty: Type<'db>,
         subclass: Option<ClassLiteral<'db>>,
@@ -272,7 +272,7 @@ impl<'db> ClassBase<'db> {
         }
     }
 
-    pub(super) fn into_class(self) -> Option<ClassType<'db>> {
+    pub fn into_class(self) -> Option<ClassType<'db>> {
         match self {
             Self::Class(class) => Some(class),
             Self::Dynamic(_) | Self::Generic | Self::Protocol | Self::TypedDict => None,
@@ -280,7 +280,7 @@ impl<'db> ClassBase<'db> {
     }
 
     /// Return the metaclass of this class base.
-    pub(crate) fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
         match self {
             Self::Class(class) => class.metaclass(db),
             Self::Dynamic(dynamic) => Type::Dynamic(dynamic),
@@ -304,7 +304,7 @@ impl<'db> ClassBase<'db> {
         }
     }
 
-    pub(crate) fn apply_optional_specialization(
+    pub fn apply_optional_specialization(
         self,
         db: &'db dyn Db,
         specialization: Option<Specialization<'db>>,
@@ -336,7 +336,7 @@ impl<'db> ClassBase<'db> {
         )
     }
 
-    pub(super) fn has_cyclic_mro(self, db: &'db dyn Db) -> bool {
+    pub fn has_cyclic_mro(self, db: &'db dyn Db) -> bool {
         match self {
             ClassBase::Class(class) => {
                 let Some((class_literal, specialization)) = class.static_class_literal(db) else {
@@ -358,7 +358,7 @@ impl<'db> ClassBase<'db> {
     }
 
     /// Iterate over the MRO of this base
-    pub(super) fn mro(
+    pub fn mro(
         self,
         db: &'db dyn Db,
         additional_specialization: Option<Specialization<'db>>,
@@ -374,11 +374,11 @@ impl<'db> ClassBase<'db> {
         }
     }
 
-    pub(super) fn display(self, db: &'db dyn Db) -> impl std::fmt::Display {
+    pub fn display(self, db: &'db dyn Db) -> impl std::fmt::Display {
         self.display_with(db, DisplaySettings::default())
     }
 
-    pub(super) fn display_with(
+    pub fn display_with(
         self,
         db: &'db dyn Db,
         display_settings: DisplaySettings<'db>,

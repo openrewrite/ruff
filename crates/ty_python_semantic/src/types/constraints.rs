@@ -90,7 +90,7 @@ use crate::types::{
 use crate::{Db, FxIndexMap, FxIndexSet};
 
 /// An extension trait for building constraint sets from [`Option`] values.
-pub(crate) trait OptionConstraintsExtension<T> {
+pub trait OptionConstraintsExtension<T> {
     /// Returns a constraint set that is always satisfiable if the option is `None`; otherwise
     /// applies a function to determine under what constraints the value inside of it holds.
     fn when_none_or<'db, 'c>(
@@ -137,7 +137,7 @@ impl<T> OptionConstraintsExtension<T> for Option<T> {
 }
 
 /// An extension trait for building constraint sets from an [`Iterator`].
-pub(crate) trait IteratorConstraintsExtension<T> {
+pub trait IteratorConstraintsExtension<T> {
     /// Returns the constraints under which any element of the iterator holds.
     ///
     /// This method short-circuits; if we encounter any element that
@@ -267,7 +267,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
         Self::from_node(builder, ALWAYS_TRUE)
     }
 
-    pub(crate) fn from_bool(builder: &'c ConstraintSetBuilder<'db>, b: bool) -> Self {
+    pub fn from_bool(builder: &'c ConstraintSetBuilder<'db>, b: bool) -> Self {
         if b {
             Self::always(builder)
         } else {
@@ -276,7 +276,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     }
 
     /// Returns a constraint set that constraints a typevar to a particular range of types.
-    pub(crate) fn constrain_typevar(
+    pub fn constrain_typevar(
         db: &'db dyn Db,
         builder: &'c ConstraintSetBuilder<'db>,
         typevar: BoundTypeVarInstance<'db>,
@@ -296,12 +296,12 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     }
 
     /// Returns whether this constraint set never holds
-    pub(crate) fn is_never_satisfied(self, db: &'db dyn Db) -> bool {
+    pub fn is_never_satisfied(self, db: &'db dyn Db) -> bool {
         self.node.is_never_satisfied(db, self.builder)
     }
 
     /// Returns whether this constraint set always holds
-    pub(crate) fn is_always_satisfied(self, db: &'db dyn Db) -> bool {
+    pub fn is_always_satisfied(self, db: &'db dyn Db) -> bool {
         self.node.is_always_satisfied(db, self.builder)
     }
 
@@ -315,7 +315,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     /// `(T ≤ list[U]) ∧ (U ≤ list[T])` does not violate our lower/upper bounds restrictions, since
     /// neither bound _is_ a typevar. And it's not something we can create a specialization from,
     /// since we would endlessly substitute until we stack overflow.
-    pub(crate) fn is_cyclic(self, db: &'db dyn Db) -> bool {
+    pub fn is_cyclic(self, db: &'db dyn Db) -> bool {
         #[derive(Default)]
         struct CollectReachability<'db> {
             reachable_typevars: RefCell<FxHashSet<BoundTypeVarIdentity<'db>>>,
@@ -417,7 +417,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     /// Returns the constraints under which `lhs` is a subtype of `rhs`, assuming that the
     /// constraints in this constraint set hold. Panics if neither of the types being compared are
     /// a typevar. (That case is handled by `Type::has_relation_to`.)
-    pub(crate) fn implies_subtype_of(
+    pub fn implies_subtype_of(
         self,
         db: &'db dyn Db,
         builder: &'c ConstraintSetBuilder<'db>,
@@ -442,7 +442,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     /// since the constraint set cannot be affected by any typevars that it does not mention. That
     /// means that those additional typevars trivially satisfy the constraint set, regardless of
     /// whether they are inferable or not.
-    pub(crate) fn satisfied_by_all_typevars(
+    pub fn satisfied_by_all_typevars(
         &self,
         db: &'db dyn Db,
         builder: &'c ConstraintSetBuilder<'db>,
@@ -456,7 +456,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     ///
     /// In the result, `self` will appear before `other` according to the `source_order` of the BDD
     /// nodes.
-    pub(crate) fn union(
+    pub fn union(
         &mut self,
         _db: &'db dyn Db,
         builder: &'c ConstraintSetBuilder<'db>,
@@ -471,7 +471,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     ///
     /// In the result, `self` will appear before `other` according to the `source_order` of the BDD
     /// nodes.
-    pub(crate) fn intersect(
+    pub fn intersect(
         &mut self,
         _db: &'db dyn Db,
         builder: &'c ConstraintSetBuilder<'db>,
@@ -483,7 +483,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     }
 
     /// Returns the negation of this constraint set.
-    pub(crate) fn negate(self, _db: &'db dyn Db, builder: &'c ConstraintSetBuilder<'db>) -> Self {
+    pub fn negate(self, _db: &'db dyn Db, builder: &'c ConstraintSetBuilder<'db>) -> Self {
         self.verify_builder(builder);
         Self::from_node(builder, self.node.negate(builder))
     }
@@ -494,7 +494,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     ///
     /// In the result, `self` will appear before `other` according to the `source_order` of the BDD
     /// nodes.
-    pub(crate) fn and(
+    pub fn and(
         mut self,
         db: &'db dyn Db,
         builder: &'c ConstraintSetBuilder<'db>,
@@ -515,7 +515,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     ///
     /// In the result, `self` will appear before `other` according to the `source_order` of the BDD
     /// nodes.
-    pub(crate) fn or(
+    pub fn or(
         mut self,
         db: &'db dyn Db,
         builder: &'c ConstraintSetBuilder<'db>,
@@ -534,7 +534,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     ///
     /// In the result, `self` will appear before `other` according to the `source_order` of the BDD
     /// nodes.
-    pub(crate) fn implies(
+    pub fn implies(
         self,
         db: &'db dyn Db,
         builder: &'c ConstraintSetBuilder<'db>,
@@ -547,7 +547,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     ///
     /// In the result, `self` will appear before `other` according to the `source_order` of the BDD
     /// nodes.
-    pub(crate) fn iff(
+    pub fn iff(
         self,
         _db: &'db dyn Db,
         builder: &'c ConstraintSetBuilder<'db>,
@@ -562,7 +562,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     /// abstracted away. Those typevars will be removed from the constraint set, and the constraint
     /// set will return true whenever there was _any_ specialization of those typevars that
     /// returned true before.
-    pub(crate) fn reduce_inferable(
+    pub fn reduce_inferable(
         self,
         db: &'db dyn Db,
         builder: &'c ConstraintSetBuilder<'db>,
@@ -572,7 +572,7 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
         Self::from_node(builder, self.node.exists(db, builder, to_remove))
     }
 
-    pub(crate) fn solutions(
+    pub fn solutions(
         self,
         db: &'db dyn Db,
         builder: &'c ConstraintSetBuilder<'db>,
@@ -589,18 +589,14 @@ impl<'db, 'c> ConstraintSet<'db, 'c> {
     }
 
     #[expect(dead_code)] // Keep this around for debugging purposes
-    pub(crate) fn display(self, db: &'db dyn Db) -> impl Display {
+    pub fn display(self, db: &'db dyn Db) -> impl Display {
         self.node
             .simplify_for_display(db, self.builder)
             .display(db, self.builder)
     }
 
     #[expect(dead_code)] // Keep this around for debugging purposes
-    pub(crate) fn display_graph<'a>(
-        self,
-        db: &'db dyn Db,
-        prefix: &'a dyn Display,
-    ) -> impl Display + 'a
+    pub fn display_graph<'a>(self, db: &'db dyn Db, prefix: &'a dyn Display) -> impl Display + 'a
     where
         'db: 'a,
         'c: 'a,
@@ -638,7 +634,7 @@ impl Debug for ConstraintSet<'_, '_> {
 /// once we determine that we need _something_ from an inference regions, we always infer _all_ of
 /// the definitions and expressions in that region, in a stable order.
 #[derive(Default)]
-pub(crate) struct ConstraintSetBuilder<'db> {
+pub struct ConstraintSetBuilder<'db> {
     storage: RefCell<ConstraintSetStorage<'db>>,
 }
 
@@ -682,14 +678,14 @@ struct ConstraintSetStorage<'db> {
 }
 
 impl<'db> ConstraintSetBuilder<'db> {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self::default()
     }
 
     /// Creates an [`OwnedConstraintSet`], consuming this builder in the process. You provide a
     /// callback that constructs a [`ConstraintSet`]. We then package that constraint set up with
     /// the storage arenas from this builder.
-    pub(crate) fn into_owned(
+    pub fn into_owned(
         self,
         f: impl for<'c> FnOnce(&'c Self) -> ConstraintSet<'db, 'c>,
     ) -> OwnedConstraintSet<'db> {
@@ -709,7 +705,7 @@ impl<'db> ConstraintSetBuilder<'db> {
     }
 
     /// Loads an [`OwnedConstraintSet`] into this builder.
-    pub(crate) fn load<'c>(
+    pub fn load<'c>(
         &'c self,
         db: &'db dyn Db,
         other: &OwnedConstraintSet<'db>,
@@ -911,10 +907,10 @@ pub struct ConstraintId;
 /// An individual constraint in a constraint set. This restricts a single typevar to be within a
 /// lower and upper bound.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::Update)]
-pub(crate) struct Constraint<'db> {
-    pub(crate) typevar: BoundTypeVarInstance<'db>,
-    pub(crate) lower: Type<'db>,
-    pub(crate) upper: Type<'db>,
+pub struct Constraint<'db> {
+    pub typevar: BoundTypeVarInstance<'db>,
+    pub lower: Type<'db>,
+    pub upper: Type<'db>,
 }
 
 impl ConstraintId {
@@ -1248,7 +1244,7 @@ impl ConstraintId {
         })
     }
 
-    pub(crate) fn display<'db>(
+    pub fn display<'db>(
         self,
         db: &'db dyn Db,
         builder: &ConstraintSetBuilder<'db>,
@@ -3608,24 +3604,24 @@ impl InteriorNode {
 }
 
 #[derive(Debug)]
-pub(crate) enum Solutions<'db, 'c> {
+pub enum Solutions<'db, 'c> {
     Unsatisfiable,
     Unconstrained,
     Constrained(Ref<'c, Vec<Solution<'db>>>),
 }
 
-pub(crate) type Solution<'db> = Vec<TypeVarSolution<'db>>;
+pub type Solution<'db> = Vec<TypeVarSolution<'db>>;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, get_size2::GetSize)]
-pub(crate) struct TypeVarSolution<'db> {
-    pub(crate) bound_typevar: BoundTypeVarInstance<'db>,
-    pub(crate) solution: Type<'db>,
+pub struct TypeVarSolution<'db> {
+    pub bound_typevar: BoundTypeVarInstance<'db>,
+    pub solution: Type<'db>,
 }
 
 /// An assignment of one BDD variable to either `true` or `false`. (When evaluating a BDD, we
 /// must provide an assignment for each variable present in the BDD.)
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize)]
-pub(crate) enum ConstraintAssignment {
+pub enum ConstraintAssignment {
     Positive(ConstraintId),
     Negative(ConstraintId),
 }
@@ -4512,7 +4508,7 @@ impl SequentMap {
 /// The collection of constraints that we know to be true or false at a certain point when
 /// traversing a BDD.
 #[derive(Debug)]
-pub(crate) struct PathAssignments {
+pub struct PathAssignments {
     map: SequentMap,
     assignments: FxIndexMap<ConstraintAssignment, usize>,
     /// Constraints that we have discovered, mapped to whether we have processed them yet. (This
@@ -4612,7 +4608,7 @@ impl PathAssignments {
         result
     }
 
-    pub(crate) fn positive_constraints(&self) -> impl Iterator<Item = (ConstraintId, usize)> + '_ {
+    pub fn positive_constraints(&self) -> impl Iterator<Item = (ConstraintId, usize)> + '_ {
         self.assignments
             .iter()
             .filter_map(|(assignment, source_order)| match assignment {

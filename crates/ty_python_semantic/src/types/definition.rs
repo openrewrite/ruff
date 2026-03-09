@@ -57,7 +57,7 @@ impl TypeDefinition<'_> {
         }
     }
 
-    pub(super) fn file(&self, db: &dyn Db) -> Option<File> {
+    pub fn file(&self, db: &dyn Db) -> Option<File> {
         match self {
             Self::Module(module) => module.file(db),
             Self::StaticClass(definition)

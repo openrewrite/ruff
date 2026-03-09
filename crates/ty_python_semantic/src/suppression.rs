@@ -74,7 +74,7 @@ declare_lint! {
     ///
     /// This rule is skipped if [`analysis.respect-type-ignore-comments`](https://docs.astral.sh/ty/reference/configuration/#respect-type-ignore-comments)
     /// to `false`.
-    pub(crate) static UNUSED_TYPE_IGNORE_COMMENT = {
+    pub static UNUSED_TYPE_IGNORE_COMMENT = {
         summary: "detects unused `type: ignore` comments",
         status: LintStatus::stable("0.0.14"),
         default_level: Level::Warn,
@@ -99,7 +99,7 @@ declare_lint! {
     /// ```py
     /// a = 20 / 0  # ty: ignore[division-by-zero]
     /// ```
-    pub(crate) static IGNORE_COMMENT_UNKNOWN_RULE = {
+    pub static IGNORE_COMMENT_UNKNOWN_RULE = {
         summary: "detects `ty: ignore` comments that reference unknown rules",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Warn,
@@ -123,7 +123,7 @@ declare_lint! {
     /// ```py
     /// a = 20 / 0  # type: ignore
     /// ```
-    pub(crate) static INVALID_IGNORE_COMMENT = {
+    pub static INVALID_IGNORE_COMMENT = {
         summary: "detects ignore comments that use invalid syntax",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Warn,
@@ -135,7 +135,7 @@ pub fn is_unused_ignore_comment_lint(name: LintName) -> bool {
 }
 
 #[salsa::tracked(returns(ref), heap_size=ruff_memory_usage::heap_size)]
-pub(crate) fn suppressions(db: &dyn Db, file: File) -> Suppressions {
+pub fn suppressions(db: &dyn Db, file: File) -> Suppressions {
     let parsed = parsed_module(db, file).load(db);
     let source = source_text(db, file);
 
@@ -190,7 +190,7 @@ pub(crate) fn suppressions(db: &dyn Db, file: File) -> Suppressions {
     builder.finish()
 }
 
-pub(crate) fn check_suppressions(
+pub fn check_suppressions(
     db: &dyn Db,
     file: File,
     diagnostics: TypeCheckDiagnostics,
@@ -290,7 +290,7 @@ impl<'a> CheckSuppressionsContext<'a> {
 ///
 /// This type exists to separate the phases of "check if a diagnostic should
 /// be reported" and "build the actual diagnostic."
-pub(crate) struct SuppressionDiagnosticGuardBuilder<'ctx, 'db> {
+pub struct SuppressionDiagnosticGuardBuilder<'ctx, 'db> {
     ctx: &'ctx CheckSuppressionsContext<'db>,
     id: DiagnosticId,
     range: TextRange,
@@ -320,10 +320,7 @@ impl<'ctx, 'db> SuppressionDiagnosticGuardBuilder<'ctx, 'db> {
     ///
     /// The diagnostic can be further mutated on the guard via its `DerefMut`
     /// impl to `Diagnostic`.
-    pub(crate) fn into_diagnostic(
-        self,
-        message: impl IntoDiagnosticMessage,
-    ) -> DiagnosticGuard<'ctx> {
+    pub fn into_diagnostic(self, message: impl IntoDiagnosticMessage) -> DiagnosticGuard<'ctx> {
         let mut diag = Diagnostic::new(self.id, self.severity, message);
 
         let primary_span = Span::from(self.ctx.file).with_range(self.range);
@@ -334,7 +331,7 @@ impl<'ctx, 'db> SuppressionDiagnosticGuardBuilder<'ctx, 'db> {
 
 /// The suppressions of a single file.
 #[derive(Debug, Eq, PartialEq, get_size2::GetSize)]
-pub(crate) struct Suppressions {
+pub struct Suppressions {
     /// Suppressions that apply to the entire file.
     ///
     /// The suppressions are sorted by [`Suppression::comment_range`] and the [`Suppression::suppressed_range`]
@@ -358,7 +355,7 @@ pub(crate) struct Suppressions {
 }
 
 impl Suppressions {
-    pub(crate) fn find_suppression(&self, range: TextRange, id: LintId) -> Option<&Suppression> {
+    pub fn find_suppression(&self, range: TextRange, id: LintId) -> Option<&Suppression> {
         self.lint_suppressions(range, id).next()
     }
 
@@ -409,7 +406,7 @@ impl Suppressions {
     }
 }
 
-pub(crate) type SuppressionsIter<'a> =
+pub type SuppressionsIter<'a> =
     std::iter::Chain<std::slice::Iter<'a, Suppression>, std::slice::Iter<'a, Suppression>>;
 
 impl<'a> IntoIterator for &'a Suppressions {
@@ -427,7 +424,7 @@ impl<'a> IntoIterator for &'a Suppressions {
 /// create multiple suppressions: one for every code.
 /// They all share the same `comment_range`.
 #[derive(Clone, Debug, Eq, PartialEq, get_size2::GetSize)]
-pub(crate) struct Suppression {
+pub struct Suppression {
     target: SuppressionTarget,
     kind: SuppressionKind,
 
@@ -467,7 +464,7 @@ impl Suppression {
         }
     }
 
-    pub(crate) fn id(&self) -> FileSuppressionId {
+    pub fn id(&self) -> FileSuppressionId {
         FileSuppressionId(self.range)
     }
 }
@@ -507,7 +504,7 @@ impl fmt::Display for SuppressionKind {
 /// This is unique enough because it is its exact
 /// location in the source.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, get_size2::GetSize)]
-pub(crate) struct FileSuppressionId(TextRange);
+pub struct FileSuppressionId(TextRange);
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, get_size2::GetSize)]
 enum SuppressionTarget {

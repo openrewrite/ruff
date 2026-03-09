@@ -36,7 +36,7 @@ use crate::Db;
     cycle_initial=|_, _, _| Box::default(),
     heap_size=ruff_memory_usage::heap_size)
 ]
-pub(super) fn exported_names(db: &dyn Db, file: File) -> Box<[Name]> {
+pub fn exported_names(db: &dyn Db, file: File) -> Box<[Name]> {
     let module = parsed_module(db, file).load(db);
     let mut finder = ExportFinder::new(db, file);
     finder.visit_body(module.suite());

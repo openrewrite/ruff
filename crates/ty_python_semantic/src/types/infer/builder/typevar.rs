@@ -29,7 +29,7 @@ use ruff_python_ast::{self as ast, PythonVersion};
 use ruff_text_size::{Ranged, TextRange};
 
 impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
-    pub(super) fn infer_typevar_definition(
+    pub fn infer_typevar_definition(
         &mut self,
         node: &ast::TypeParamTypeVar,
         definition: Definition<'db>,
@@ -79,7 +79,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         );
     }
 
-    pub(super) fn infer_typevar_deferred(&mut self, node: &'ast ast::TypeParamTypeVar) {
+    pub fn infer_typevar_deferred(&mut self, node: &'ast ast::TypeParamTypeVar) {
         let ast::TypeParamTypeVar {
             range: _,
             node_index: _,
@@ -158,7 +158,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     }
 
     /// Validate that a `TypeVar`'s default is compatible with its bound or constraints.
-    pub(super) fn validate_typevar_default(
+    pub fn validate_typevar_default(
         &mut self,
         name: Option<&str>,
         bound_or_constraints: Option<TypeVarBoundOrConstraints<'db>>,
@@ -526,7 +526,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         true
     }
 
-    pub(super) fn infer_paramspec_definition(
+    pub fn infer_paramspec_definition(
         &mut self,
         node: &ast::TypeParamParamSpec,
         definition: Definition<'db>,
@@ -559,7 +559,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         );
     }
 
-    pub(super) fn infer_paramspec_deferred(&mut self, node: &ast::TypeParamParamSpec) {
+    pub fn infer_paramspec_deferred(&mut self, node: &ast::TypeParamParamSpec) {
         let ast::TypeParamParamSpec {
             range: _,
             node_index: _,
@@ -575,7 +575,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         self.deferred_state = previous_deferred_state;
     }
 
-    pub(super) fn infer_paramspec_default(
+    pub fn infer_paramspec_default(
         &mut self,
         default_expr: &ast::Expr,
         paramspec_name: Option<&str>,
@@ -641,7 +641,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn infer_typevartuple_definition(
+    pub fn infer_typevartuple_definition(
         &mut self,
         node: &ast::TypeParamTypeVarTuple,
         definition: Definition<'db>,
@@ -661,7 +661,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         );
     }
 
-    pub(super) fn infer_legacy_paramspec(
+    pub fn infer_legacy_paramspec(
         &mut self,
         target: &ast::Expr,
         call_expr: &ast::ExprCall,
@@ -817,7 +817,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         )))
     }
 
-    pub(super) fn infer_legacy_typevar(
+    pub fn infer_legacy_typevar(
         &mut self,
         target: &ast::Expr,
         call_expr: &ast::ExprCall,

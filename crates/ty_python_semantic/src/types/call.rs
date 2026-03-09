@@ -6,12 +6,12 @@ use crate::types::{MemberLookupPolicy, PropertyInstanceType};
 use ruff_python_ast as ast;
 
 mod arguments;
-pub(crate) mod bind;
-pub(super) use arguments::{Argument, CallArguments};
-pub(super) use bind::{Binding, Bindings, CallableBinding, MatchedArgument};
+pub mod bind;
+pub use arguments::{Argument, CallArguments};
+pub use bind::{Binding, Bindings, CallableBinding, MatchedArgument};
 
 impl<'db> Type<'db> {
-    pub(crate) fn try_call_bin_op(
+    pub fn try_call_bin_op(
         db: &'db dyn Db,
         left_ty: Type<'db>,
         op: ast::Operator,
@@ -20,7 +20,7 @@ impl<'db> Type<'db> {
         Self::try_call_bin_op_with_policy(db, left_ty, op, right_ty, MemberLookupPolicy::default())
     }
 
-    pub(crate) fn try_call_bin_op_with_policy(
+    pub fn try_call_bin_op_with_policy(
         db: &'db dyn Db,
         left_ty: Type<'db>,
         op: ast::Operator,
@@ -101,14 +101,12 @@ impl<'db> Type<'db> {
 ///
 /// The bindings are boxed so that we do not pass around large `Err` variants on the stack.
 #[derive(Debug)]
-pub(crate) struct CallError<'db>(pub(crate) CallErrorKind, pub(crate) Box<Bindings<'db>>);
+pub struct CallError<'db>(pub CallErrorKind, pub Box<Bindings<'db>>);
 
 impl<'db> CallError<'db> {
     /// Returns `Some(property)` if the call error was caused by an attempt to set a property
     /// that has no setter, and `None` otherwise.
-    pub(crate) fn as_attempt_to_set_property_with_no_setter(
-        &self,
-    ) -> Option<PropertyInstanceType<'db>> {
+    pub fn as_attempt_to_set_property_with_no_setter(&self) -> Option<PropertyInstanceType<'db>> {
         if self.0 != CallErrorKind::BindingError {
             return None;
         }
@@ -125,7 +123,7 @@ impl<'db> CallError<'db> {
 
 /// The reason why calling a type failed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum CallErrorKind {
+pub enum CallErrorKind {
     /// The type is not callable. For a union type, _none_ of the union elements are callable.
     NotCallable,
 
@@ -142,7 +140,7 @@ pub(crate) enum CallErrorKind {
 }
 
 #[derive(Debug)]
-pub(super) enum CallDunderError<'db> {
+pub enum CallDunderError<'db> {
     /// The dunder attribute exists but it can't be called with the given arguments.
     ///
     /// This includes non-callable dunder attributes that are possibly unbound.
@@ -158,7 +156,7 @@ pub(super) enum CallDunderError<'db> {
 }
 
 impl<'db> CallDunderError<'db> {
-    pub(super) fn return_type(&self, db: &'db dyn Db) -> Option<Type<'db>> {
+    pub fn return_type(&self, db: &'db dyn Db) -> Option<Type<'db>> {
         match self {
             Self::MethodNotAvailable | Self::CallError(CallErrorKind::NotCallable, _) => None,
             Self::CallError(_, bindings) => Some(bindings.return_type(db)),
@@ -166,7 +164,7 @@ impl<'db> CallDunderError<'db> {
         }
     }
 
-    pub(super) fn fallback_return_type(&self, db: &'db dyn Db) -> Type<'db> {
+    pub fn fallback_return_type(&self, db: &'db dyn Db) -> Type<'db> {
         self.return_type(db).unwrap_or(Type::unknown())
     }
 }
@@ -178,7 +176,7 @@ impl<'db> From<CallError<'db>> for CallDunderError<'db> {
 }
 
 #[derive(Debug)]
-pub(crate) enum CallBinOpError {
+pub enum CallBinOpError {
     /// The dunder attribute exists but it can't be called with the given arguments.
     ///
     /// This includes non-callable dunder attributes that are possibly unbound.

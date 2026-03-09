@@ -234,7 +234,7 @@ impl LintStatus {
 ///     /// ```python
 ///     /// print(x)  # NameError: name 'x' is not defined
 ///     /// ```
-///     pub(crate) static UNRESOLVED_REFERENCE = {
+///     pub static UNRESOLVED_REFERENCE = {
 ///         summary: "detects references to names that are not defined",
 ///         status: LintStatus::preview("1.0.0"),
 ///         default_level: Level::Warn,

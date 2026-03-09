@@ -1097,7 +1097,7 @@ mod resolve_definition {
     /// Returns resolved definitions which can be either specific definitions or module files.
     /// For non-import definitions, returns the definition wrapped in `ResolvedDefinition::Definition`.
     /// Always returns at least the original definition as a fallback if resolution fails.
-    pub(crate) fn resolve_definition<'db>(
+    pub fn resolve_definition<'db>(
         db: &'db dyn Db,
         definition: Definition<'db>,
         symbol_name: Option<&str>,
@@ -1219,7 +1219,7 @@ mod resolve_definition {
     }
 
     /// Helper function to resolve import definitions for `ImportFrom` and `StarImport` cases.
-    pub(crate) fn resolve_from_import_definitions<'db>(
+    pub fn resolve_from_import_definitions<'db>(
         db: &'db dyn Db,
         file: File,
         import_node: &ast::StmtImportFrom,
@@ -1303,7 +1303,7 @@ mod resolve_definition {
     }
 
     /// Find definitions for a symbol name in a specific scope.
-    pub(crate) fn find_symbol_in_scope<'db>(
+    pub fn find_symbol_in_scope<'db>(
         db: &'db dyn Db,
         scope: ScopeId<'db>,
         symbol_name: &str,

@@ -4,20 +4,20 @@ use super::SemanticIndexBuilder;
 
 /// An abstraction over the fact that each scope should have its own [`TryNodeContextStack`]
 #[derive(Debug, Default)]
-pub(super) struct TryNodeContextStackManager(Vec<TryNodeContextStack>);
+pub struct TryNodeContextStackManager(Vec<TryNodeContextStack>);
 
 impl TryNodeContextStackManager {
     /// Push a new [`TryNodeContextStack`] onto the stack of stacks.
     ///
     /// Each [`TryNodeContextStack`] is only valid for a single scope
-    pub(super) fn enter_nested_scope(&mut self) {
+    pub fn enter_nested_scope(&mut self) {
         self.0.push(TryNodeContextStack::default());
     }
 
     /// Pop a new [`TryNodeContextStack`] off the stack of stacks.
     ///
     /// Each [`TryNodeContextStack`] is only valid for a single scope
-    pub(super) fn exit_scope(&mut self) {
+    pub fn exit_scope(&mut self) {
         let popped_context = self.0.pop();
         debug_assert!(
             popped_context.is_some(),
@@ -28,20 +28,20 @@ impl TryNodeContextStackManager {
 
     /// Push a [`TryNodeContext`] onto the [`TryNodeContextStack`]
     /// at the top of our stack of stacks
-    pub(super) fn push_context(&mut self) {
+    pub fn push_context(&mut self) {
         self.current_try_context_stack().push_context();
     }
 
     /// Pop a [`TryNodeContext`] off the [`TryNodeContextStack`]
     /// at the top of our stack of stacks. Return the Vec of [`FlowSnapshot`]s
     /// recorded while we were visiting the `try` suite.
-    pub(super) fn pop_context(&mut self) -> Vec<FlowSnapshot> {
+    pub fn pop_context(&mut self) -> Vec<FlowSnapshot> {
         self.current_try_context_stack().pop_context()
     }
 
     /// Retrieve the stack that is at the top of our stack of stacks.
     /// For each `try` block on that stack, push the snapshot onto the `try` block
-    pub(super) fn record_definition(&mut self, builder: &SemanticIndexBuilder) {
+    pub fn record_definition(&mut self, builder: &SemanticIndexBuilder) {
         self.current_try_context_stack().record_definition(builder);
     }
 

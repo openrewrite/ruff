@@ -13,13 +13,13 @@ use std::ops::{Deref, DerefMut};
 
 /// A member access, e.g. `x.y` or `x[1]` or `x["foo"]`.
 #[derive(Clone, Debug, PartialEq, Eq, get_size2::GetSize)]
-pub(crate) struct Member {
+pub struct Member {
     expression: MemberExpr,
     flags: MemberFlags,
 }
 
 impl Member {
-    pub(crate) fn new(expression: MemberExpr) -> Self {
+    pub fn new(expression: MemberExpr) -> Self {
         Self {
             expression,
             flags: MemberFlags::empty(),
@@ -29,38 +29,38 @@ impl Member {
     /// Returns the left most part of the member expression, e.g. `x` in `x.y.z`.
     ///
     /// This is the symbol on which the member access is performed.
-    pub(crate) fn symbol_name(&self) -> &str {
+    pub fn symbol_name(&self) -> &str {
         self.expression.symbol_name()
     }
 
-    pub(crate) fn expression(&self) -> &MemberExpr {
+    pub fn expression(&self) -> &MemberExpr {
         &self.expression
     }
 
     /// Is the place given a value in its containing scope?
-    pub(crate) const fn is_bound(&self) -> bool {
+    pub const fn is_bound(&self) -> bool {
         self.flags.contains(MemberFlags::IS_BOUND)
     }
 
     /// Is the place declared in its containing scope?
-    pub(crate) fn is_declared(&self) -> bool {
+    pub fn is_declared(&self) -> bool {
         self.flags.contains(MemberFlags::IS_DECLARED)
     }
 
-    pub(super) fn mark_bound(&mut self) {
+    pub fn mark_bound(&mut self) {
         self.insert_flags(MemberFlags::IS_BOUND);
     }
 
-    pub(super) fn mark_declared(&mut self) {
+    pub fn mark_declared(&mut self) {
         self.insert_flags(MemberFlags::IS_DECLARED);
     }
 
-    pub(super) fn mark_instance_attribute(&mut self) {
+    pub fn mark_instance_attribute(&mut self) {
         self.flags.insert(MemberFlags::IS_INSTANCE_ATTRIBUTE);
     }
 
     /// Is the place an instance attribute?
-    pub(crate) fn is_instance_attribute(&self) -> bool {
+    pub fn is_instance_attribute(&self) -> bool {
         let is_instance_attribute = self.flags.contains(MemberFlags::IS_INSTANCE_ATTRIBUTE);
         if is_instance_attribute {
             debug_assert!(self.is_instance_attribute_candidate());
@@ -82,7 +82,7 @@ impl Member {
     /// a method context, or whether the `<NAME>` actually refers to the first
     /// parameter of the method (i.e. `self`). To answer those questions,
     /// use [`Self::as_instance_attribute`].
-    pub(super) fn as_instance_attribute_candidate(&self) -> Option<&str> {
+    pub fn as_instance_attribute_candidate(&self) -> Option<&str> {
         let mut segments = self.expression().segments();
         let first_segment = segments.next()?;
 
@@ -102,17 +102,17 @@ impl Member {
     /// a method context, or whether the `<NAME>` actually refers to the first
     /// parameter of the method (i.e. `self`). To answer those questions,
     /// use [`Self::is_instance_attribute`].
-    pub(super) fn is_instance_attribute_candidate(&self) -> bool {
+    pub fn is_instance_attribute_candidate(&self) -> bool {
         self.as_instance_attribute_candidate().is_some()
     }
 
     /// Does the place expression have the form `self.{name}` (`self` is the first parameter of the method)?
-    pub(super) fn is_instance_attribute_named(&self, name: &str) -> bool {
+    pub fn is_instance_attribute_named(&self, name: &str) -> bool {
         self.as_instance_attribute() == Some(name)
     }
 
     /// Return `Some(<ATTRIBUTE>)` if the place expression is an instance attribute.
-    pub(crate) fn as_instance_attribute(&self) -> Option<&str> {
+    pub fn as_instance_attribute(&self) -> Option<&str> {
         if self.is_instance_attribute() {
             debug_assert!(self.as_instance_attribute_candidate().is_some());
             self.as_instance_attribute_candidate()
@@ -157,7 +157,7 @@ impl get_size2::GetSize for MemberFlags {}
 ///
 /// The symbol name can be extracted from the path by taking the text up to the first segment's start offset.
 #[derive(Clone, Debug, PartialEq, Eq, get_size2::GetSize)]
-pub(crate) struct MemberExpr {
+pub struct MemberExpr {
     /// The entire path as a single Name
     path: Name,
     /// Metadata for each segment (in forward order)
@@ -166,11 +166,11 @@ pub(crate) struct MemberExpr {
 
 impl MemberExpr {
     #[cfg(test)]
-    pub(super) fn try_from_expr(expression: ast::ExprRef<'_>) -> Option<Self> {
+    pub fn try_from_expr(expression: ast::ExprRef<'_>) -> Option<Self> {
         MemberExprBuilder::visit_expr(expression).and_then(Self::try_from_builder)
     }
 
-    pub(super) fn try_from_builder(builder: MemberExprBuilder) -> Option<Self> {
+    pub fn try_from_builder(builder: MemberExprBuilder) -> Option<Self> {
         if builder.segments.is_empty() {
             None
         } else {
@@ -196,15 +196,15 @@ impl MemberExpr {
     /// Returns the left most part of the member expression, e.g. `x` in `x.y.z`.
     ///
     /// This is the symbol on which the member access is performed.
-    pub(crate) fn symbol_name(&self) -> &str {
+    pub fn symbol_name(&self) -> &str {
         self.as_ref().symbol_name()
     }
 
-    pub(super) fn num_segments(&self) -> usize {
+    pub fn num_segments(&self) -> usize {
         self.segments.len()
     }
 
-    pub(crate) fn as_ref(&self) -> MemberExprRef<'_> {
+    pub fn as_ref(&self) -> MemberExprRef<'_> {
         MemberExprRef {
             path: self.path.as_str(),
             segments: SegmentsRef::from(&self.segments),
@@ -214,13 +214,13 @@ impl MemberExpr {
 
 /// A builder for a [`MemberExpr`].
 #[derive(Clone, Debug, PartialEq, Eq, get_size2::GetSize)]
-pub(super) struct MemberExprBuilder {
+pub struct MemberExprBuilder {
     path: Name,
     segments: SmallVec<[SegmentInfo; 8]>,
 }
 
 impl MemberExprBuilder {
-    pub(super) fn visit_expr(expr: ast::ExprRef) -> Option<MemberExprBuilder> {
+    pub fn visit_expr(expr: ast::ExprRef) -> Option<MemberExprBuilder> {
         match expr {
             ast::ExprRef::Name(name) => Some(MemberExprBuilder {
                 path: name.id.clone(),
@@ -248,7 +248,7 @@ impl MemberExprBuilder {
         }
     }
 
-    pub(super) fn visit_subscript_expr(
+    pub fn visit_subscript_expr(
         subscript_value: MemberExprBuilder,
         subscript_slice: &ast::Expr,
     ) -> Option<MemberExprBuilder> {
@@ -365,13 +365,13 @@ impl PartialEq<&MemberExpr> for MemberExprRef<'_> {
 
 /// Reference to a member expression.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct MemberExprRef<'a> {
+pub struct MemberExprRef<'a> {
     path: &'a str,
     segments: SegmentsRef<'a>,
 }
 
 impl<'a> MemberExprRef<'a> {
-    pub(super) fn symbol_name(&self) -> &'a str {
+    pub fn symbol_name(&self) -> &'a str {
         let end = self
             .segments
             .iter()
@@ -389,7 +389,7 @@ impl<'a> MemberExprRef<'a> {
         SegmentsIterator::new(self.path, self.segments.iter())
     }
 
-    pub(super) fn parent(&self) -> Option<MemberExprRef<'a>> {
+    pub fn parent(&self) -> Option<MemberExprRef<'a>> {
         let parent_segments = self.segments.parent()?;
 
         // The removed segment is always the last one. Find its start offset.
@@ -424,7 +424,7 @@ pub struct ScopedMemberId;
 
 /// The members of a scope. Allows lookup by member path and [`ScopedMemberId`].
 #[derive(Default, get_size2::GetSize)]
-pub(super) struct MemberTable {
+pub struct MemberTable {
     members: IndexVec<ScopedMemberId, Member>,
 
     /// Map from member path to its ID.
@@ -439,7 +439,7 @@ impl MemberTable {
     /// ## Panics
     /// If the ID is not valid for this table.
     #[track_caller]
-    pub(crate) fn member(&self, id: ScopedMemberId) -> &Member {
+    pub fn member(&self, id: ScopedMemberId) -> &Member {
         &self.members[id]
     }
 
@@ -448,12 +448,12 @@ impl MemberTable {
     /// ## Panics
     /// If the ID is not valid for this table.
     #[track_caller]
-    pub(super) fn member_mut(&mut self, id: ScopedMemberId) -> &mut Member {
+    pub fn member_mut(&mut self, id: ScopedMemberId) -> &mut Member {
         &mut self.members[id]
     }
 
     /// Returns an iterator over all members in the table.
-    pub(crate) fn iter(&self) -> std::slice::Iter<'_, Member> {
+    pub fn iter(&self) -> std::slice::Iter<'_, Member> {
         self.members.iter()
     }
 
@@ -462,10 +462,7 @@ impl MemberTable {
     }
 
     /// Returns the ID of the member with the given expression, if it exists.
-    pub(crate) fn member_id<'a>(
-        &self,
-        member: impl Into<MemberExprRef<'a>>,
-    ) -> Option<ScopedMemberId> {
+    pub fn member_id<'a>(&self, member: impl Into<MemberExprRef<'a>>) -> Option<ScopedMemberId> {
         let member = member.into();
         let hash = Self::hash_member_expression_ref(&member);
         self.map
@@ -473,7 +470,7 @@ impl MemberTable {
             .copied()
     }
 
-    pub(crate) fn place_id_by_instance_attribute_name(&self, name: &str) -> Option<ScopedMemberId> {
+    pub fn place_id_by_instance_attribute_name(&self, name: &str) -> Option<ScopedMemberId> {
         for (id, member) in self.members.iter_enumerated() {
             if member.is_instance_attribute_named(name) {
                 return Some(id);
@@ -500,7 +497,7 @@ impl std::fmt::Debug for MemberTable {
 }
 
 #[derive(Debug, Default)]
-pub(super) struct MemberTableBuilder {
+pub struct MemberTableBuilder {
     table: MemberTable,
 }
 
@@ -508,7 +505,7 @@ impl MemberTableBuilder {
     /// Adds a member to the table or updates the flags of an existing member if it already exists.
     ///
     /// Members are identified by their expression, which is hashed to find the entry in the table.
-    pub(super) fn add(&mut self, mut member: Member) -> (ScopedMemberId, bool) {
+    pub fn add(&mut self, mut member: Member) -> (ScopedMemberId, bool) {
         let member_ref = member.expression.as_ref();
         let hash = MemberTable::hash_member_expression_ref(&member_ref);
         let entry = self.table.map.entry(
@@ -540,7 +537,7 @@ impl MemberTableBuilder {
         }
     }
 
-    pub(super) fn build(self) -> MemberTable {
+    pub fn build(self) -> MemberTable {
         let mut table = self.table;
         table.members.shrink_to_fit();
         table.map.shrink_to_fit(|id| {

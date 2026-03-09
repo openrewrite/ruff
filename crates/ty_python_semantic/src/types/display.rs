@@ -651,7 +651,7 @@ fn fmt_file_location<'db>(
 ///
 /// # Returns
 /// A vector of path components in order (e.g., `["module", "OuterClass", "InnerClass"]`)
-pub(super) fn qualified_name_components_from_scope(
+pub fn qualified_name_components_from_scope(
     db: &dyn Db,
     file: ruff_db::files::File,
     file_scope_id: FileScopeId,
@@ -1254,7 +1254,7 @@ impl<'db> FmtDetailed<'db> for DisplayRepresentation<'db> {
 }
 
 impl<'db> BoundTypeVarIdentity<'db> {
-    pub(crate) fn display(self, db: &'db dyn Db) -> impl Display {
+    pub fn display(self, db: &'db dyn Db) -> impl Display {
         DisplayBoundTypeVarIdentity {
             bound_typevar_identity: self,
             db,
@@ -1262,11 +1262,7 @@ impl<'db> BoundTypeVarIdentity<'db> {
         }
     }
 
-    pub(crate) fn display_with(
-        self,
-        db: &'db dyn Db,
-        settings: DisplaySettings<'db>,
-    ) -> impl Display {
+    pub fn display_with(self, db: &'db dyn Db, settings: DisplaySettings<'db>) -> impl Display {
         DisplayBoundTypeVarIdentity {
             bound_typevar_identity: self,
             db,
@@ -1299,7 +1295,7 @@ impl Display for DisplayBoundTypeVarIdentity<'_> {
 }
 
 impl<'db> TupleSpec<'db> {
-    pub(crate) fn display_with<'a>(
+    pub fn display_with<'a>(
         &'a self,
         db: &'db dyn Db,
         settings: DisplaySettings<'db>,
@@ -1312,7 +1308,7 @@ impl<'db> TupleSpec<'db> {
     }
 }
 
-pub(crate) struct DisplayTuple<'a, 'db> {
+pub struct DisplayTuple<'a, 'db> {
     tuple: &'a TupleSpec<'db>,
     db: &'db dyn Db,
     settings: DisplaySettings<'db>,
@@ -1394,11 +1390,11 @@ impl Display for DisplayTuple<'_, '_> {
 impl<'db> OverloadLiteral<'db> {
     // Not currently used, but useful for debugging.
     #[expect(dead_code)]
-    pub(crate) fn display(self, db: &'db dyn Db) -> DisplayOverloadLiteral<'db> {
+    pub fn display(self, db: &'db dyn Db) -> DisplayOverloadLiteral<'db> {
         Self::display_with(self, db, DisplaySettings::default())
     }
 
-    pub(crate) fn display_with(
+    pub fn display_with(
         self,
         db: &'db dyn Db,
         settings: DisplaySettings<'db>,
@@ -1411,7 +1407,7 @@ impl<'db> OverloadLiteral<'db> {
     }
 }
 
-pub(crate) struct DisplayOverloadLiteral<'db> {
+pub struct DisplayOverloadLiteral<'db> {
     literal: OverloadLiteral<'db>,
     db: &'db dyn Db,
     settings: DisplaySettings<'db>,
@@ -1445,7 +1441,7 @@ impl Display for DisplayOverloadLiteral<'_> {
 }
 
 impl<'db> FunctionType<'db> {
-    pub(crate) fn display_with(
+    pub fn display_with(
         self,
         db: &'db dyn Db,
         settings: DisplaySettings<'db>,
@@ -1458,7 +1454,7 @@ impl<'db> FunctionType<'db> {
     }
 }
 
-pub(crate) struct DisplayFunctionType<'db> {
+pub struct DisplayFunctionType<'db> {
     ty: FunctionType<'db>,
     db: &'db dyn Db,
     settings: DisplaySettings<'db>,
@@ -1534,11 +1530,11 @@ impl Display for DisplayFunctionType<'_> {
 }
 
 impl<'db> GenericAlias<'db> {
-    pub(crate) fn display(self, db: &'db dyn Db) -> DisplayGenericAlias<'db> {
+    pub fn display(self, db: &'db dyn Db) -> DisplayGenericAlias<'db> {
         self.display_with(db, DisplaySettings::default())
     }
 
-    pub(crate) fn display_with(
+    pub fn display_with(
         self,
         db: &'db dyn Db,
         settings: DisplaySettings<'db>,
@@ -1552,7 +1548,7 @@ impl<'db> GenericAlias<'db> {
     }
 }
 
-pub(crate) struct DisplayGenericAlias<'db> {
+pub struct DisplayGenericAlias<'db> {
     origin: ClassLiteral<'db>,
     specialization: Specialization<'db>,
     db: &'db dyn Db,
@@ -1747,7 +1743,7 @@ impl<'db> Specialization<'db> {
         self.display_short(db, TupleSpecialization::No, DisplaySettings::default())
     }
 
-    pub(crate) fn display_full(self, db: &'db dyn Db) -> DisplaySpecialization<'db> {
+    pub fn display_full(self, db: &'db dyn Db) -> DisplaySpecialization<'db> {
         DisplaySpecialization {
             specialization: self,
             db,
@@ -1857,11 +1853,11 @@ impl TupleSpecialization {
 }
 
 impl<'db> CallableType<'db> {
-    pub(crate) fn display<'a>(&'a self, db: &'db dyn Db) -> DisplayCallableType<'a, 'db> {
+    pub fn display<'a>(&'a self, db: &'db dyn Db) -> DisplayCallableType<'a, 'db> {
         Self::display_with(self, db, DisplaySettings::default())
     }
 
-    pub(crate) fn display_with<'a>(
+    pub fn display_with<'a>(
         &'a self,
         db: &'db dyn Db,
         settings: DisplaySettings<'db>,
@@ -1875,7 +1871,7 @@ impl<'db> CallableType<'db> {
     }
 }
 
-pub(crate) struct DisplayCallableType<'a, 'db> {
+pub struct DisplayCallableType<'a, 'db> {
     signatures: &'a CallableSignature<'db>,
     kind: CallableTypeKind,
     db: &'db dyn Db,
@@ -1934,11 +1930,11 @@ impl Display for DisplayCallableType<'_, '_> {
 }
 
 impl<'db> Signature<'db> {
-    pub(crate) fn display<'a>(&'a self, db: &'db dyn Db) -> DisplaySignature<'a, 'db> {
+    pub fn display<'a>(&'a self, db: &'db dyn Db) -> DisplaySignature<'a, 'db> {
         Self::display_with(self, db, DisplaySettings::default())
     }
 
-    pub(crate) fn display_with<'a>(
+    pub fn display_with<'a>(
         &'a self,
         db: &'db dyn Db,
         settings: DisplaySettings<'db>,
@@ -1954,7 +1950,7 @@ impl<'db> Signature<'db> {
     }
 }
 
-pub(crate) struct DisplaySignature<'a, 'db> {
+pub struct DisplaySignature<'a, 'db> {
     definition: Option<Definition<'db>>,
     generic_context: Option<&'a GenericContext<'db>>,
     parameters: &'a Parameters<'db>,
@@ -1965,7 +1961,7 @@ pub(crate) struct DisplaySignature<'a, 'db> {
 
 impl<'db> DisplaySignature<'_, 'db> {
     /// Get detailed display information including component ranges
-    pub(crate) fn to_string_parts(&self) -> SignatureDisplayDetails {
+    pub fn to_string_parts(&self) -> SignatureDisplayDetails {
         let mut f = TypeWriter::Details(TypeDetailsWriter::new());
         self.fmt_detailed(&mut f).unwrap();
 
@@ -1975,7 +1971,7 @@ impl<'db> DisplaySignature<'_, 'db> {
         }
     }
 
-    pub(crate) fn should_hide_self_from_display(&self, db: &'db dyn Db) -> bool {
+    pub fn should_hide_self_from_display(&self, db: &'db dyn Db) -> bool {
         !self.return_ty.contains_self(db)
             && !self
                 .parameters
@@ -2069,7 +2065,7 @@ impl Display for DisplaySignature<'_, '_> {
 
 /// Details about signature display components, including ranges for parameters and return type
 #[derive(Debug, Clone)]
-pub(crate) struct SignatureDisplayDetails {
+pub struct SignatureDisplayDetails {
     /// The full signature string
     pub label: String,
     /// Ranges for each parameter within the label
@@ -2707,7 +2703,7 @@ impl Display for DisplayMaybeParenthesizedType<'_> {
     }
 }
 
-pub(crate) trait TypeArrayDisplay<'db> {
+pub trait TypeArrayDisplay<'db> {
     fn display_with(
         &self,
         db: &'db dyn Db,
@@ -2757,7 +2753,7 @@ impl<'db> TypeArrayDisplay<'db> for [Type<'db>] {
     }
 }
 
-pub(crate) struct DisplayTypeArray<'b, 'db> {
+pub struct DisplayTypeArray<'b, 'db> {
     types: &'b [Type<'db>],
     db: &'db dyn Db,
     settings: DisplaySettings<'db>,
@@ -2815,13 +2811,13 @@ impl Display for DisplayStringLiteralType<'_> {
     }
 }
 
-pub(crate) struct DisplayKnownInstanceRepr<'db> {
-    pub(crate) known_instance: KnownInstanceType<'db>,
-    pub(crate) db: &'db dyn Db,
+pub struct DisplayKnownInstanceRepr<'db> {
+    pub known_instance: KnownInstanceType<'db>,
+    pub db: &'db dyn Db,
 }
 
 impl<'db> KnownInstanceType<'db> {
-    pub(crate) fn display_with(
+    pub fn display_with(
         self,
         db: &'db dyn Db,
         _settings: DisplaySettings<'db>,

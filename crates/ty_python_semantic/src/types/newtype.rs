@@ -107,7 +107,7 @@ impl<'db> NewType<'db> {
         Type::object()
     }
 
-    pub(crate) fn is_equivalent_to_impl(self, db: &'db dyn Db, other: Self) -> bool {
+    pub fn is_equivalent_to_impl(self, db: &'db dyn Db, other: Self) -> bool {
         // Two instances of the "same" `NewType` won't compare == if one of them has an eagerly
         // evaluated base (or a normalized base, etc.) and the other doesn't, so we only check for
         // equality of the `definition`.
@@ -117,7 +117,7 @@ impl<'db> NewType<'db> {
     // Since a regular class can't inherit from a newtype, the only way for one newtype to be a
     // subtype of another is to have the other in its chain of newtype bases. Once we reach the
     // base class, we don't have to keep looking.
-    pub(crate) fn has_relation_to_impl<'c>(
+    pub fn has_relation_to_impl<'c>(
         self,
         db: &'db dyn Db,
         other: Self,
@@ -136,7 +136,7 @@ impl<'db> NewType<'db> {
         ConstraintSet::from_bool(constraints, false)
     }
 
-    pub(crate) fn is_disjoint_from_impl<'c>(
+    pub fn is_disjoint_from_impl<'c>(
         self,
         db: &'db dyn Db,
         other: Self,
@@ -157,7 +157,7 @@ impl<'db> NewType<'db> {
     /// Create a new `NewType` by mapping the underlying `ClassType`. This descends through any
     /// number of nested `NewType` layers and rebuilds the whole chain. In the rare case of cyclic
     /// `NewType`s with no underlying `ClassType`, this has no effect and does not call `f`.
-    pub(crate) fn try_map_base_class_type(
+    pub fn try_map_base_class_type(
         self,
         db: &'db dyn Db,
         f: impl FnOnce(ClassType<'db>) -> Option<ClassType<'db>>,
@@ -206,7 +206,7 @@ impl<'db> NewType<'db> {
         Some(self)
     }
 
-    pub(crate) fn map_base_class_type(
+    pub fn map_base_class_type(
         self,
         db: &'db dyn Db,
         f: impl FnOnce(ClassType<'db>) -> ClassType<'db>,
@@ -216,7 +216,7 @@ impl<'db> NewType<'db> {
     }
 }
 
-pub(crate) fn walk_newtype_instance_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_newtype_instance_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     newtype: NewType<'db>,
     visitor: &V,

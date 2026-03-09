@@ -24,7 +24,7 @@ use crate::{FxOrderSet, Program, add_inferred_python_version_hint_to_diagnostic}
 /// Type expressions
 impl<'db> TypeInferenceBuilder<'db, '_> {
     /// Infer the type of a type expression.
-    pub(super) fn infer_type_expression(&mut self, expression: &ast::Expr) -> Type<'db> {
+    pub fn infer_type_expression(&mut self, expression: &ast::Expr) -> Type<'db> {
         if self.inner_expression_inference_state.is_get() {
             return self.expression_type(expression);
         }
@@ -75,7 +75,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Infer the type of a type expression without storing the result.
-    pub(super) fn infer_type_expression_no_store(&mut self, expression: &ast::Expr) -> Type<'db> {
+    pub fn infer_type_expression_no_store(&mut self, expression: &ast::Expr) -> Type<'db> {
         if self.inner_expression_inference_state.is_get() {
             return self.expression_type(expression);
         }
@@ -696,7 +696,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         }
     }
 
-    pub(super) fn infer_subscript_type_expression_no_store(
+    pub fn infer_subscript_type_expression_no_store(
         &mut self,
         subscript: &ast::ExprSubscript,
         slice: &ast::Expr,
@@ -713,10 +713,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Infer the type of a string type expression.
-    pub(super) fn infer_string_type_expression(
-        &mut self,
-        string: &ast::ExprStringLiteral,
-    ) -> Type<'db> {
+    pub fn infer_string_type_expression(&mut self, string: &ast::ExprStringLiteral) -> Type<'db> {
         match parse_string_annotation(&self.context, string) {
             Some(parsed) => {
                 self.string_annotations
@@ -737,7 +734,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// This method assumes that a type has already been inferred and stored for the `value`
     /// of the subscript passed in.
-    pub(super) fn infer_tuple_type_expression(
+    pub fn infer_tuple_type_expression(
         &mut self,
         tuple: &ast::ExprSubscript,
     ) -> Option<TupleType<'db>> {
@@ -1049,7 +1046,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Infer the type of an explicitly specialized generic type alias (implicit or PEP 613).
-    pub(crate) fn infer_explicit_type_alias_specialization(
+    pub fn infer_explicit_type_alias_specialization(
         &mut self,
         subscript: &ast::ExprSubscript,
         mut value_ty: Type<'db>,
@@ -1137,7 +1134,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         )
     }
 
-    pub(super) fn infer_subscript_type_expression(
+    pub fn infer_subscript_type_expression(
         &mut self,
         subscript: &ast::ExprSubscript,
         value_ty: Type<'db>,
@@ -1474,7 +1471,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Infer the type of a `Callable[...]` type expression.
-    pub(crate) fn infer_callable_type(&mut self, subscript: &ast::ExprSubscript) -> Type<'db> {
+    pub fn infer_callable_type(&mut self, subscript: &ast::ExprSubscript) -> Type<'db> {
         fn inner<'db>(
             builder: &mut TypeInferenceBuilder<'db, '_>,
             subscript: &ast::ExprSubscript,
@@ -2011,7 +2008,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         }
     }
 
-    pub(crate) fn infer_literal_parameter_type<'param>(
+    pub fn infer_literal_parameter_type<'param>(
         &mut self,
         parameters: &'param ast::Expr,
     ) -> Result<Type<'db>, Vec<&'param ast::Expr>> {
@@ -2128,7 +2125,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// It returns `None` if the argument is invalid i.e., not a list of types, parameter
     /// specification, `typing.Concatenate`, or `...`.
-    pub(super) fn infer_callable_parameter_types(
+    pub fn infer_callable_parameter_types(
         &mut self,
         parameters: &ast::Expr,
     ) -> Option<Parameters<'db>> {
@@ -2238,7 +2235,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// Returns `Unknown` as a fallback if the type variable is unbound, otherwise returns the
     /// original type unchanged.
-    pub(super) fn check_for_unbound_type_variable(
+    pub fn check_for_unbound_type_variable(
         &self,
         expression: &ast::Expr,
         ty: Type<'db>,

@@ -57,7 +57,7 @@ use crate::types::{
 };
 use crate::unpack::Unpack;
 use builder::TypeInferenceBuilder;
-pub(super) use comparisons::UnsupportedComparisonError;
+pub use comparisons::UnsupportedComparisonError;
 
 mod builder;
 mod comparisons;
@@ -75,7 +75,7 @@ mod tests;
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(crate) fn infer_definition_types<'db>(
+pub fn infer_definition_types<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> DefinitionInference<'db> {
@@ -114,7 +114,7 @@ fn definition_cycle_initial<'db>(
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(crate) fn infer_deferred_types<'db>(
+pub fn infer_deferred_types<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> DefinitionInference<'db> {
@@ -148,7 +148,7 @@ fn deferred_cycle_initial<'db>(
 ///
 /// Unlike [`infer_scope_types`], this function does not take a type context, as it may infer
 /// the parent scope to obtain the necessary type context by which to infer the inner scope.
-pub(crate) fn infer_complete_scope_types<'db>(
+pub fn infer_complete_scope_types<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
 ) -> &'db ScopeInference<'db> {
@@ -176,7 +176,7 @@ pub(crate) fn infer_complete_scope_types<'db>(
 /// unless you have already obtained the necessary type context while inferring the parent scope.
 /// Inferring a nested scope independently without type context can lead to incorrect inferred
 /// types or diagnostics.
-pub(crate) fn infer_scope_types<'db>(
+pub fn infer_scope_types<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
     tcx: TypeContext<'db>,
@@ -192,10 +192,7 @@ pub(crate) fn infer_scope_types<'db>(
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(crate) fn infer_scope_types_impl<'db>(
-    db: &'db dyn Db,
-    input: InferScope<'db>,
-) -> ScopeInference<'db> {
+pub fn infer_scope_types_impl<'db>(db: &'db dyn Db, input: InferScope<'db>) -> ScopeInference<'db> {
     let (scope, tcx) = input.into_inner(db);
     let file = scope.file(db);
     let _span = tracing::trace_span!("infer_scope_types", scope=?scope.as_id(), ?file).entered();
@@ -213,7 +210,7 @@ pub(crate) fn infer_scope_types_impl<'db>(
 /// Use rarely; only for cases where we'd otherwise risk double-inferring an expression: RHS of an
 /// assignment, which might be unpacking/multi-target and thus part of multiple definitions, or a
 /// type narrowing guard expression (e.g. if statement test node).
-pub(crate) fn infer_expression_types<'db>(
+pub fn infer_expression_types<'db>(
     db: &'db dyn Db,
     expression: Expression<'db>,
     tcx: TypeContext<'db>,
@@ -229,7 +226,7 @@ pub(crate) fn infer_expression_types<'db>(
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(super) fn infer_expression_types_impl<'db>(
+pub fn infer_expression_types_impl<'db>(
     db: &'db dyn Db,
     input: InferExpression<'db>,
 ) -> ExpressionInference<'db> {
@@ -271,7 +268,7 @@ fn expression_cycle_initial<'db>(
 /// This is a small helper around [`infer_expression_types()`] to reduce the boilerplate.
 /// Use [`infer_expression_type()`] if it isn't guaranteed that `expression` is in the same file to
 /// avoid cross-file query dependencies.
-pub(crate) fn infer_same_file_expression_type<'db>(
+pub fn infer_same_file_expression_type<'db>(
     db: &'db dyn Db,
     expression: Expression<'db>,
     tcx: TypeContext<'db>,
@@ -288,7 +285,7 @@ pub(crate) fn infer_same_file_expression_type<'db>(
 ///
 /// Use [`infer_same_file_expression_type`] if it is guaranteed that  `expression` is in the same
 /// to avoid unnecessary salsa ingredients. This is normally the case inside the `TypeInferenceBuilder`.
-pub(crate) fn infer_expression_type<'db>(
+pub fn infer_expression_type<'db>(
     db: &'db dyn Db,
     expression: Expression<'db>,
     tcx: TypeContext<'db>,
@@ -320,19 +317,19 @@ fn infer_expression_type_impl<'db>(db: &'db dyn Db, input: InferExpression<'db>)
 /// This is a Salsa supertype used as the input to `infer_expression_types` to avoid
 /// interning an `ExpressionWithContext` unnecessarily when no type context is provided.
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq, salsa::Supertype, salsa::Update)]
-pub(super) enum InferExpression<'db> {
+pub enum InferExpression<'db> {
     Bare(Expression<'db>),
     WithContext(ExpressionWithContext<'db>),
 }
 
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(super) struct ExpressionWithContext<'db> {
+pub struct ExpressionWithContext<'db> {
     expression: Expression<'db>,
     tcx: TypeContext<'db>,
 }
 
 impl<'db> InferExpression<'db> {
-    pub(super) fn new(
+    pub fn new(
         db: &'db dyn Db,
         expression: Expression<'db>,
         tcx: TypeContext<'db>,
@@ -357,23 +354,19 @@ impl<'db> InferExpression<'db> {
 
 /// A `ScopeId` with an optional `TypeContext`.
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq, salsa::Supertype, salsa::Update)]
-pub(super) enum InferScope<'db> {
+pub enum InferScope<'db> {
     Bare(ScopeId<'db>),
     WithContext(ScopeWithContext<'db>),
 }
 
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(super) struct ScopeWithContext<'db> {
+pub struct ScopeWithContext<'db> {
     scope: ScopeId<'db>,
     tcx: TypeContext<'db>,
 }
 
 impl<'db> InferScope<'db> {
-    pub(super) fn new(
-        db: &'db dyn Db,
-        scope: ScopeId<'db>,
-        tcx: TypeContext<'db>,
-    ) -> InferScope<'db> {
+    pub fn new(db: &'db dyn Db, scope: ScopeId<'db>, tcx: TypeContext<'db>) -> InferScope<'db> {
         if tcx.annotation.is_some() {
             InferScope::WithContext(ScopeWithContext::new(db, scope, tcx))
         } else {
@@ -397,12 +390,12 @@ impl<'db> InferScope<'db> {
 /// Knowing the outer type context when inferring an expression can enable
 /// more precise inference results, aka "bidirectional type inference".
 #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Hash, get_size2::GetSize, salsa::Update)]
-pub(crate) struct TypeContext<'db> {
-    pub(crate) annotation: Option<Type<'db>>,
+pub struct TypeContext<'db> {
+    pub annotation: Option<Type<'db>>,
 }
 
 impl<'db> TypeContext<'db> {
-    pub(crate) fn new(annotation: Option<Type<'db>>) -> Self {
+    pub fn new(annotation: Option<Type<'db>>) -> Self {
         Self { annotation }
     }
 
@@ -417,13 +410,13 @@ impl<'db> TypeContext<'db> {
             .and_then(|ty| ty.known_specialization(db, known_class))
     }
 
-    pub(crate) fn map(self, f: impl FnOnce(Type<'db>) -> Type<'db>) -> Self {
+    pub fn map(self, f: impl FnOnce(Type<'db>) -> Type<'db>) -> Self {
         Self {
             annotation: self.annotation.map(f),
         }
     }
 
-    pub(crate) fn is_typealias(&self) -> bool {
+    pub fn is_typealias(&self) -> bool {
         self.annotation
             .is_some_and(|ty| ty.is_typealias_special_form())
     }
@@ -443,7 +436,7 @@ impl<'db> TypeContext<'db> {
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(super) fn infer_unpack_types<'db>(db: &'db dyn Db, unpack: Unpack<'db>) -> UnpackResult<'db> {
+pub fn infer_unpack_types<'db>(db: &'db dyn Db, unpack: Unpack<'db>) -> UnpackResult<'db> {
     let file = unpack.file(db);
     let module = parsed_module(db, file).load(db);
     let _span = tracing::trace_span!("infer_unpack_types", range=?unpack.range(db, &module), ?file)
@@ -463,7 +456,7 @@ pub(super) fn infer_unpack_types<'db>(db: &'db dyn Db, unpack: Unpack<'db>) -> U
 /// scope is a type-parameters scope and the grandparent scope is a class.
 ///
 /// Returns `None` if no enclosing class is found.
-pub(crate) fn nearest_enclosing_class<'db>(
+pub fn nearest_enclosing_class<'db>(
     db: &'db dyn Db,
     semantic: &SemanticIndex<'db>,
     scope: ScopeId,
@@ -486,7 +479,7 @@ pub(crate) fn nearest_enclosing_class<'db>(
 /// and finds the closest (non-lambda) function definition.
 ///
 /// Returns `None` if no enclosing function is found.
-pub(crate) fn nearest_enclosing_function<'db>(
+pub fn nearest_enclosing_function<'db>(
     db: &'db dyn Db,
     semantic: &SemanticIndex<'db>,
     scope: ScopeId,
@@ -506,7 +499,7 @@ pub(crate) fn nearest_enclosing_function<'db>(
 
 /// A region within which we can infer types.
 #[derive(Copy, Clone, Debug)]
-pub(crate) enum InferenceRegion<'db> {
+pub enum InferenceRegion<'db> {
     /// infer types for a standalone [`Expression`]
     Expression(Expression<'db>, TypeContext<'db>),
     /// infer types for a [`Definition`]
@@ -531,7 +524,7 @@ impl<'db> InferenceRegion<'db> {
 
 /// The inferred types for a scope region.
 #[derive(Debug, Eq, PartialEq, salsa::Update, get_size2::GetSize)]
-pub(crate) struct ScopeInference<'db> {
+pub struct ScopeInference<'db> {
     /// The types of every expression in this region.
     expressions: FxHashMap<ExpressionNodeKey, Type<'db>>,
 
@@ -576,16 +569,16 @@ impl<'db> ScopeInference<'db> {
         self
     }
 
-    pub(crate) fn diagnostics(&self) -> Option<&TypeCheckDiagnostics> {
+    pub fn diagnostics(&self) -> Option<&TypeCheckDiagnostics> {
         self.extra.as_deref().map(|extra| &extra.diagnostics)
     }
 
-    pub(crate) fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
+    pub fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
         self.try_expression_type(expression)
             .unwrap_or_else(Type::unknown)
     }
 
-    pub(crate) fn try_expression_type(
+    pub fn try_expression_type(
         &self,
         expression: impl Into<ExpressionNodeKey>,
     ) -> Option<Type<'db>> {
@@ -601,7 +594,7 @@ impl<'db> ScopeInference<'db> {
 
     /// Returns whether the given expression is a string annotation
     /// (the string in `x: "int | None"`).
-    pub(crate) fn is_string_annotation(&self, expression: impl Into<ExpressionNodeKey>) -> bool {
+    pub fn is_string_annotation(&self, expression: impl Into<ExpressionNodeKey>) -> bool {
         let Some(extra) = &self.extra else {
             return false;
         };
@@ -612,7 +605,7 @@ impl<'db> ScopeInference<'db> {
 
 /// The inferred types for a definition region.
 #[derive(Debug, Eq, PartialEq, salsa::Update, get_size2::GetSize)]
-pub(crate) struct DefinitionInference<'db> {
+pub struct DefinitionInference<'db> {
     /// The types of every expression in this region.
     expressions: FxHashMap<ExpressionNodeKey, Type<'db>>,
 
@@ -624,7 +617,7 @@ pub(crate) struct DefinitionInference<'db> {
     ///
     /// Almost all definition regions have less than 10 bindings. There are very few with more than 10 (but still less than 20).
     /// Because of that, use a slice with linear search over a hash map.
-    pub(crate) bindings: Box<[(Definition<'db>, Type<'db>)]>,
+    pub bindings: Box<[(Definition<'db>, Type<'db>)]>,
 
     /// The types and type qualifiers of every declaration in this region.
     ///
@@ -714,12 +707,12 @@ impl<'db> DefinitionInference<'db> {
         self
     }
 
-    pub(crate) fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
+    pub fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
         self.try_expression_type(expression)
             .unwrap_or_else(Type::unknown)
     }
 
-    pub(crate) fn try_expression_type(
+    pub fn try_expression_type(
         &self,
         expression: impl Into<ExpressionNodeKey>,
     ) -> Option<Type<'db>> {
@@ -730,7 +723,7 @@ impl<'db> DefinitionInference<'db> {
     }
 
     #[track_caller]
-    pub(crate) fn binding_type(&self, definition: Definition<'db>) -> Type<'db> {
+    pub fn binding_type(&self, definition: Definition<'db>) -> Type<'db> {
         self.bindings
             .iter()
             .find_map(
@@ -750,7 +743,7 @@ impl<'db> DefinitionInference<'db> {
     }
 
     #[track_caller]
-    pub(crate) fn declaration_type(&self, definition: Definition<'db>) -> TypeAndQualifiers<'db> {
+    pub fn declaration_type(&self, definition: Definition<'db>) -> TypeAndQualifiers<'db> {
         self.declarations
             .iter()
             .find_map(|(def, qualifiers)| {
@@ -777,18 +770,18 @@ impl<'db> DefinitionInference<'db> {
         self.declarations.iter().map(|(_, qualifiers)| *qualifiers)
     }
 
-    pub(crate) fn fallback_type(&self) -> Option<Type<'db>> {
+    pub fn fallback_type(&self) -> Option<Type<'db>> {
         self.extra.as_ref().and_then(|extra| extra.cycle_recovery)
     }
 
-    pub(crate) fn undecorated_type(&self) -> Option<Type<'db>> {
+    pub fn undecorated_type(&self) -> Option<Type<'db>> {
         self.extra.as_ref().and_then(|extra| extra.undecorated_type)
     }
 }
 
 /// The inferred types for an expression region.
 #[derive(Debug, Eq, PartialEq, salsa::Update, get_size2::GetSize)]
-pub(crate) struct ExpressionInference<'db> {
+pub struct ExpressionInference<'db> {
     /// The types of every expression in this region.
     expressions: FxHashMap<ExpressionNodeKey, Type<'db>>,
 
@@ -864,7 +857,7 @@ impl<'db> ExpressionInference<'db> {
         self
     }
 
-    pub(crate) fn try_expression_type(
+    pub fn try_expression_type(
         &self,
         expression: impl Into<ExpressionNodeKey>,
     ) -> Option<Type<'db>> {
@@ -874,7 +867,7 @@ impl<'db> ExpressionInference<'db> {
             .or_else(|| self.fallback_type())
     }
 
-    pub(crate) fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
+    pub fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
         self.try_expression_type(expression)
             .unwrap_or_else(Type::unknown)
     }
@@ -886,7 +879,7 @@ impl<'db> ExpressionInference<'db> {
 
 bitflags::bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-    pub(crate) struct InferenceFlags: u8 {
+    pub struct InferenceFlags: u8 {
         /// Whether to allow `ParamSpec` in type expressions.
         ///
         /// In most contexts inside type expressions, bare `ParamSpec`s are not allowed.

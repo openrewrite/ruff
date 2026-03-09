@@ -20,10 +20,10 @@ use crate::semantic_index::scope::FileScopeId;
 ///
 /// This is a TDD node ID in the shared reachability constraints graph.
 /// `ALWAYS_TRUE` means "no narrowing constraint" (the base type is unchanged).
-pub(crate) type ScopedNarrowingConstraint = ScopedReachabilityConstraintId;
+pub type ScopedNarrowingConstraint = ScopedReachabilityConstraintId;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum ConstraintKey {
+pub enum ConstraintKey {
     NarrowingConstraint(ScopedNarrowingConstraint),
     NestedScope(FileScopeId),
     UseId(ScopedUseId),

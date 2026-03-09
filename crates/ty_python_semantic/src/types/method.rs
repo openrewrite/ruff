@@ -25,16 +25,16 @@ use crate::{
 pub struct BoundMethodType<'db> {
     /// The function that is being bound. Corresponds to the `__func__` attribute on a
     /// bound method object
-    pub(crate) function: FunctionType<'db>,
+    pub function: FunctionType<'db>,
     /// The instance on which this method has been called. Corresponds to the `__self__`
     /// attribute on a bound method object
-    pub(super) self_instance: Type<'db>,
+    pub self_instance: Type<'db>,
 }
 
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for BoundMethodType<'_> {}
 
-pub(super) fn walk_bound_method_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_bound_method_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     method: BoundMethodType<'db>,
     visitor: &V,
@@ -56,7 +56,7 @@ impl<'db> BoundMethodType<'db> {
     /// Returns the type that replaces any `typing.Self` annotations in the bound method signature.
     /// This is normally the bound-instance type (the type of `self` or `cls`), but if the bound method is
     /// a `@classmethod`, then it should be an instance of that bound-instance type.
-    pub(crate) fn typing_self_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn typing_self_type(self, db: &'db dyn Db) -> Type<'db> {
         let mut self_instance = self.self_instance(db);
         if self.function(db).is_classmethod(db) {
             self_instance = self_instance.to_instance(db).unwrap_or_else(Type::unknown);
@@ -64,16 +64,12 @@ impl<'db> BoundMethodType<'db> {
         self_instance
     }
 
-    pub(crate) fn map_self_type(
-        self,
-        db: &'db dyn Db,
-        f: impl FnOnce(Type<'db>) -> Type<'db>,
-    ) -> Self {
+    pub fn map_self_type(self, db: &'db dyn Db, f: impl FnOnce(Type<'db>) -> Type<'db>) -> Self {
         Self::new(db, self.function(db), f(self.self_instance(db)))
     }
 
     #[salsa::tracked(cycle_initial=into_callable_type_cycle_initial, heap_size=ruff_memory_usage::heap_size)]
-    pub(crate) fn into_callable_type(self, db: &'db dyn Db) -> CallableType<'db> {
+    pub fn into_callable_type(self, db: &'db dyn Db) -> CallableType<'db> {
         let function = self.function(db);
         let self_instance = self.typing_self_type(db);
 
@@ -90,7 +86,7 @@ impl<'db> BoundMethodType<'db> {
         )
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -106,7 +102,7 @@ impl<'db> BoundMethodType<'db> {
     }
 
     #[expect(clippy::too_many_arguments)]
-    pub(super) fn has_relation_to_impl<'c>(
+    pub fn has_relation_to_impl<'c>(
         self,
         db: &'db dyn Db,
         other: Self,
@@ -174,7 +170,7 @@ pub enum KnownBoundMethodType<'db> {
     ConstraintSetSatisfiedByAllTypeVars(InternedConstraintSet<'db>),
 }
 
-pub(super) fn walk_method_wrapper_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_method_wrapper_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     method_wrapper: KnownBoundMethodType<'db>,
     visitor: &V,
@@ -209,7 +205,7 @@ pub(super) fn walk_method_wrapper_type<'db, V: visitor::TypeVisitor<'db> + ?Size
 
 impl<'db> KnownBoundMethodType<'db> {
     #[expect(clippy::too_many_arguments)]
-    pub(super) fn has_relation_to_impl<'c>(
+    pub fn has_relation_to_impl<'c>(
         self,
         db: &'db dyn Db,
         other: Self,
@@ -317,7 +313,7 @@ impl<'db> KnownBoundMethodType<'db> {
         }
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -355,7 +351,7 @@ impl<'db> KnownBoundMethodType<'db> {
     }
 
     /// Return the [`KnownClass`] that inhabitants of this type are instances of at runtime
-    pub(super) fn class(self) -> KnownClass {
+    pub fn class(self) -> KnownClass {
         match self {
             KnownBoundMethodType::FunctionTypeDunderGet(_)
             | KnownBoundMethodType::FunctionTypeDunderCall(_)
@@ -376,7 +372,7 @@ impl<'db> KnownBoundMethodType<'db> {
     /// Return the signatures of this bound method type.
     ///
     /// If the bound method type is overloaded, it may have multiple signatures.
-    pub(super) fn signatures(self, db: &'db dyn Db) -> impl Iterator<Item = Signature<'db>> {
+    pub fn signatures(self, db: &'db dyn Db) -> impl Iterator<Item = Signature<'db>> {
         match self {
             // Here, we dynamically model the overloaded function signature of `types.FunctionType.__get__`.
             // This is required because we need to return more precise types than what the signature in
@@ -568,7 +564,7 @@ pub enum WrapperDescriptorKind {
 }
 
 impl WrapperDescriptorKind {
-    pub(super) fn signatures(self, db: &dyn Db) -> impl Iterator<Item = Signature<'_>> {
+    pub fn signatures(self, db: &dyn Db) -> impl Iterator<Item = Signature<'_>> {
         /// Similar to what we do in [`KnownBoundMethod::signatures`],
         /// here we also model `types.FunctionType.__get__` (or builtins.property.__get__),
         /// but now we consider a call to this as a function, i.e. we also expect the `self`

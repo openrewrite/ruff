@@ -36,7 +36,7 @@ use ruff_python_ast as ast;
 use ruff_text_size::Ranged;
 
 impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
-    pub(super) fn infer_function_body(&mut self, function: &ast::StmtFunctionDef) {
+    pub fn infer_function_body(&mut self, function: &ast::StmtFunctionDef) {
         let db = self.db();
 
         // Parameters are odd: they are Definitions in the function body scope, but have no
@@ -160,11 +160,11 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn infer_function_definition_statement(&mut self, function: &ast::StmtFunctionDef) {
+    pub fn infer_function_definition_statement(&mut self, function: &ast::StmtFunctionDef) {
         self.infer_definition(function);
     }
 
-    pub(super) fn infer_function_definition(
+    pub fn infer_function_definition(
         &mut self,
         function: &ast::StmtFunctionDef,
         definition: Definition<'db>,
@@ -346,7 +346,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn infer_function_deferred(
+    pub fn infer_function_deferred(
         &mut self,
         definition: Definition<'db>,
         function: &ast::StmtFunctionDef,
@@ -464,7 +464,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn infer_function_type_params(&mut self, function: &ast::StmtFunctionDef) {
+    pub fn infer_function_type_params(&mut self, function: &ast::StmtFunctionDef) {
         let type_params = function
             .type_params
             .as_deref()
@@ -581,7 +581,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     /// It is safe (non-cycle-causing) to query the annotation type via `file_expression_type`
     /// here, because an outer scope can't depend on a definition from an inner scope, so we
     /// shouldn't be in-process of inferring the outer scope here.
-    pub(super) fn infer_parameter_definition(
+    pub fn infer_parameter_definition(
         &mut self,
         parameter_with_default: &'ast ast::ParameterWithDefault,
         definition: Definition<'db>,
@@ -680,7 +680,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     /// See [`infer_parameter_definition`] doc comment for some relevant observations about scopes.
     ///
     /// [`infer_parameter_definition`]: Self::infer_parameter_definition
-    pub(super) fn infer_variadic_positional_parameter_definition(
+    pub fn infer_variadic_positional_parameter_definition(
         &mut self,
         parameter: &'ast ast::Parameter,
         definition: Definition<'db>,
@@ -820,7 +820,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     /// See [`infer_parameter_definition`] doc comment for some relevant observations about scopes.
     ///
     /// [`infer_parameter_definition`]: Self::infer_parameter_definition
-    pub(super) fn infer_variadic_keyword_parameter_definition(
+    pub fn infer_variadic_keyword_parameter_definition(
         &mut self,
         parameter: &'ast ast::Parameter,
         definition: Definition<'db>,

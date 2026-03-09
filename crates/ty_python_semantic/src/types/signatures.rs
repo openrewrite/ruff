@@ -66,23 +66,23 @@ fn function_signature_expression_type<'db>(
 pub struct CallableSignature<'db> {
     /// The signatures of each overload of this callable. Will be empty if the type is not
     /// callable.
-    pub(crate) overloads: SmallVec<[Signature<'db>; 1]>,
+    pub overloads: SmallVec<[Signature<'db>; 1]>,
 }
 
 impl<'db> CallableSignature<'db> {
-    pub(crate) fn single(signature: Signature<'db>) -> Self {
+    pub fn single(signature: Signature<'db>) -> Self {
         Self {
             overloads: smallvec_inline![signature],
         }
     }
 
-    pub(crate) fn bottom() -> Self {
+    pub fn bottom() -> Self {
         Self::single(Signature::bottom())
     }
 
     /// Creates a new `CallableSignature` from an iterator of [`Signature`]s. Returns a
     /// non-callable signature if the iterator is empty.
-    pub(crate) fn from_overloads<I>(overloads: I) -> Self
+    pub fn from_overloads<I>(overloads: I) -> Self
     where
         I: IntoIterator<Item = Signature<'db>>,
     {
@@ -91,11 +91,11 @@ impl<'db> CallableSignature<'db> {
         }
     }
 
-    pub(crate) fn iter(&self) -> std::slice::Iter<'_, Signature<'db>> {
+    pub fn iter(&self) -> std::slice::Iter<'_, Signature<'db>> {
         self.overloads.iter()
     }
 
-    pub(crate) fn with_inherited_generic_context(
+    pub fn with_inherited_generic_context(
         &self,
         db: &'db dyn Db,
         inherited_generic_context: GenericContext<'db>,
@@ -107,7 +107,7 @@ impl<'db> CallableSignature<'db> {
         }))
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         &self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -122,7 +122,7 @@ impl<'db> CallableSignature<'db> {
         })
     }
 
-    pub(crate) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         &self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -254,7 +254,7 @@ impl<'db> CallableSignature<'db> {
         }
     }
 
-    pub(crate) fn find_legacy_typevars_impl(
+    pub fn find_legacy_typevars_impl(
         &self,
         db: &'db dyn Db,
         binding_context: Option<Definition<'db>>,
@@ -269,7 +269,7 @@ impl<'db> CallableSignature<'db> {
     /// Binds the first (presumably `self`) parameter of this signature. If a `self_type` is
     /// provided, we will replace any occurrences of `typing.Self` in the parameter and return
     /// annotations with that type.
-    pub(crate) fn bind_self(&self, db: &'db dyn Db, self_type: Option<Type<'db>>) -> Self {
+    pub fn bind_self(&self, db: &'db dyn Db, self_type: Option<Type<'db>>) -> Self {
         Self {
             overloads: self
                 .overloads
@@ -282,7 +282,7 @@ impl<'db> CallableSignature<'db> {
     /// Replaces any occurrences of `typing.Self` in the parameter and return annotations with the
     /// given type. (Does not bind the `self` parameter; to do that, use
     /// [`bind_self`][Self::bind_self].)
-    pub(crate) fn apply_self(&self, db: &'db dyn Db, self_type: Type<'db>) -> Self {
+    pub fn apply_self(&self, db: &'db dyn Db, self_type: Type<'db>) -> Self {
         Self {
             overloads: self
                 .overloads
@@ -293,7 +293,7 @@ impl<'db> CallableSignature<'db> {
     }
 
     #[expect(clippy::too_many_arguments)]
-    pub(crate) fn has_relation_to_impl<'c>(
+    pub fn has_relation_to_impl<'c>(
         &self,
         db: &'db dyn Db,
         other: &Self,
@@ -315,7 +315,7 @@ impl<'db> CallableSignature<'db> {
         )
     }
 
-    pub(crate) fn is_single_paramspec(&self) -> Option<(BoundTypeVarInstance<'db>, Type<'db>)> {
+    pub fn is_single_paramspec(&self) -> Option<(BoundTypeVarInstance<'db>, Type<'db>)> {
         Self::signatures_is_single_paramspec(&self.overloads)
     }
 
@@ -335,7 +335,7 @@ impl<'db> CallableSignature<'db> {
             .map(|bound_typevar| (bound_typevar, signature.return_ty))
     }
 
-    pub(crate) fn when_constraint_set_assignable_to<'c>(
+    pub fn when_constraint_set_assignable_to<'c>(
         &self,
         db: &'db dyn Db,
         other: &Self,
@@ -679,11 +679,11 @@ impl<'db> VarianceInferable<'db> for &CallableSignature<'db> {
 #[derive(Clone, Debug, salsa::Update, get_size2::GetSize, PartialEq, Eq, Hash)]
 pub struct Signature<'db> {
     /// The generic context for this overload, if it is generic.
-    pub(crate) generic_context: Option<GenericContext<'db>>,
+    pub generic_context: Option<GenericContext<'db>>,
 
     /// The original definition associated with this function, if available.
     /// This is useful for locating and extracting docstring information for the signature.
-    pub(crate) definition: Option<Definition<'db>>,
+    pub definition: Option<Definition<'db>>,
 
     /// Parameters, in source order.
     ///
@@ -696,10 +696,10 @@ pub struct Signature<'db> {
     parameters: Parameters<'db>,
 
     /// Return type. If no annotation was provided, this is `Unknown`.
-    pub(crate) return_ty: Type<'db>,
+    pub return_ty: Type<'db>,
 }
 
-pub(super) fn walk_signature<'db, V: super::visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_signature<'db, V: super::visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     signature: &Signature<'db>,
     visitor: &V,
@@ -716,7 +716,7 @@ pub(super) fn walk_signature<'db, V: super::visitor::TypeVisitor<'db> + ?Sized>(
 }
 
 impl<'db> Signature<'db> {
-    pub(crate) fn new(parameters: Parameters<'db>, return_ty: Type<'db>) -> Self {
+    pub fn new(parameters: Parameters<'db>, return_ty: Type<'db>) -> Self {
         Self {
             generic_context: None,
             definition: None,
@@ -725,7 +725,7 @@ impl<'db> Signature<'db> {
         }
     }
 
-    pub(crate) fn new_generic(
+    pub fn new_generic(
         generic_context: Option<GenericContext<'db>>,
         parameters: Parameters<'db>,
         return_ty: Type<'db>,
@@ -739,7 +739,7 @@ impl<'db> Signature<'db> {
     }
 
     /// Return a signature for a dynamic callable
-    pub(crate) fn dynamic(signature_type: Type<'db>) -> Self {
+    pub fn dynamic(signature_type: Type<'db>) -> Self {
         Signature {
             generic_context: None,
             definition: None,
@@ -750,7 +750,7 @@ impl<'db> Signature<'db> {
 
     /// Return a todo signature: (*args: Todo, **kwargs: Todo) -> Todo
     #[allow(unused_variables)] // 'reason' only unused in debug builds
-    pub(crate) fn todo(reason: &'static str) -> Self {
+    pub fn todo(reason: &'static str) -> Self {
         let signature_type = todo_type!(reason);
         Signature {
             generic_context: None,
@@ -761,7 +761,7 @@ impl<'db> Signature<'db> {
     }
 
     /// Return a typed signature from a function definition.
-    pub(super) fn from_function(
+    pub fn from_function(
         db: &'db dyn Db,
         pep695_generic_context: Option<GenericContext<'db>>,
         definition: Definition<'db>,
@@ -806,19 +806,19 @@ impl<'db> Signature<'db> {
         }
     }
 
-    pub(super) fn wrap_coroutine_return_type(self, db: &'db dyn Db) -> Self {
+    pub fn wrap_coroutine_return_type(self, db: &'db dyn Db) -> Self {
         let return_ty = KnownClass::CoroutineType
             .to_specialized_instance(db, &[Type::any(), Type::any(), self.return_ty]);
         Self { return_ty, ..self }
     }
 
     /// Returns the signature which accepts any parameters and returns an `Unknown` type.
-    pub(crate) fn unknown() -> Self {
+    pub fn unknown() -> Self {
         Self::new(Parameters::unknown(), Type::unknown())
     }
 
     /// Return the "bottom" signature, subtype of all other fully-static signatures.
-    pub(crate) fn bottom() -> Self {
+    pub fn bottom() -> Self {
         Self::new(Parameters::bottom(), Type::Never)
     }
 
@@ -827,7 +827,7 @@ impl<'db> Signature<'db> {
     /// `Self` is hidden if it does not appear in:
     /// 1. The return type
     /// 2. Any explicitly annotated parameter (not inferred)
-    pub(crate) fn should_hide_self_from_display(&self, db: &'db dyn Db) -> bool {
+    pub fn should_hide_self_from_display(&self, db: &'db dyn Db) -> bool {
         !self.return_ty.contains_self(db)
             && !self
                 .parameters()
@@ -835,7 +835,7 @@ impl<'db> Signature<'db> {
                 .any(|p| p.should_annotation_be_displayed() && p.annotated_type().contains_self(db))
     }
 
-    pub(crate) fn with_inherited_generic_context(
+    pub fn with_inherited_generic_context(
         mut self,
         db: &'db dyn Db,
         inherited_generic_context: GenericContext<'db>,
@@ -851,7 +851,7 @@ impl<'db> Signature<'db> {
         self
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         &self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -880,7 +880,7 @@ impl<'db> Signature<'db> {
         })
     }
 
-    pub(crate) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         &self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -901,7 +901,7 @@ impl<'db> Signature<'db> {
         }
     }
 
-    pub(crate) fn find_legacy_typevars_impl(
+    pub fn find_legacy_typevars_impl(
         &self,
         db: &'db dyn Db,
         binding_context: Option<Definition<'db>>,
@@ -924,7 +924,7 @@ impl<'db> Signature<'db> {
     }
 
     /// Return the parameters in this signature.
-    pub(crate) fn parameters(&self) -> &Parameters<'db> {
+    pub fn parameters(&self) -> &Parameters<'db> {
         &self.parameters
     }
 
@@ -933,7 +933,7 @@ impl<'db> Signature<'db> {
     /// right thing to do! The caller must determine whether the first parameter is actually a
     /// `self` or `cls` parameter, and must determine the correct type to use as the implicit
     /// annotation.
-    pub(crate) fn add_implicit_self_annotation(
+    pub fn add_implicit_self_annotation(
         &mut self,
         db: &'db dyn Db,
         self_type: impl FnOnce() -> Option<Type<'db>>,
@@ -980,11 +980,11 @@ impl<'db> Signature<'db> {
     }
 
     /// Return the definition associated with this signature, if any.
-    pub(crate) fn definition(&self) -> Option<Definition<'db>> {
+    pub fn definition(&self) -> Option<Definition<'db>> {
         self.definition
     }
 
-    pub(crate) fn bind_self(&self, db: &'db dyn Db, self_type: Option<Type<'db>>) -> Self {
+    pub fn bind_self(&self, db: &'db dyn Db, self_type: Option<Type<'db>>) -> Self {
         let mut parameters = self.parameters.iter().cloned().peekable();
 
         // TODO: Theoretically, for a signature like `f(*args: *tuple[MyClass, int, *tuple[str, ...]])` with
@@ -1017,7 +1017,7 @@ impl<'db> Signature<'db> {
         }
     }
 
-    pub(crate) fn apply_self(&self, db: &'db dyn Db, self_type: Type<'db>) -> Self {
+    pub fn apply_self(&self, db: &'db dyn Db, self_type: Type<'db>) -> Self {
         let self_mapping = TypeMapping::BindSelf(SelfBinding::new(
             db,
             self_type,
@@ -1047,7 +1047,7 @@ impl<'db> Signature<'db> {
         }
     }
 
-    pub(crate) fn when_constraint_set_assignable_to_signatures<'c>(
+    pub fn when_constraint_set_assignable_to_signatures<'c>(
         &self,
         db: &'db dyn Db,
         other: &CallableSignature<'db>,
@@ -1693,12 +1693,12 @@ impl<'db> Signature<'db> {
     }
 
     /// Create a new signature with the given definition.
-    pub(crate) fn with_definition(self, definition: Option<Definition<'db>>) -> Self {
+    pub fn with_definition(self, definition: Option<Definition<'db>>) -> Self {
         Self { definition, ..self }
     }
 
     /// Create a new signature with the given return type.
-    pub(crate) fn with_return_type(self, return_ty: Type<'db>) -> Self {
+    pub fn with_return_type(self, return_ty: Type<'db>) -> Self {
         Self { return_ty, ..self }
     }
 }
@@ -1733,7 +1733,7 @@ impl<'db> VarianceInferable<'db> for &Signature<'db> {
 
 /// The kind of parameter list represented.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash, salsa::Update, get_size2::GetSize)]
-pub(crate) enum ParametersKind<'db> {
+pub enum ParametersKind<'db> {
     /// A standard parameter list.
     #[default]
     Standard,
@@ -1766,7 +1766,7 @@ pub(crate) enum ParametersKind<'db> {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, salsa::Update, get_size2::GetSize)]
-pub(crate) struct Parameters<'db> {
+pub struct Parameters<'db> {
     // TODO: use SmallVec here once invariance bug is fixed
     value: Vec<Parameter<'db>>,
     kind: ParametersKind<'db>,
@@ -1778,10 +1778,7 @@ impl<'db> Parameters<'db> {
     /// The kind of the parameter list is determined based on the provided parameters.
     /// Specifically, if the parameters is made up of `*args` and `**kwargs` only, it checks
     /// their annotated types to determine if they represent a gradual form or a `ParamSpec`.
-    pub(crate) fn new(
-        db: &'db dyn Db,
-        parameters: impl IntoIterator<Item = Parameter<'db>>,
-    ) -> Self {
+    pub fn new(db: &'db dyn Db, parameters: impl IntoIterator<Item = Parameter<'db>>) -> Self {
         fn new_impl<'db>(db: &'db dyn Db, value: Vec<Parameter<'db>>) -> Parameters<'db> {
             let mut kind = ParametersKind::Standard;
             if let [p1, p2] = value.as_slice()
@@ -1816,30 +1813,30 @@ impl<'db> Parameters<'db> {
     }
 
     /// Create an empty parameter list.
-    pub(crate) fn empty() -> Self {
+    pub fn empty() -> Self {
         Self {
             value: Vec::new(),
             kind: ParametersKind::Standard,
         }
     }
 
-    pub(crate) fn as_slice(&self) -> &[Parameter<'db>] {
+    pub fn as_slice(&self) -> &[Parameter<'db>] {
         self.value.as_slice()
     }
 
-    pub(crate) const fn kind(&self) -> ParametersKind<'db> {
+    pub const fn kind(&self) -> ParametersKind<'db> {
         self.kind
     }
 
-    pub(crate) const fn is_gradual(&self) -> bool {
+    pub const fn is_gradual(&self) -> bool {
         matches!(self.kind, ParametersKind::Gradual)
     }
 
-    pub(crate) const fn is_top(&self) -> bool {
+    pub const fn is_top(&self) -> bool {
         matches!(self.kind, ParametersKind::Top)
     }
 
-    pub(crate) const fn as_paramspec(&self) -> Option<BoundTypeVarInstance<'db>> {
+    pub const fn as_paramspec(&self) -> Option<BoundTypeVarInstance<'db>> {
         match self.kind {
             ParametersKind::ParamSpec(bound_typevar) => Some(bound_typevar),
             _ => None,
@@ -1847,7 +1844,7 @@ impl<'db> Parameters<'db> {
     }
 
     /// Return todo parameters: (*args: Todo, **kwargs: Todo)
-    pub(crate) fn todo() -> Self {
+    pub fn todo() -> Self {
         Self {
             value: vec![
                 Parameter::variadic(Name::new_static("args"))
@@ -1864,7 +1861,7 @@ impl<'db> Parameters<'db> {
     /// Internally, this is represented as `(*Any, **Any)` that accepts parameters of type [`Any`].
     ///
     /// [`Any`]: DynamicType::Any
-    pub(crate) fn gradual_form() -> Self {
+    pub fn gradual_form() -> Self {
         Self {
             value: vec![
                 Parameter::variadic(Name::new_static("args"))
@@ -1876,7 +1873,7 @@ impl<'db> Parameters<'db> {
         }
     }
 
-    pub(crate) fn paramspec(db: &'db dyn Db, typevar: BoundTypeVarInstance<'db>) -> Self {
+    pub fn paramspec(db: &'db dyn Db, typevar: BoundTypeVarInstance<'db>) -> Self {
         Self {
             value: vec![
                 Parameter::variadic(Name::new_static("args")).with_annotated_type(Type::TypeVar(
@@ -1896,7 +1893,7 @@ impl<'db> Parameters<'db> {
     /// [`Unknown`].
     ///
     /// [`Unknown`]: crate::types::DynamicType::Unknown
-    pub(crate) fn unknown() -> Self {
+    pub fn unknown() -> Self {
         Self {
             value: vec![
                 Parameter::variadic(Name::new_static("args"))
@@ -1910,7 +1907,7 @@ impl<'db> Parameters<'db> {
 
     /// Return parameters that represents `(*args: object, **kwargs: object)`, the bottom signature
     /// (accepts any call, so subtype of all other signatures.)
-    pub(crate) fn bottom() -> Self {
+    pub fn bottom() -> Self {
         Self {
             value: vec![
                 Parameter::variadic(Name::new_static("args")).with_annotated_type(Type::object()),
@@ -1926,7 +1923,7 @@ impl<'db> Parameters<'db> {
     /// signatures. This is not `(*Never, **Never)`, which is equivalent to no parameters at all
     /// and still accepts the empty call `()`; it has to be represented instead as a special
     /// `ParametersKind`.
-    pub(crate) fn top() -> Self {
+    pub fn top() -> Self {
         Self {
             // We always emit `called-top-callable` for any call to the top callable (based on the
             // `kind` below), so we otherwise give it the most permissive signature`(*object,
@@ -1941,7 +1938,7 @@ impl<'db> Parameters<'db> {
     }
 
     /// Returns the bound `ParamSpec` type variable if the parameters contain a `ParamSpec`.
-    pub(crate) fn find_paramspec_from_args_kwargs<'a>(
+    pub fn find_paramspec_from_args_kwargs<'a>(
         &'a self,
         db: &'db dyn Db,
     ) -> Option<(&'a [Parameter<'db>], BoundTypeVarInstance<'db>)> {
@@ -2129,11 +2126,11 @@ impl<'db> Parameters<'db> {
         }
     }
 
-    pub(crate) fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.value.len()
     }
 
-    pub(crate) fn iter(&self) -> std::slice::Iter<'_, Parameter<'db>> {
+    pub fn iter(&self) -> std::slice::Iter<'_, Parameter<'db>> {
         self.value.iter()
     }
 
@@ -2142,25 +2139,25 @@ impl<'db> Parameters<'db> {
     /// For a valid signature, this will be all positional parameters. In an invalid signature,
     /// there could be non-initial positional parameters; effectively, we just won't consider those
     /// to be positional, which is fine.
-    pub(crate) fn positional(&self) -> impl Iterator<Item = &Parameter<'db>> {
+    pub fn positional(&self) -> impl Iterator<Item = &Parameter<'db>> {
         self.iter().take_while(|param| param.is_positional())
     }
 
     /// Return parameter at given index, or `None` if index is out-of-range.
-    pub(crate) fn get(&self, index: usize) -> Option<&Parameter<'db>> {
+    pub fn get(&self, index: usize) -> Option<&Parameter<'db>> {
         self.value.get(index)
     }
 
     /// Return positional parameter at given index, or `None` if `index` is out of range.
     ///
     /// Does not return variadic parameter.
-    pub(crate) fn get_positional(&self, index: usize) -> Option<&Parameter<'db>> {
+    pub fn get_positional(&self, index: usize) -> Option<&Parameter<'db>> {
         self.get(index)
             .and_then(|parameter| parameter.is_positional().then_some(parameter))
     }
 
     /// Return a positional-only parameter (with index) with the given name.
-    pub(crate) fn positional_only_by_name(&self, name: &str) -> Option<(usize, &Parameter<'db>)> {
+    pub fn positional_only_by_name(&self, name: &str) -> Option<(usize, &Parameter<'db>)> {
         self.iter().enumerate().find(|(_, parameter)| {
             parameter.is_positional_only()
                 && parameter
@@ -2171,7 +2168,7 @@ impl<'db> Parameters<'db> {
     }
 
     /// Return the variadic parameter (`*args`), if any, and its index, or `None`.
-    pub(crate) fn variadic(&self) -> Option<(usize, &Parameter<'db>)> {
+    pub fn variadic(&self) -> Option<(usize, &Parameter<'db>)> {
         self.iter()
             .enumerate()
             .find(|(_, parameter)| parameter.is_variadic())
@@ -2183,14 +2180,14 @@ impl<'db> Parameters<'db> {
     ///
     /// In an invalid signature, there could be multiple parameters with the same name; we will
     /// just return the first that matches.
-    pub(crate) fn keyword_by_name(&self, name: &str) -> Option<(usize, &Parameter<'db>)> {
+    pub fn keyword_by_name(&self, name: &str) -> Option<(usize, &Parameter<'db>)> {
         self.iter()
             .enumerate()
             .find(|(_, parameter)| parameter.callable_by_name(name))
     }
 
     /// Return the keywords parameter (`**kwargs`), if any, and its index, or `None`.
-    pub(crate) fn keyword_variadic(&self) -> Option<(usize, &Parameter<'db>)> {
+    pub fn keyword_variadic(&self) -> Option<(usize, &Parameter<'db>)> {
         self.iter()
             .enumerate()
             .rfind(|(_, parameter)| parameter.is_keyword_variadic())
@@ -2215,7 +2212,7 @@ impl<'db> std::ops::Index<usize> for Parameters<'db> {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, salsa::Update, get_size2::GetSize)]
-pub(crate) struct Parameter<'db> {
+pub struct Parameter<'db> {
     /// Annotated type of the parameter. If no annotation was provided, this is `Unknown`.
     annotated_type: Type<'db>,
 
@@ -2224,7 +2221,7 @@ pub(crate) struct Parameter<'db> {
     /// parameter of instance method, or `type[Self]` for `cls` parameter of classmethods. This
     /// field is only used to decide whether to display the annotated type; it has no effect on the
     /// type semantics of the parameter.
-    pub(crate) inferred_annotation: bool,
+    pub inferred_annotation: bool,
 
     /// Variadic parameters can have starred annotations, e.g.
     /// - `*args: *Ts`
@@ -2236,11 +2233,11 @@ pub(crate) struct Parameter<'db> {
     has_starred_annotation: bool,
 
     kind: ParameterKind<'db>,
-    pub(crate) form: ParameterForm,
+    pub form: ParameterForm,
 }
 
 impl<'db> Parameter<'db> {
-    pub(crate) fn positional_only(name: Option<Name>) -> Self {
+    pub fn positional_only(name: Option<Name>) -> Self {
         Self {
             annotated_type: Type::unknown(),
             inferred_annotation: true,
@@ -2253,7 +2250,7 @@ impl<'db> Parameter<'db> {
         }
     }
 
-    pub(crate) fn positional_or_keyword(name: Name) -> Self {
+    pub fn positional_or_keyword(name: Name) -> Self {
         Self {
             annotated_type: Type::unknown(),
             inferred_annotation: true,
@@ -2266,7 +2263,7 @@ impl<'db> Parameter<'db> {
         }
     }
 
-    pub(crate) fn variadic(name: Name) -> Self {
+    pub fn variadic(name: Name) -> Self {
         Self {
             annotated_type: Type::unknown(),
             inferred_annotation: true,
@@ -2276,7 +2273,7 @@ impl<'db> Parameter<'db> {
         }
     }
 
-    pub(crate) fn keyword_only(name: Name) -> Self {
+    pub fn keyword_only(name: Name) -> Self {
         Self {
             annotated_type: Type::unknown(),
             inferred_annotation: true,
@@ -2289,7 +2286,7 @@ impl<'db> Parameter<'db> {
         }
     }
 
-    pub(crate) fn keyword_variadic(name: Name) -> Self {
+    pub fn keyword_variadic(name: Name) -> Self {
         Self {
             annotated_type: Type::unknown(),
             inferred_annotation: true,
@@ -2301,13 +2298,13 @@ impl<'db> Parameter<'db> {
 
     /// Set the annotated type for this parameter. This also marks the annotation as explicit
     /// (not inferred), so it will be displayed.
-    pub(crate) fn with_annotated_type(mut self, annotated_type: Type<'db>) -> Self {
+    pub fn with_annotated_type(mut self, annotated_type: Type<'db>) -> Self {
         self.annotated_type = annotated_type;
         self.inferred_annotation = false;
         self
     }
 
-    pub(crate) fn with_default_type(mut self, default: Type<'db>) -> Self {
+    pub fn with_default_type(mut self, default: Type<'db>) -> Self {
         match &mut self.kind {
             ParameterKind::PositionalOnly { default_type, .. }
             | ParameterKind::PositionalOrKeyword { default_type, .. }
@@ -2319,7 +2316,7 @@ impl<'db> Parameter<'db> {
         self
     }
 
-    pub(crate) fn with_optional_default_type(self, default: Option<Type<'db>>) -> Self {
+    pub fn with_optional_default_type(self, default: Option<Type<'db>>) -> Self {
         if let Some(default) = default {
             self.with_default_type(default)
         } else {
@@ -2327,7 +2324,7 @@ impl<'db> Parameter<'db> {
         }
     }
 
-    pub(crate) fn type_form(mut self) -> Self {
+    pub fn type_form(mut self) -> Self {
         self.form = ParameterForm::Type;
         self
     }
@@ -2355,7 +2352,7 @@ impl<'db> Parameter<'db> {
         }
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         &self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -2456,35 +2453,35 @@ impl<'db> Parameter<'db> {
     }
 
     /// Returns `true` if this is a keyword-only parameter.
-    pub(crate) fn is_keyword_only(&self) -> bool {
+    pub fn is_keyword_only(&self) -> bool {
         matches!(self.kind, ParameterKind::KeywordOnly { .. })
     }
 
     /// Returns `true` if this is a positional-only parameter.
-    pub(crate) fn is_positional_only(&self) -> bool {
+    pub fn is_positional_only(&self) -> bool {
         matches!(self.kind, ParameterKind::PositionalOnly { .. })
     }
 
     /// Returns `true` if this is a variadic parameter.
-    pub(crate) fn is_variadic(&self) -> bool {
+    pub fn is_variadic(&self) -> bool {
         matches!(self.kind, ParameterKind::Variadic { .. })
     }
 
     /// Returns `true` if this is a keyword-variadic parameter.
-    pub(crate) fn is_keyword_variadic(&self) -> bool {
+    pub fn is_keyword_variadic(&self) -> bool {
         matches!(self.kind, ParameterKind::KeywordVariadic { .. })
     }
 
     /// Returns `true` if this is either a positional-only or standard (positional or keyword)
     /// parameter.
-    pub(crate) fn is_positional(&self) -> bool {
+    pub fn is_positional(&self) -> bool {
         matches!(
             self.kind,
             ParameterKind::PositionalOnly { .. } | ParameterKind::PositionalOrKeyword { .. }
         )
     }
 
-    pub(crate) fn callable_by_name(&self, name: &str) -> bool {
+    pub fn callable_by_name(&self, name: &str) -> bool {
         match &self.kind {
             ParameterKind::PositionalOrKeyword {
                 name: param_name, ..
@@ -2497,28 +2494,28 @@ impl<'db> Parameter<'db> {
     }
 
     /// Annotated type of the parameter. If no annotation was provided, this is `Unknown`.
-    pub(crate) fn annotated_type(&self) -> Type<'db> {
+    pub fn annotated_type(&self) -> Type<'db> {
         self.annotated_type
     }
 
     /// Return `true` if this parameter has a starred annotation,
     /// e.g. `*args: *Ts` or `*args: *tuple[int, *tuple[str, ...], bytes]`
-    pub(crate) fn has_starred_annotation(&self) -> bool {
+    pub fn has_starred_annotation(&self) -> bool {
         self.has_starred_annotation
     }
 
     /// Kind of the parameter.
-    pub(crate) fn kind(&self) -> &ParameterKind<'db> {
+    pub fn kind(&self) -> &ParameterKind<'db> {
         &self.kind
     }
 
     /// Whether or not the type of this parameter should be displayed.
-    pub(crate) fn should_annotation_be_displayed(&self) -> bool {
+    pub fn should_annotation_be_displayed(&self) -> bool {
         !self.inferred_annotation
     }
 
     /// Name of the parameter (if it has one).
-    pub(crate) fn name(&self) -> Option<&ast::name::Name> {
+    pub fn name(&self) -> Option<&ast::name::Name> {
         match &self.kind {
             ParameterKind::PositionalOnly { name, .. } => name.as_ref(),
             ParameterKind::PositionalOrKeyword { name, .. } => Some(name),
@@ -2529,7 +2526,7 @@ impl<'db> Parameter<'db> {
     }
 
     /// Display name of the parameter, if it has one.
-    pub(crate) fn display_name(&self) -> Option<ast::name::Name> {
+    pub fn display_name(&self) -> Option<ast::name::Name> {
         self.name().map(|name| match self.kind {
             ParameterKind::Variadic { .. } => ast::name::Name::new(format!("*{name}")),
             ParameterKind::KeywordVariadic { .. } => ast::name::Name::new(format!("**{name}")),
@@ -2538,7 +2535,7 @@ impl<'db> Parameter<'db> {
     }
 
     /// Default-value type of the parameter, if any.
-    pub(crate) fn default_type(&self) -> Option<Type<'db>> {
+    pub fn default_type(&self) -> Option<Type<'db>> {
         match self.kind {
             ParameterKind::PositionalOnly { default_type, .. }
             | ParameterKind::PositionalOrKeyword { default_type, .. }
@@ -2625,7 +2622,7 @@ impl<'db> ParameterKind<'db> {
 
 /// Whether a parameter is used as a value or a type form.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize)]
-pub(crate) enum ParameterForm {
+pub enum ParameterForm {
     Value,
     Type,
 }

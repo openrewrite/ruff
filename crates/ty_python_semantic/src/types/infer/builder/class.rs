@@ -16,11 +16,11 @@ use ruff_python_ast::{self as ast, helpers::any_over_expr};
 use ty_module_resolver::{KnownModule, file_to_module};
 
 impl<'db> TypeInferenceBuilder<'db, '_> {
-    pub(super) fn infer_class_body(&mut self, class: &ast::StmtClassDef) {
+    pub fn infer_class_body(&mut self, class: &ast::StmtClassDef) {
         self.infer_body(&class.body);
     }
 
-    pub(super) fn infer_class_type_params(&mut self, class: &ast::StmtClassDef) {
+    pub fn infer_class_type_params(&mut self, class: &ast::StmtClassDef) {
         let type_params = class
             .type_params
             .as_deref()
@@ -52,11 +52,11 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         self.typevar_binding_context = previous_typevar_binding_context;
     }
 
-    pub(super) fn infer_class_definition_statement(&mut self, class: &ast::StmtClassDef) {
+    pub fn infer_class_definition_statement(&mut self, class: &ast::StmtClassDef) {
         self.infer_definition(class);
     }
 
-    pub(super) fn infer_class_definition(
+    pub fn infer_class_definition(
         &mut self,
         class_node: &ast::StmtClassDef,
         definition: Definition<'db>,
@@ -235,11 +235,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         }
     }
 
-    pub(super) fn infer_class_deferred(
-        &mut self,
-        definition: Definition<'db>,
-        class: &ast::StmtClassDef,
-    ) {
+    pub fn infer_class_deferred(&mut self, definition: Definition<'db>, class: &ast::StmtClassDef) {
         let previous_typevar_binding_context = self.typevar_binding_context.replace(definition);
         for base in class.bases() {
             if self.in_stub() {

@@ -26,7 +26,7 @@ use crate::{
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct InternedConstraintSet<'db> {
     #[returns(ref)]
-    pub(super) constraints: OwnedConstraintSet<'db>,
+    pub constraints: OwnedConstraintSet<'db>,
 }
 
 // The Salsa heap is tracked separately.
@@ -106,7 +106,7 @@ pub enum KnownInstanceType<'db> {
     NamedTupleSpec(NamedTupleSpec<'db>),
 }
 
-pub(super) fn walk_known_instance_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_known_instance_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     known_instance: KnownInstanceType<'db>,
     visitor: &V,
@@ -170,7 +170,7 @@ impl<'db> VarianceInferable<'db> for KnownInstanceType<'db> {
 }
 
 impl<'db> KnownInstanceType<'db> {
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -220,7 +220,7 @@ impl<'db> KnownInstanceType<'db> {
         }
     }
 
-    pub(super) fn class(self, db: &'db dyn Db) -> KnownClass {
+    pub fn class(self, db: &'db dyn Db) -> KnownClass {
         match self {
             Self::SubscriptedProtocol(_) | Self::SubscriptedGeneric(_) => KnownClass::SpecialForm,
             Self::TypeVar(typevar_instance) if typevar_instance.is_paramspec(db) => {
@@ -247,7 +247,7 @@ impl<'db> KnownInstanceType<'db> {
         }
     }
 
-    pub(super) fn to_meta_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn to_meta_type(self, db: &'db dyn Db) -> Type<'db> {
         self.class(db).to_class_literal(db)
     }
 
@@ -256,21 +256,21 @@ impl<'db> KnownInstanceType<'db> {
     /// For example, an alias created using the `type` statement is an instance of
     /// `typing.TypeAliasType`, so `KnownInstanceType::TypeAliasType(_).instance_fallback(db)`
     /// returns `Type::NominalInstance(NominalInstanceType { class: <typing.TypeAliasType> })`.
-    pub(super) fn instance_fallback(self, db: &dyn Db) -> Type<'_> {
+    pub fn instance_fallback(self, db: &dyn Db) -> Type<'_> {
         self.class(db).to_instance(db)
     }
 
     /// Return `true` if this symbol is an instance of `class`.
-    pub(super) fn is_instance_of(self, db: &dyn Db, class: ClassType) -> bool {
+    pub fn is_instance_of(self, db: &dyn Db, class: ClassType) -> bool {
         self.class(db).is_subclass_of(db, class)
     }
 
     /// Return the repr of the symbol at runtime
-    pub(super) fn repr(self, db: &'db dyn Db) -> impl std::fmt::Display + 'db {
+    pub fn repr(self, db: &'db dyn Db) -> impl std::fmt::Display + 'db {
         self.display_with(db, DisplaySettings::default())
     }
 
-    pub(super) fn apply_type_mapping_impl(
+    pub fn apply_type_mapping_impl(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'_, 'db>,
@@ -416,13 +416,13 @@ pub struct UnionTypeInstance<'db> {
     /// `Ok(int | str)`. If any of the element types could not be converted, this
     /// contains the first encountered error.
     #[returns(ref)]
-    pub(super) union_type: Result<Type<'db>, InvalidTypeExpressionError<'db>>,
+    pub union_type: Result<Type<'db>, InvalidTypeExpressionError<'db>>,
 }
 
 impl get_size2::GetSize for UnionTypeInstance<'_> {}
 
 impl<'db> UnionTypeInstance<'db> {
-    pub(crate) fn from_value_expression_types(
+    pub fn from_value_expression_types(
         db: &'db dyn Db,
         value_expr_types: [Type<'db>; 2],
         scope_id: ScopeId<'db>,
@@ -448,7 +448,7 @@ impl<'db> UnionTypeInstance<'db> {
         )))
     }
 
-    pub(super) fn apply_type_mapping_impl(
+    pub fn apply_type_mapping_impl(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'_, 'db>,
@@ -472,7 +472,7 @@ impl<'db> UnionTypeInstance<'db> {
     /// legacy `typing.Union[…]` annotation, we turn the type-expression types into
     /// their corresponding value-expression types, i.e. we turn instances like `int`
     /// into class literals like `<class 'int'>`. This operation is potentially lossy.
-    pub(crate) fn value_expression_types(
+    pub fn value_expression_types(
         self,
         db: &'db dyn Db,
     ) -> Result<impl Iterator<Item = Type<'db>> + 'db, InvalidTypeExpressionError<'db>> {
@@ -539,7 +539,7 @@ impl<'db> UnionTypeInstance<'db> {
 /// A salsa-interned `Type`
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct InternedType<'db> {
-    pub(super) inner: Type<'db>,
+    pub inner: Type<'db>,
 }
 
 impl get_size2::GetSize for InternedType<'_> {}

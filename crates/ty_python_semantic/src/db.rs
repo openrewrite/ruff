@@ -21,7 +21,7 @@ pub trait Db: ModuleResolverDb {
 }
 
 #[cfg(test)]
-pub(crate) mod tests {
+pub mod tests {
     use std::sync::{Arc, Mutex};
 
     use crate::program::Program;
@@ -48,7 +48,7 @@ pub(crate) mod tests {
 
     #[salsa::db]
     #[derive(Clone)]
-    pub(crate) struct TestDb {
+    pub struct TestDb {
         storage: salsa::Storage<Self>,
         files: Files,
         system: TestSystem,
@@ -59,7 +59,7 @@ pub(crate) mod tests {
     }
 
     impl TestDb {
-        pub(crate) fn new() -> Self {
+        pub fn new() -> Self {
             let events = Events::default();
             Self {
                 storage: salsa::Storage::new(Some(Box::new({
@@ -80,7 +80,7 @@ pub(crate) mod tests {
         }
 
         /// Takes the salsa events.
-        pub(crate) fn take_salsa_events(&mut self) -> Vec<salsa::Event> {
+        pub fn take_salsa_events(&mut self) -> Vec<salsa::Event> {
             let mut events = self.events.lock().unwrap();
 
             std::mem::take(&mut *events)
@@ -90,7 +90,7 @@ pub(crate) mod tests {
         ///
         /// ## Panics
         /// If there are any pending salsa snapshots.
-        pub(crate) fn clear_salsa_events(&mut self) {
+        pub fn clear_salsa_events(&mut self) {
             self.take_salsa_events();
         }
     }
@@ -157,7 +157,7 @@ pub(crate) mod tests {
     #[salsa::db]
     impl salsa::Database for TestDb {}
 
-    pub(crate) struct TestDbBuilder<'a> {
+    pub struct TestDbBuilder<'a> {
         /// Target Python version
         python_version: PythonVersion,
         /// Target Python platform
@@ -167,7 +167,7 @@ pub(crate) mod tests {
     }
 
     impl<'a> TestDbBuilder<'a> {
-        pub(crate) fn new() -> Self {
+        pub fn new() -> Self {
             Self {
                 python_version: PythonVersion::default(),
                 python_platform: PythonPlatform::default(),
@@ -175,12 +175,12 @@ pub(crate) mod tests {
             }
         }
 
-        pub(crate) fn with_python_version(mut self, version: PythonVersion) -> Self {
+        pub fn with_python_version(mut self, version: PythonVersion) -> Self {
             self.python_version = version;
             self
         }
 
-        pub(crate) fn with_file(
+        pub fn with_file(
             mut self,
             path: &'a (impl AsRef<SystemPath> + ?Sized),
             content: &'a str,
@@ -189,7 +189,7 @@ pub(crate) mod tests {
             self
         }
 
-        pub(crate) fn build(self) -> anyhow::Result<TestDb> {
+        pub fn build(self) -> anyhow::Result<TestDb> {
             let mut db = TestDb::new();
 
             let src_root = SystemPathBuf::from("/src");
@@ -216,7 +216,7 @@ pub(crate) mod tests {
         }
     }
 
-    pub(crate) fn setup_db() -> TestDb {
+    pub fn setup_db() -> TestDb {
         TestDbBuilder::new().build().expect("valid TestDb setup")
     }
 }

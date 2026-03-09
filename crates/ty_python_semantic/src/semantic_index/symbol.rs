@@ -13,7 +13,7 @@ pub struct ScopedSymbolId;
 
 /// A symbol in a given scope.
 #[derive(Debug, Clone, PartialEq, Eq, get_size2::GetSize, salsa::Update)]
-pub(crate) struct Symbol {
+pub struct Symbol {
     name: Name,
     flags: SymbolFlags,
 }
@@ -45,39 +45,39 @@ bitflags! {
 impl get_size2::GetSize for SymbolFlags {}
 
 impl Symbol {
-    pub(crate) const fn new(name: Name) -> Self {
+    pub const fn new(name: Name) -> Self {
         Self {
             name,
             flags: SymbolFlags::empty(),
         }
     }
 
-    pub(crate) fn name(&self) -> &Name {
+    pub fn name(&self) -> &Name {
         &self.name
     }
 
     /// Is the symbol used in its containing scope?
-    pub(crate) fn is_used(&self) -> bool {
+    pub fn is_used(&self) -> bool {
         self.flags.contains(SymbolFlags::IS_USED)
     }
 
     /// Is the symbol given a value in its containing scope?
-    pub(crate) const fn is_bound(&self) -> bool {
+    pub const fn is_bound(&self) -> bool {
         self.flags.contains(SymbolFlags::IS_BOUND)
     }
 
     /// Is the symbol declared in its containing scope?
-    pub(crate) fn is_declared(&self) -> bool {
+    pub fn is_declared(&self) -> bool {
         self.flags.contains(SymbolFlags::IS_DECLARED)
     }
 
     /// Is the symbol `global` its containing scope?
-    pub(crate) fn is_global(&self) -> bool {
+    pub fn is_global(&self) -> bool {
         self.flags.contains(SymbolFlags::MARKED_GLOBAL)
     }
 
     /// Is the symbol `nonlocal` its containing scope?
-    pub(crate) fn is_nonlocal(&self) -> bool {
+    pub fn is_nonlocal(&self) -> bool {
         self.flags.contains(SymbolFlags::MARKED_NONLOCAL)
     }
 
@@ -109,27 +109,27 @@ impl Symbol {
     /// In cases like this, the resolution isn't known until runtime, and in fact it varies from
     /// one use to the next. The semantic index alone can't resolve this, and instead it's a
     /// special case in type inference (see `infer_place_load`).
-    pub(crate) fn is_local(&self) -> bool {
+    pub fn is_local(&self) -> bool {
         !self.is_global() && !self.is_nonlocal() && (self.is_bound() || self.is_declared())
     }
 
-    pub(crate) const fn is_reassigned(&self) -> bool {
+    pub const fn is_reassigned(&self) -> bool {
         self.flags.contains(SymbolFlags::IS_REASSIGNED)
     }
 
-    pub(crate) fn is_parameter(&self) -> bool {
+    pub fn is_parameter(&self) -> bool {
         self.flags.contains(SymbolFlags::IS_PARAMETER)
     }
 
-    pub(super) fn mark_global(&mut self) {
+    pub fn mark_global(&mut self) {
         self.insert_flags(SymbolFlags::MARKED_GLOBAL);
     }
 
-    pub(super) fn mark_nonlocal(&mut self) {
+    pub fn mark_nonlocal(&mut self) {
         self.insert_flags(SymbolFlags::MARKED_NONLOCAL);
     }
 
-    pub(super) fn mark_bound(&mut self) {
+    pub fn mark_bound(&mut self) {
         if self.is_bound() || self.is_used() {
             self.insert_flags(SymbolFlags::IS_REASSIGNED);
         }
@@ -137,15 +137,15 @@ impl Symbol {
         self.insert_flags(SymbolFlags::IS_BOUND);
     }
 
-    pub(super) fn mark_used(&mut self) {
+    pub fn mark_used(&mut self) {
         self.insert_flags(SymbolFlags::IS_USED);
     }
 
-    pub(super) fn mark_declared(&mut self) {
+    pub fn mark_declared(&mut self) {
         self.insert_flags(SymbolFlags::IS_DECLARED);
     }
 
-    pub(super) fn mark_parameter(&mut self) {
+    pub fn mark_parameter(&mut self) {
         self.insert_flags(SymbolFlags::IS_PARAMETER);
     }
 
@@ -158,7 +158,7 @@ impl Symbol {
 ///
 /// Allows lookup by name and a symbol's ID.
 #[derive(Default, get_size2::GetSize)]
-pub(super) struct SymbolTable {
+pub struct SymbolTable {
     symbols: IndexVec<ScopedSymbolId, Symbol>,
 
     /// Map from symbol name to its ID.
@@ -173,7 +173,7 @@ impl SymbolTable {
     /// ## Panics
     /// If the ID is not valid for this symbol table.
     #[track_caller]
-    pub(crate) fn symbol(&self, id: ScopedSymbolId) -> &Symbol {
+    pub fn symbol(&self, id: ScopedSymbolId) -> &Symbol {
         &self.symbols[id]
     }
 
@@ -182,19 +182,19 @@ impl SymbolTable {
     /// ## Panics
     /// If the ID is not valid for this symbol table.
     #[track_caller]
-    pub(crate) fn symbol_mut(&mut self, id: ScopedSymbolId) -> &mut Symbol {
+    pub fn symbol_mut(&mut self, id: ScopedSymbolId) -> &mut Symbol {
         &mut self.symbols[id]
     }
 
     /// Look up the ID of a symbol by its name.
-    pub(crate) fn symbol_id(&self, name: &str) -> Option<ScopedSymbolId> {
+    pub fn symbol_id(&self, name: &str) -> Option<ScopedSymbolId> {
         self.map
             .find(Self::hash_name(name), |id| self.symbols[*id].name == name)
             .copied()
     }
 
     /// Iterate over the symbols in this symbol table.
-    pub(crate) fn iter(&self) -> std::slice::Iter<'_, Symbol> {
+    pub fn iter(&self) -> std::slice::Iter<'_, Symbol> {
         self.symbols.iter()
     }
 
@@ -221,13 +221,13 @@ impl std::fmt::Debug for SymbolTable {
 }
 
 #[derive(Debug, Default)]
-pub(super) struct SymbolTableBuilder {
+pub struct SymbolTableBuilder {
     table: SymbolTable,
 }
 
 impl SymbolTableBuilder {
     /// Add a new symbol to this scope or update the flags if a symbol with the same name already exists.
-    pub(super) fn add(&mut self, mut symbol: Symbol) -> (ScopedSymbolId, bool) {
+    pub fn add(&mut self, mut symbol: Symbol) -> (ScopedSymbolId, bool) {
         let hash = SymbolTable::hash_name(symbol.name());
         let entry = self.table.map.entry(
             hash,
@@ -254,7 +254,7 @@ impl SymbolTableBuilder {
         }
     }
 
-    pub(super) fn build(self) -> SymbolTable {
+    pub fn build(self) -> SymbolTable {
         let mut table = self.table;
         table.symbols.shrink_to_fit();
         table

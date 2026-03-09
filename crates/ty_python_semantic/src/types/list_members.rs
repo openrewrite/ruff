@@ -29,7 +29,7 @@ use crate::{
 
 /// Iterate over all declarations and bindings that exist at the end
 /// of the given scope.
-pub(crate) fn all_end_of_scope_members<'db>(
+pub fn all_end_of_scope_members<'db>(
     db: &'db dyn Db,
     scope_id: ScopeId<'db>,
 ) -> impl Iterator<Item = MemberWithDefinition<'db>> + 'db {
@@ -80,7 +80,7 @@ pub(crate) fn all_end_of_scope_members<'db>(
 
 /// Iterate over all declarations and bindings that are reachable anywhere
 /// in the given scope.
-pub(crate) fn all_reachable_members<'db>(
+pub fn all_reachable_members<'db>(
     db: &'db dyn Db,
     scope_id: ScopeId<'db>,
 ) -> impl Iterator<Item = MemberWithDefinition<'db>> + 'db {

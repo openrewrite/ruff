@@ -26,7 +26,7 @@ const MAX_TUPLE_EXPANSION: usize = 64;
 const MAX_TOTAL_EXPANSION: usize = 256;
 
 #[derive(Clone, Copy, Debug)]
-pub(crate) enum Argument<'a> {
+pub enum Argument<'a> {
     /// The synthetic `self` or `cls` argument, which doesn't appear explicitly at the call site.
     Synthetic,
     /// A positional argument.
@@ -41,7 +41,7 @@ pub(crate) enum Argument<'a> {
 
 /// Arguments for a single call, in source order, along with inferred types for each argument.
 #[derive(Clone, Debug, Default)]
-pub(crate) struct CallArguments<'a, 'db> {
+pub struct CallArguments<'a, 'db> {
     arguments: Vec<Argument<'a>>,
     types: Vec<Option<Type<'db>>>,
 }
@@ -55,7 +55,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
     /// Create `CallArguments` from AST arguments. We will use the provided callback to obtain the
     /// type of each splatted argument, so that we can determine its length. All other arguments
     /// will remain uninitialized as `Unknown`.
-    pub(crate) fn from_arguments(
+    pub fn from_arguments(
         arguments: &'a ast::Arguments,
         mut infer_argument_type: impl FnMut(Option<&ast::Expr>, &ast::Expr) -> Type<'db>,
     ) -> Self {
@@ -85,7 +85,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
     ///
     /// This currently only exists for the LSP usecase, and shouldn't be used in normal
     /// typechecking.
-    pub(crate) fn from_arguments_typed(
+    pub fn from_arguments_typed(
         arguments: &'a ast::Arguments,
         mut infer_argument_type: impl FnMut(&ast::Expr) -> Type<'db>,
     ) -> Self {
@@ -115,33 +115,33 @@ impl<'a, 'db> CallArguments<'a, 'db> {
     }
 
     /// Create a [`CallArguments`] with no arguments.
-    pub(crate) fn none() -> Self {
+    pub fn none() -> Self {
         Self::default()
     }
 
     /// Create a [`CallArguments`] from an iterator over non-variadic positional argument types.
-    pub(crate) fn positional(positional_tys: impl IntoIterator<Item = Type<'db>>) -> Self {
+    pub fn positional(positional_tys: impl IntoIterator<Item = Type<'db>>) -> Self {
         let types: Vec<_> = positional_tys.into_iter().map(Some).collect();
         let arguments = vec![Argument::Positional; types.len()];
         Self { arguments, types }
     }
 
-    pub(crate) fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.arguments.len()
     }
 
-    pub(crate) fn types(&self) -> &[Option<Type<'db>>] {
+    pub fn types(&self) -> &[Option<Type<'db>>] {
         &self.types
     }
 
-    pub(crate) fn iter_types(&self) -> impl Iterator<Item = Type<'db>> {
+    pub fn iter_types(&self) -> impl Iterator<Item = Type<'db>> {
         self.types.iter().map(|ty| ty.unwrap_or_else(Type::unknown))
     }
 
     /// Prepend an optional extra synthetic argument (for a `self` or `cls` parameter) to the front
     /// of this argument list. (If `bound_self` is none, we return the argument list
     /// unmodified.)
-    pub(crate) fn with_self(&self, bound_self: Option<Type<'db>>) -> Cow<'_, Self> {
+    pub fn with_self(&self, bound_self: Option<Type<'db>>) -> Cow<'_, Self> {
         if bound_self.is_some() {
             let arguments = std::iter::once(Argument::Synthetic)
                 .chain(self.arguments.iter().copied())
@@ -155,18 +155,18 @@ impl<'a, 'db> CallArguments<'a, 'db> {
         }
     }
 
-    pub(crate) fn iter(&self) -> impl Iterator<Item = (Argument<'a>, Option<Type<'db>>)> + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = (Argument<'a>, Option<Type<'db>>)> + '_ {
         (self.arguments.iter().copied()).zip(self.types.iter().copied())
     }
 
-    pub(crate) fn iter_mut(
+    pub fn iter_mut(
         &mut self,
     ) -> impl Iterator<Item = (Argument<'a>, &mut Option<Type<'db>>)> + '_ {
         (self.arguments.iter().copied()).zip(self.types.iter_mut())
     }
 
     /// Create a new [`CallArguments`] starting from the specified index.
-    pub(super) fn start_from(&self, index: usize) -> Self {
+    pub fn start_from(&self, index: usize) -> Self {
         Self {
             arguments: self.arguments[index..].to_vec(),
             types: self.types[index..].to_vec(),
@@ -179,7 +179,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
     /// contains the same arguments, but with one or more of the argument types expanded.
     ///
     /// [argument type expansion]: https://typing.python.org/en/latest/spec/overload.html#argument-type-expansion
-    pub(super) fn expand(&self, db: &'db dyn Db) -> impl Iterator<Item = Expansion<'a, 'db>> + '_ {
+    pub fn expand(&self, db: &'db dyn Db) -> impl Iterator<Item = Expansion<'a, 'db>> + '_ {
         /// Represents the state of the expansion process.
         enum State<'a, 'b, 'db> {
             LimitReached(usize),
@@ -276,7 +276,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
         })
     }
 
-    pub(super) fn display(&self, db: &'db dyn Db) -> impl Display {
+    pub fn display(&self, db: &'db dyn Db) -> impl Display {
         struct DisplayCallArguments<'a, 'db> {
             call_arguments: &'a CallArguments<'a, 'db>,
             db: &'db dyn Db,
@@ -326,7 +326,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
 /// Represents a single element of the expansion process for argument types for [`expand`].
 ///
 /// [`expand`]: CallArguments::expand
-pub(super) enum Expansion<'a, 'db> {
+pub enum Expansion<'a, 'db> {
     /// Indicates that the expansion process has reached the maximum number of argument lists
     /// that can be generated in a single step.
     ///
@@ -352,7 +352,7 @@ impl<'a, 'db> FromIterator<(Argument<'a>, Option<Type<'db>>)> for CallArguments<
 /// Returns `true` if the type can be expanded into its subtypes.
 ///
 /// In other words, it returns `true` if [`expand_type`] returns [`Some`] for the given type.
-pub(crate) fn is_expandable_type<'db>(db: &'db dyn Db, ty: Type<'db>) -> bool {
+pub fn is_expandable_type<'db>(db: &'db dyn Db, ty: Type<'db>) -> bool {
     match ty {
         Type::NominalInstance(instance) => {
             let class = instance.class(db);

@@ -36,10 +36,7 @@ use crate::types::{
 use crate::{Db, FxOrderSet};
 
 impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
-    pub(super) fn infer_subscript_expression(
-        &mut self,
-        subscript: &ast::ExprSubscript,
-    ) -> Type<'db> {
+    pub fn infer_subscript_expression(&mut self, subscript: &ast::ExprSubscript) -> Type<'db> {
         let ast::ExprSubscript {
             value,
             slice,
@@ -71,7 +68,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn infer_subscript_load(&mut self, subscript: &ast::ExprSubscript) -> Type<'db> {
+    pub fn infer_subscript_load(&mut self, subscript: &ast::ExprSubscript) -> Type<'db> {
         let value_ty = self.infer_expression(&subscript.value, TypeContext::default());
 
         // If we have an implicit type alias like `MyList = list[T]`, and if `MyList` is being
@@ -84,7 +81,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         self.infer_subscript_load_impl(value_ty, subscript)
     }
 
-    pub(super) fn infer_subscript_load_impl(
+    pub fn infer_subscript_load_impl(
         &mut self,
         value_ty: Type<'db>,
         subscript: &ast::ExprSubscript,
@@ -423,7 +420,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         self.narrow_expr_with_applicable_constraints(subscript, result_ty, &constraint_keys)
     }
 
-    pub(super) fn infer_explicit_class_specialization(
+    pub fn infer_explicit_class_specialization(
         &mut self,
         subscript: &ast::ExprSubscript,
         value_ty: Type<'db>,
@@ -445,7 +442,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         )
     }
 
-    pub(super) fn infer_explicit_type_alias_type_specialization(
+    pub fn infer_explicit_type_alias_type_specialization(
         &mut self,
         subscript: &ast::ExprSubscript,
         value_ty: Type<'db>,
@@ -469,7 +466,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         )
     }
 
-    pub(super) fn infer_explicit_callable_specialization(
+    pub fn infer_explicit_callable_specialization(
         &mut self,
         subscript: &ast::ExprSubscript,
         value_ty: Type<'db>,
@@ -492,7 +489,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         result
     }
 
-    pub(super) fn infer_explicit_callable_specialization_impl(
+    pub fn infer_explicit_callable_specialization_impl(
         &mut self,
         subscript: &ast::ExprSubscript,
         value_ty: Type<'db>,
@@ -998,7 +995,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         Err(())
     }
 
-    pub(super) fn infer_subscript_expression_types(
+    pub fn infer_subscript_expression_types(
         &self,
         subscript: &ast::ExprSubscript,
         value_ty: Type<'db>,
@@ -1049,7 +1046,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         })
     }
 
-    pub(super) fn infer_slice_expression(&mut self, slice: &ast::ExprSlice) -> Type<'db> {
+    pub fn infer_slice_expression(&mut self, slice: &ast::ExprSlice) -> Type<'db> {
         enum SliceArg<'db> {
             Arg(Type<'db>),
             Unsupported,
@@ -1095,7 +1092,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     }
 
     /// Validate a subscript assignment of the form `object[key] = rhs_value`.
-    pub(super) fn validate_subscript_assignment(
+    pub fn validate_subscript_assignment(
         &mut self,
         target: &ast::ExprSubscript,
         rhs_value: &ast::Expr,

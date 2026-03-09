@@ -232,7 +232,7 @@ use crate::types::{
 /// reachability constraints are normalized, so equivalent constraints are guaranteed to have equal
 /// IDs.
 #[derive(Clone, Copy, Eq, Hash, PartialEq, salsa::Update, get_size2::GetSize)]
-pub(crate) struct ScopedReachabilityConstraintId(u32);
+pub struct ScopedReachabilityConstraintId(u32);
 
 impl std::fmt::Debug for ScopedReachabilityConstraintId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -273,15 +273,15 @@ struct InteriorNode {
 
 impl ScopedReachabilityConstraintId {
     /// A special ID that is used for an "always true" / "always visible" constraint.
-    pub(crate) const ALWAYS_TRUE: ScopedReachabilityConstraintId =
+    pub const ALWAYS_TRUE: ScopedReachabilityConstraintId =
         ScopedReachabilityConstraintId(0xffff_ffff);
 
     /// A special ID that is used for an ambiguous constraint.
-    pub(crate) const AMBIGUOUS: ScopedReachabilityConstraintId =
+    pub const AMBIGUOUS: ScopedReachabilityConstraintId =
         ScopedReachabilityConstraintId(0xffff_fffe);
 
     /// A special ID that is used for an "always false" / "never visible" constraint.
-    pub(crate) const ALWAYS_FALSE: ScopedReachabilityConstraintId =
+    pub const ALWAYS_FALSE: ScopedReachabilityConstraintId =
         ScopedReachabilityConstraintId(0xffff_fffd);
 
     fn is_terminal(self) -> bool {
@@ -447,7 +447,7 @@ fn analyze_pattern_predicate<'db>(db: &'db dyn Db, predicate: PatternPredicate<'
 
 /// A collection of reachability constraints for a given scope.
 #[derive(Debug, PartialEq, Eq, salsa::Update, get_size2::GetSize)]
-pub(crate) struct ReachabilityConstraints {
+pub struct ReachabilityConstraints {
     /// The interior TDD nodes that were marked as used when being built.
     used_interiors: Box<[InteriorNode]>,
     /// A bit vector indicating which interior TDD nodes were marked as used. This is indexed by
@@ -457,7 +457,7 @@ pub(crate) struct ReachabilityConstraints {
 }
 
 #[derive(Debug, Default, PartialEq, Eq)]
-pub(crate) struct ReachabilityConstraintsBuilder {
+pub struct ReachabilityConstraintsBuilder {
     interiors: IndexVec<ScopedReachabilityConstraintId, InteriorNode>,
     interior_used: IndexVec<ScopedReachabilityConstraintId, bool>,
     interior_cache: FxHashMap<InteriorNode, ScopedReachabilityConstraintId>,
@@ -479,7 +479,7 @@ pub(crate) struct ReachabilityConstraintsBuilder {
 }
 
 impl ReachabilityConstraintsBuilder {
-    pub(crate) fn build(self) -> ReachabilityConstraints {
+    pub fn build(self) -> ReachabilityConstraints {
         let used_indices = RankBitBox::from_bits(self.interior_used.iter().copied());
         let used_interiors = (self.interiors.into_iter())
             .zip(self.interior_used)
@@ -494,7 +494,7 @@ impl ReachabilityConstraintsBuilder {
     /// Marks that a particular TDD node is used. This lets us throw away interior nodes that were
     /// only calculated for intermediate values, and which don't need to be included in the final
     /// built result.
-    pub(crate) fn mark_used(&mut self, node: ScopedReachabilityConstraintId) {
+    pub fn mark_used(&mut self, node: ScopedReachabilityConstraintId) {
         if !node.is_terminal() && !self.interior_used[node] {
             self.interior_used[node] = true;
             let node = self.interiors[node];
@@ -571,10 +571,7 @@ impl ReachabilityConstraintsBuilder {
     /// advantage of the fact that the [`Predicates`] arena does not deduplicate `Predicate`s.
     /// You can add a `Predicate` multiple times, yielding different `ScopedPredicateId`s, which
     /// you can then create separate TDD atoms for.
-    pub(crate) fn add_atom(
-        &mut self,
-        predicate: ScopedPredicateId,
-    ) -> ScopedReachabilityConstraintId {
+    pub fn add_atom(&mut self, predicate: ScopedPredicateId) -> ScopedReachabilityConstraintId {
         if predicate == ScopedPredicateId::ALWAYS_FALSE {
             ScopedReachabilityConstraintId::ALWAYS_FALSE
         } else if predicate == ScopedPredicateId::ALWAYS_TRUE {
@@ -590,7 +587,7 @@ impl ReachabilityConstraintsBuilder {
     }
 
     /// Adds a new reachability constraint that is the ternary NOT of an existing one.
-    pub(crate) fn add_not_constraint(
+    pub fn add_not_constraint(
         &mut self,
         a: ScopedReachabilityConstraintId,
     ) -> ScopedReachabilityConstraintId {
@@ -625,7 +622,7 @@ impl ReachabilityConstraintsBuilder {
     }
 
     /// Adds a new reachability constraint that is the ternary OR of two existing ones.
-    pub(crate) fn add_or_constraint(
+    pub fn add_or_constraint(
         &mut self,
         a: ScopedReachabilityConstraintId,
         b: ScopedReachabilityConstraintId,
@@ -695,7 +692,7 @@ impl ReachabilityConstraintsBuilder {
     }
 
     /// Adds a new reachability constraint that is the ternary AND of two existing ones.
-    pub(crate) fn add_and_constraint(
+    pub fn add_and_constraint(
         &mut self,
         a: ScopedReachabilityConstraintId,
         b: ScopedReachabilityConstraintId,
@@ -812,7 +809,7 @@ impl ReachabilityConstraints {
     /// - `ALWAYS_FALSE`: this path is impossible → Never
     ///
     /// The final result is the union of all path results.
-    pub(crate) fn narrow_by_constraint<'db>(
+    pub fn narrow_by_constraint<'db>(
         &self,
         db: &'db dyn Db,
         predicates: &Predicates<'db>,
@@ -944,7 +941,7 @@ impl ReachabilityConstraints {
     }
 
     /// Analyze the statically known reachability for a given constraint.
-    pub(crate) fn evaluate<'db>(
+    pub fn evaluate<'db>(
         &self,
         db: &'db dyn Db,
         predicates: &Predicates<'db>,

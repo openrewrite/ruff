@@ -60,18 +60,18 @@ pub enum TypedDictType<'db> {
 }
 
 impl<'db> TypedDictType<'db> {
-    pub(crate) fn new(defining_class: ClassType<'db>) -> Self {
+    pub fn new(defining_class: ClassType<'db>) -> Self {
         Self::Class(defining_class)
     }
 
-    pub(crate) fn defining_class(self) -> Option<ClassType<'db>> {
+    pub fn defining_class(self) -> Option<ClassType<'db>> {
         match self {
             Self::Class(defining_class) => Some(defining_class),
             Self::Synthesized(_) => None,
         }
     }
 
-    pub(crate) fn items(self, db: &'db dyn Db) -> &'db TypedDictSchema<'db> {
+    pub fn items(self, db: &'db dyn Db) -> &'db TypedDictSchema<'db> {
         #[salsa::tracked(returns(ref), heap_size=ruff_memory_usage::heap_size)]
         fn class_based_items<'db>(db: &'db dyn Db, class: ClassType<'db>) -> TypedDictSchema<'db> {
             let Some((class_literal, specialization)) = class.static_class_literal(db) else {
@@ -108,7 +108,7 @@ impl<'db> TypedDictType<'db> {
         }
     }
 
-    pub(crate) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -129,7 +129,7 @@ impl<'db> TypedDictType<'db> {
     // Subtyping between `TypedDict`s follows the algorithm described at:
     // https://typing.python.org/en/latest/spec/typeddict.html#subtyping-between-typeddict-types
     #[expect(clippy::too_many_arguments)]
-    pub(super) fn has_relation_to_impl<'c>(
+    pub fn has_relation_to_impl<'c>(
         self,
         db: &'db dyn Db,
         target: TypedDictType<'db>,
@@ -376,7 +376,7 @@ impl<'db> TypedDictType<'db> {
     ///    be assignable to both.)
     ///
     /// TODO: Adding support for `closed` and `extra_items` will complicate this.
-    pub(crate) fn is_disjoint_from_impl<'c>(
+    pub fn is_disjoint_from_impl<'c>(
         self,
         db: &'db dyn Db,
         other: TypedDictType<'db>,
@@ -466,7 +466,7 @@ impl<'db> TypedDictType<'db> {
     }
 }
 
-pub(crate) fn walk_typed_dict_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_typed_dict_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     typed_dict: TypedDictType<'db>,
     visitor: &V,
@@ -483,7 +483,7 @@ pub(crate) fn walk_typed_dict_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     }
 }
 
-pub(super) fn typed_dict_params_from_class_def(class_stmt: &StmtClassDef) -> TypedDictParams {
+pub fn typed_dict_params_from_class_def(class_stmt: &StmtClassDef) -> TypedDictParams {
     let mut typed_dict_params = TypedDictParams::default();
 
     // Check for `total` keyword argument in the class definition
@@ -506,7 +506,7 @@ pub(super) fn typed_dict_params_from_class_def(class_stmt: &StmtClassDef) -> Typ
 }
 
 #[derive(Debug, Clone, Copy)]
-pub(super) enum TypedDictAssignmentKind {
+pub enum TypedDictAssignmentKind {
     /// For subscript assignments like `d["key"] = value`
     Subscript,
     /// For constructor arguments like `MyTypedDict(key=value)`
@@ -534,21 +534,21 @@ impl TypedDictAssignmentKind {
 }
 
 /// A helper that validates assignments of a value to a specific key on a `TypedDict`.
-pub(super) struct TypedDictKeyAssignment<'a, 'db, 'ast> {
-    pub(super) context: &'a InferContext<'db, 'ast>,
-    pub(super) typed_dict: TypedDictType<'db>,
-    pub(super) full_object_ty: Option<Type<'db>>,
-    pub(super) key: &'a str,
-    pub(super) value_ty: Type<'db>,
-    pub(super) typed_dict_node: AnyNodeRef<'ast>,
-    pub(super) key_node: AnyNodeRef<'ast>,
-    pub(super) value_node: AnyNodeRef<'ast>,
-    pub(super) assignment_kind: TypedDictAssignmentKind,
-    pub(super) emit_diagnostic: bool,
+pub struct TypedDictKeyAssignment<'a, 'db, 'ast> {
+    pub context: &'a InferContext<'db, 'ast>,
+    pub typed_dict: TypedDictType<'db>,
+    pub full_object_ty: Option<Type<'db>>,
+    pub key: &'a str,
+    pub value_ty: Type<'db>,
+    pub typed_dict_node: AnyNodeRef<'ast>,
+    pub key_node: AnyNodeRef<'ast>,
+    pub value_node: AnyNodeRef<'ast>,
+    pub assignment_kind: TypedDictAssignmentKind,
+    pub emit_diagnostic: bool,
 }
 
 impl<'db> TypedDictKeyAssignment<'_, 'db, '_> {
-    pub(super) fn validate(&self) -> bool {
+    pub fn validate(&self) -> bool {
         let db = self.context.db();
         let items = self.typed_dict.items(db);
 
@@ -694,7 +694,7 @@ impl<'db> TypedDictKeyAssignment<'_, 'db, '_> {
 /// Reports errors for any keys that are required but not provided.
 ///
 /// Returns true if the assignment is valid, or false otherwise.
-pub(super) fn validate_typed_dict_required_keys<'db, 'ast>(
+pub fn validate_typed_dict_required_keys<'db, 'ast>(
     context: &InferContext<'db, 'ast>,
     typed_dict: TypedDictType<'db>,
     provided_keys: &OrderSet<Name>,
@@ -809,7 +809,7 @@ fn extract_typed_dict_keys<'db>(
     }
 }
 
-pub(super) fn validate_typed_dict_constructor<'db, 'ast>(
+pub fn validate_typed_dict_constructor<'db, 'ast>(
     context: &InferContext<'db, 'ast>,
     typed_dict: TypedDictType<'db>,
     arguments: &'ast Arguments,
@@ -985,7 +985,7 @@ fn validate_from_keywords<'db, 'ast>(
 
 /// Validates a `TypedDict` dictionary literal assignment,
 /// e.g. `person: Person = {"name": "Alice", "age": 30}`
-pub(super) fn validate_typed_dict_dict_literal<'db>(
+pub fn validate_typed_dict_dict_literal<'db>(
     context: &InferContext<'db, '_>,
     typed_dict: TypedDictType<'db>,
     dict_expr: &ast::ExprDict,
@@ -1034,14 +1034,14 @@ pub(super) fn validate_typed_dict_dict_literal<'db>(
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct SynthesizedTypedDictType<'db> {
     #[returns(ref)]
-    pub(crate) items: TypedDictSchema<'db>,
+    pub items: TypedDictSchema<'db>,
 }
 
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for SynthesizedTypedDictType<'_> {}
 
 impl<'db> SynthesizedTypedDictType<'db> {
-    pub(super) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -1098,25 +1098,25 @@ impl<'db> FromIterator<(Name, TypedDictField<'db>)> for TypedDictSchema<'db> {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, get_size2::GetSize, salsa::Update)]
 pub struct TypedDictField<'db> {
-    pub(super) declared_ty: Type<'db>,
+    pub declared_ty: Type<'db>,
     flags: TypedDictFieldFlags,
     first_declaration: Option<Definition<'db>>,
 }
 
 impl<'db> TypedDictField<'db> {
-    pub(crate) const fn is_required(&self) -> bool {
+    pub const fn is_required(&self) -> bool {
         self.flags.contains(TypedDictFieldFlags::REQUIRED)
     }
 
-    pub(crate) const fn is_read_only(&self) -> bool {
+    pub const fn is_read_only(&self) -> bool {
         self.flags.contains(TypedDictFieldFlags::READ_ONLY)
     }
 
-    pub(crate) const fn first_declaration(&self) -> Option<Definition<'db>> {
+    pub const fn first_declaration(&self) -> Option<Definition<'db>> {
         self.first_declaration
     }
 
-    pub(crate) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -1133,14 +1133,14 @@ impl<'db> TypedDictField<'db> {
     }
 }
 
-pub(super) struct TypedDictFieldBuilder<'db> {
+pub struct TypedDictFieldBuilder<'db> {
     declared_ty: Type<'db>,
     flags: TypedDictFieldFlags,
     first_declaration: Option<Definition<'db>>,
 }
 
 impl<'db> TypedDictFieldBuilder<'db> {
-    pub(crate) fn new(declared_ty: Type<'db>) -> Self {
+    pub fn new(declared_ty: Type<'db>) -> Self {
         Self {
             declared_ty,
             flags: TypedDictFieldFlags::empty(),
@@ -1148,22 +1148,22 @@ impl<'db> TypedDictFieldBuilder<'db> {
         }
     }
 
-    pub(crate) fn required(mut self, yes: bool) -> Self {
+    pub fn required(mut self, yes: bool) -> Self {
         self.flags.set(TypedDictFieldFlags::REQUIRED, yes);
         self
     }
 
-    pub(crate) fn read_only(mut self, yes: bool) -> Self {
+    pub fn read_only(mut self, yes: bool) -> Self {
         self.flags.set(TypedDictFieldFlags::READ_ONLY, yes);
         self
     }
 
-    pub(crate) fn first_declaration(mut self, definition: Option<Definition<'db>>) -> Self {
+    pub fn first_declaration(mut self, definition: Option<Definition<'db>>) -> Self {
         self.first_declaration = definition;
         self
     }
 
-    pub(crate) fn build(self) -> TypedDictField<'db> {
+    pub fn build(self) -> TypedDictField<'db> {
         TypedDictField {
             declared_ty: self.declared_ty,
             flags: self.flags,

@@ -15,7 +15,7 @@ use ruff_python_ast::PythonVersion;
 use crate::Program;
 
 impl<'db> TypeInferenceBuilder<'db, '_> {
-    pub(super) fn infer_binary_expression(
+    pub fn infer_binary_expression(
         &mut self,
         binary: &ast::ExprBinOp,
         tcx: TypeContext<'db>,
@@ -87,7 +87,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// Returns the original `TypeVar` if each result is equivalent to its input constraint;
     /// otherwise returns the union of all results.
-    pub(super) fn map_constrained_typevar_constraints(
+    pub fn map_constrained_typevar_constraints(
         db: &'db dyn Db,
         typevar: Type<'db>,
         constraints: TypeVarConstraints<'db>,
@@ -111,7 +111,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         })
     }
 
-    pub(super) fn infer_binary_expression_type(
+    pub fn infer_binary_expression_type(
         &mut self,
         node: AnyNodeRef<'_>,
         mut emitted_division_by_zero_diagnostic: bool,

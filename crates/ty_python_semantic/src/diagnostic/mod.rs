@@ -12,7 +12,7 @@ use std::fmt::Write;
 mod levenshtein;
 
 /// Suggest a name from `existing_names` that is similar to `wrong_name`.
-pub(crate) fn did_you_mean<'a, O, I>(options: O, typo: &str) -> Option<&'a str>
+pub fn did_you_mean<'a, O, I>(options: O, typo: &str) -> Option<&'a str>
 where
     O: IntoIterator<IntoIter = I>,
     I: ExactSizeIterator<Item = &'a str>,
@@ -113,7 +113,7 @@ pub fn add_inferred_python_version_hint_to_diagnostic(
 /// Format a list of elements as a human-readable enumeration.
 ///
 /// Encloses every element in backticks (`1`, `2` and `3`).
-pub(crate) fn format_enumeration<I, IT, D>(elements: I) -> String
+pub fn format_enumeration<I, IT, D>(elements: I) -> String
 where
     I: IntoIterator<IntoIter = IT>,
     IT: ExactSizeIterator<Item = D> + DoubleEndedIterator,
@@ -146,7 +146,7 @@ where
 /// associated file is equivalent to the file being type checked. As a result,
 /// if either is violated, then the `Drop` impl on `DiagnosticGuard` will
 /// panic.
-pub(super) struct DiagnosticGuard<'sink> {
+pub struct DiagnosticGuard<'sink> {
     /// The file of the primary span (to which file does this diagnostic belong).
     file: File,
 
@@ -173,7 +173,7 @@ pub(super) struct DiagnosticGuard<'sink> {
 }
 
 impl<'sink> DiagnosticGuard<'sink> {
-    pub(crate) fn new(
+    pub fn new(
         file: File,
         sink: &'sink std::cell::RefCell<TypeCheckDiagnostics>,
         diag: Diagnostic,

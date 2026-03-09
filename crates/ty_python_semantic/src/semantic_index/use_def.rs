@@ -268,8 +268,8 @@ use crate::types::{PossiblyNarrowedPlaces, Truthiness, Type};
 
 mod place_state;
 
-pub(super) use place_state::PreviousDefinitions;
-pub(crate) use place_state::{LiveBinding, ScopedDefinitionId};
+pub use place_state::PreviousDefinitions;
+pub use place_state::{LiveBinding, ScopedDefinitionId};
 
 /// Uniquely identifies an interned [`Bindings`] entry in [`UseDefMap::interned_bindings`].
 #[newtype_index]
@@ -302,7 +302,7 @@ enum InternedEnclosingSnapshotId {
 
 /// Applicable definitions and constraints for every use of a name.
 #[derive(Debug, PartialEq, Eq, salsa::Update, get_size2::GetSize)]
-pub(crate) struct UseDefMap<'db> {
+pub struct UseDefMap<'db> {
     /// Array of [`Definition`] in this scope. Only the first entry should be [`DefinitionState::Undefined`];
     /// this represents the implicit "unbound"/"undeclared" definition of every place.
     all_definitions: IndexVec<ScopedDefinitionId, DefinitionState<'db>>,
@@ -380,16 +380,13 @@ pub(crate) struct UseDefMap<'db> {
     end_of_scope_reachability: ScopedReachabilityConstraintId,
 }
 
-pub(crate) enum ApplicableConstraints<'map, 'db> {
+pub enum ApplicableConstraints<'map, 'db> {
     UnboundBinding(NarrowingEvaluator<'map, 'db>),
     ConstrainedBindings(BindingWithConstraintsIterator<'map, 'db>),
 }
 
 impl<'db> UseDefMap<'db> {
-    pub(crate) fn bindings_at_use(
-        &self,
-        use_id: ScopedUseId,
-    ) -> BindingWithConstraintsIterator<'_, 'db> {
+    pub fn bindings_at_use(&self, use_id: ScopedUseId) -> BindingWithConstraintsIterator<'_, 'db> {
         let bindings_id = self.bindings_by_use[use_id];
         self.bindings_iterator(
             &self.interned_bindings[bindings_id],
@@ -397,7 +394,7 @@ impl<'db> UseDefMap<'db> {
         )
     }
 
-    pub(crate) fn applicable_constraints(
+    pub fn applicable_constraints(
         &self,
         constraint_key: ConstraintKey,
         enclosing_scope: FileScopeId,
@@ -428,7 +425,7 @@ impl<'db> UseDefMap<'db> {
         }
     }
 
-    pub(crate) fn is_reachable(
+    pub fn is_reachable(
         &self,
         db: &dyn crate::Db,
         reachability: ScopedReachabilityConstraintId,
@@ -436,7 +433,7 @@ impl<'db> UseDefMap<'db> {
         self.evaluate_reachability(db, reachability).may_be_true()
     }
 
-    pub(crate) fn evaluate_reachability(
+    pub fn evaluate_reachability(
         &self,
         db: &dyn crate::Db,
         reachability: ScopedReachabilityConstraintId,
@@ -445,11 +442,11 @@ impl<'db> UseDefMap<'db> {
             .evaluate(db, &self.predicates, reachability)
     }
 
-    pub(crate) fn definition(&self, id: ScopedDefinitionId) -> DefinitionState<'db> {
+    pub fn definition(&self, id: ScopedDefinitionId) -> DefinitionState<'db> {
         self.all_definitions[id]
     }
 
-    pub(crate) fn narrowing_evaluator(
+    pub fn narrowing_evaluator(
         &self,
         constraint: ScopedNarrowingConstraint,
     ) -> NarrowingEvaluator<'_, 'db> {
@@ -465,7 +462,7 @@ impl<'db> UseDefMap<'db> {
     /// be unreachable. Use [`super::SemanticIndex::is_node_reachable`] for the global
     /// analysis.
     #[track_caller]
-    pub(super) fn is_node_reachable(&self, db: &dyn crate::Db, node_key: NodeKey) -> bool {
+    pub fn is_node_reachable(&self, db: &dyn crate::Db, node_key: NodeKey) -> bool {
         self
             .reachability_constraints
             .evaluate(
@@ -479,7 +476,7 @@ impl<'db> UseDefMap<'db> {
             .may_be_true()
     }
 
-    pub(crate) fn end_of_scope_bindings(
+    pub fn end_of_scope_bindings(
         &self,
         place: ScopedPlaceId,
     ) -> BindingWithConstraintsIterator<'_, 'db> {
@@ -489,7 +486,7 @@ impl<'db> UseDefMap<'db> {
         }
     }
 
-    pub(crate) fn end_of_scope_symbol_bindings(
+    pub fn end_of_scope_symbol_bindings(
         &self,
         symbol: ScopedSymbolId,
     ) -> BindingWithConstraintsIterator<'_, 'db> {
@@ -499,7 +496,7 @@ impl<'db> UseDefMap<'db> {
         )
     }
 
-    pub(crate) fn end_of_scope_member_bindings(
+    pub fn end_of_scope_member_bindings(
         &self,
         member: ScopedMemberId,
     ) -> BindingWithConstraintsIterator<'_, 'db> {
@@ -510,7 +507,7 @@ impl<'db> UseDefMap<'db> {
         )
     }
 
-    pub(crate) fn reachable_bindings(
+    pub fn reachable_bindings(
         &self,
         place: ScopedPlaceId,
     ) -> BindingWithConstraintsIterator<'_, 'db> {
@@ -520,7 +517,7 @@ impl<'db> UseDefMap<'db> {
         }
     }
 
-    pub(crate) fn reachable_symbol_bindings(
+    pub fn reachable_symbol_bindings(
         &self,
         symbol: ScopedSymbolId,
     ) -> BindingWithConstraintsIterator<'_, 'db> {
@@ -528,7 +525,7 @@ impl<'db> UseDefMap<'db> {
         self.bindings_iterator(bindings, BoundnessAnalysis::AssumeBound)
     }
 
-    pub(crate) fn reachable_member_bindings(
+    pub fn reachable_member_bindings(
         &self,
         member: ScopedMemberId,
     ) -> BindingWithConstraintsIterator<'_, 'db> {
@@ -536,7 +533,7 @@ impl<'db> UseDefMap<'db> {
         self.bindings_iterator(bindings, BoundnessAnalysis::AssumeBound)
     }
 
-    pub(crate) fn enclosing_snapshot(
+    pub fn enclosing_snapshot(
         &self,
         snapshot_id: ScopedEnclosingSnapshotId,
         nested_laziness: ScopeLaziness,
@@ -564,7 +561,7 @@ impl<'db> UseDefMap<'db> {
         }
     }
 
-    pub(crate) fn bindings_at_definition(
+    pub fn bindings_at_definition(
         &self,
         definition: Definition<'db>,
     ) -> BindingWithConstraintsIterator<'_, 'db> {
@@ -575,7 +572,7 @@ impl<'db> UseDefMap<'db> {
         )
     }
 
-    pub(crate) fn declarations_at_binding(
+    pub fn declarations_at_binding(
         &self,
         binding: Definition<'db>,
     ) -> DeclarationsIterator<'_, 'db> {
@@ -586,7 +583,7 @@ impl<'db> UseDefMap<'db> {
         )
     }
 
-    pub(crate) fn end_of_scope_declarations<'map>(
+    pub fn end_of_scope_declarations<'map>(
         &'map self,
         place: ScopedPlaceId,
     ) -> DeclarationsIterator<'map, 'db> {
@@ -596,7 +593,7 @@ impl<'db> UseDefMap<'db> {
         }
     }
 
-    pub(crate) fn end_of_scope_symbol_declarations<'map>(
+    pub fn end_of_scope_symbol_declarations<'map>(
         &'map self,
         symbol: ScopedSymbolId,
     ) -> DeclarationsIterator<'map, 'db> {
@@ -604,7 +601,7 @@ impl<'db> UseDefMap<'db> {
         self.declarations_iterator(declarations, BoundnessAnalysis::BasedOnUnboundVisibility)
     }
 
-    pub(crate) fn end_of_scope_member_declarations<'map>(
+    pub fn end_of_scope_member_declarations<'map>(
         &'map self,
         member: ScopedMemberId,
     ) -> DeclarationsIterator<'map, 'db> {
@@ -613,7 +610,7 @@ impl<'db> UseDefMap<'db> {
         self.declarations_iterator(declarations, BoundnessAnalysis::BasedOnUnboundVisibility)
     }
 
-    pub(crate) fn reachable_symbol_declarations(
+    pub fn reachable_symbol_declarations(
         &self,
         symbol: ScopedSymbolId,
     ) -> DeclarationsIterator<'_, 'db> {
@@ -621,7 +618,7 @@ impl<'db> UseDefMap<'db> {
         self.declarations_iterator(declarations, BoundnessAnalysis::AssumeBound)
     }
 
-    pub(crate) fn reachable_member_declarations(
+    pub fn reachable_member_declarations(
         &self,
         member: ScopedMemberId,
     ) -> DeclarationsIterator<'_, 'db> {
@@ -629,17 +626,14 @@ impl<'db> UseDefMap<'db> {
         self.declarations_iterator(declarations, BoundnessAnalysis::AssumeBound)
     }
 
-    pub(crate) fn reachable_declarations(
-        &self,
-        place: ScopedPlaceId,
-    ) -> DeclarationsIterator<'_, 'db> {
+    pub fn reachable_declarations(&self, place: ScopedPlaceId) -> DeclarationsIterator<'_, 'db> {
         match place {
             ScopedPlaceId::Symbol(symbol) => self.reachable_symbol_declarations(symbol),
             ScopedPlaceId::Member(member) => self.reachable_member_declarations(member),
         }
     }
 
-    pub(crate) fn all_end_of_scope_symbol_declarations<'map>(
+    pub fn all_end_of_scope_symbol_declarations<'map>(
         &'map self,
     ) -> impl Iterator<Item = (ScopedSymbolId, DeclarationsIterator<'map, 'db>)> + 'map {
         self.end_of_scope_symbols
@@ -647,7 +641,7 @@ impl<'db> UseDefMap<'db> {
             .map(|symbol_id| (symbol_id, self.end_of_scope_symbol_declarations(symbol_id)))
     }
 
-    pub(crate) fn all_end_of_scope_symbol_bindings<'map>(
+    pub fn all_end_of_scope_symbol_bindings<'map>(
         &'map self,
     ) -> impl Iterator<Item = (ScopedSymbolId, BindingWithConstraintsIterator<'map, 'db>)> + 'map
     {
@@ -656,7 +650,7 @@ impl<'db> UseDefMap<'db> {
             .map(|symbol_id| (symbol_id, self.end_of_scope_symbol_bindings(symbol_id)))
     }
 
-    pub(crate) fn all_reachable_symbols<'map>(
+    pub fn all_reachable_symbols<'map>(
         &'map self,
     ) -> impl Iterator<
         Item = (
@@ -681,14 +675,14 @@ impl<'db> UseDefMap<'db> {
     }
 
     /// This function is intended to be called only once inside `TypeInferenceBuilder::infer_function_body`.
-    pub(crate) fn can_implicitly_return_none(&self, db: &dyn crate::Db) -> bool {
+    pub fn can_implicitly_return_none(&self, db: &dyn crate::Db) -> bool {
         !self
             .reachability_constraints
             .evaluate(db, &self.predicates, self.end_of_scope_reachability)
             .is_always_false()
     }
 
-    pub(crate) fn binding_reachability(
+    pub fn binding_reachability(
         &self,
         db: &dyn crate::Db,
         binding: &BindingWithConstraints<'_, 'db>,
@@ -739,18 +733,18 @@ impl<'db> UseDefMap<'db> {
 /// There is a unique ID for each distinct [`EnclosingSnapshotKey`] in the file.
 #[newtype_index]
 #[derive(get_size2::GetSize)]
-pub(crate) struct ScopedEnclosingSnapshotId;
+pub struct ScopedEnclosingSnapshotId;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize)]
-pub(crate) struct EnclosingSnapshotKey {
+pub struct EnclosingSnapshotKey {
     /// The enclosing scope containing the bindings
-    pub(crate) enclosing_scope: FileScopeId,
+    pub enclosing_scope: FileScopeId,
     /// The referenced place (in the enclosing scope)
-    pub(crate) enclosing_place: ScopedPlaceId,
+    pub enclosing_place: ScopedPlaceId,
     /// The nested scope containing the reference
-    pub(crate) nested_scope: FileScopeId,
+    pub nested_scope: FileScopeId,
     /// Laziness of the nested scope (technically redundant, but convenient to have here)
-    pub(crate) nested_laziness: ScopeLaziness,
+    pub nested_laziness: ScopeLaziness,
 }
 
 /// Snapshots of enclosing scope place states for resolving a reference in a nested scope.
@@ -760,11 +754,11 @@ pub(crate) struct EnclosingSnapshotKey {
 type EnclosingSnapshots = IndexVec<ScopedEnclosingSnapshotId, EnclosingSnapshot>;
 
 #[derive(Clone, Debug)]
-pub(crate) struct BindingWithConstraintsIterator<'map, 'db> {
-    pub(crate) all_definitions: &'map IndexVec<ScopedDefinitionId, DefinitionState<'db>>,
-    pub(crate) predicates: &'map Predicates<'db>,
-    pub(crate) reachability_constraints: &'map ReachabilityConstraints,
-    pub(crate) boundness_analysis: BoundnessAnalysis,
+pub struct BindingWithConstraintsIterator<'map, 'db> {
+    pub all_definitions: &'map IndexVec<ScopedDefinitionId, DefinitionState<'db>>,
+    pub predicates: &'map Predicates<'db>,
+    pub reachability_constraints: &'map ReachabilityConstraints,
+    pub boundness_analysis: BoundnessAnalysis,
     inner: LiveBindingsIterator<'map>,
 }
 
@@ -791,20 +785,20 @@ impl<'map, 'db> Iterator for BindingWithConstraintsIterator<'map, 'db> {
 
 impl std::iter::FusedIterator for BindingWithConstraintsIterator<'_, '_> {}
 
-pub(crate) struct BindingWithConstraints<'map, 'db> {
-    pub(crate) binding: DefinitionState<'db>,
-    pub(crate) narrowing_constraint: NarrowingEvaluator<'map, 'db>,
-    pub(crate) reachability_constraint: ScopedReachabilityConstraintId,
+pub struct BindingWithConstraints<'map, 'db> {
+    pub binding: DefinitionState<'db>,
+    pub narrowing_constraint: NarrowingEvaluator<'map, 'db>,
+    pub reachability_constraint: ScopedReachabilityConstraintId,
 }
 
-pub(crate) struct NarrowingEvaluator<'map, 'db> {
-    pub(crate) constraint: ScopedNarrowingConstraint,
+pub struct NarrowingEvaluator<'map, 'db> {
+    pub constraint: ScopedNarrowingConstraint,
     predicates: &'map Predicates<'db>,
     reachability_constraints: &'map ReachabilityConstraints,
 }
 
 impl<'db> NarrowingEvaluator<'_, 'db> {
-    pub(crate) fn narrow(
+    pub fn narrow(
         self,
         db: &'db dyn crate::Db,
         base_ty: Type<'db>,
@@ -821,18 +815,18 @@ impl<'db> NarrowingEvaluator<'_, 'db> {
 }
 
 #[derive(Clone)]
-pub(crate) struct DeclarationsIterator<'map, 'db> {
+pub struct DeclarationsIterator<'map, 'db> {
     all_definitions: &'map IndexVec<ScopedDefinitionId, DefinitionState<'db>>,
-    pub(crate) predicates: &'map Predicates<'db>,
-    pub(crate) reachability_constraints: &'map ReachabilityConstraints,
-    pub(crate) boundness_analysis: BoundnessAnalysis,
+    pub predicates: &'map Predicates<'db>,
+    pub reachability_constraints: &'map ReachabilityConstraints,
+    pub boundness_analysis: BoundnessAnalysis,
     inner: LiveDeclarationsIterator<'map>,
 }
 
 #[derive(Debug)]
-pub(crate) struct DeclarationWithConstraint<'db> {
-    pub(crate) declaration: DefinitionState<'db>,
-    pub(crate) reachability_constraint: ScopedReachabilityConstraintId,
+pub struct DeclarationWithConstraint<'db> {
+    pub declaration: DefinitionState<'db>,
+    pub reachability_constraint: ScopedReachabilityConstraintId,
 }
 
 impl<'db> Iterator for DeclarationsIterator<'_, 'db> {
@@ -863,7 +857,7 @@ struct ReachableDefinitions {
 
 /// A snapshot of the definitions and constraints state at a particular point in control flow.
 #[derive(Clone, Debug)]
-pub(super) struct FlowSnapshot {
+pub struct FlowSnapshot {
     symbol_states: IndexVec<ScopedSymbolId, PlaceState>,
     member_states: IndexVec<ScopedMemberId, PlaceState>,
     reachability: ScopedReachabilityConstraintId,
@@ -871,28 +865,28 @@ pub(super) struct FlowSnapshot {
 
 /// A snapshot of the state of a single symbol (e.g. `obj`) and all of its associated members
 /// (e.g. `obj.attr`, `obj["key"]`).
-pub(super) struct SingleSymbolSnapshot {
+pub struct SingleSymbolSnapshot {
     symbol_state: PlaceState,
     associated_member_states: FxHashMap<ScopedMemberId, PlaceState>,
 }
 
 #[derive(Debug)]
-pub(super) struct UseDefMapBuilder<'db> {
+pub struct UseDefMapBuilder<'db> {
     /// Append-only array of [`DefinitionState`].
     all_definitions: IndexVec<ScopedDefinitionId, DefinitionState<'db>>,
 
     /// Builder of predicates.
-    pub(super) predicates: PredicatesBuilder<'db>,
+    pub predicates: PredicatesBuilder<'db>,
 
     /// Builder of reachability constraints.
-    pub(super) reachability_constraints: ReachabilityConstraintsBuilder,
+    pub reachability_constraints: ReachabilityConstraintsBuilder,
 
     /// Live bindings at each so-far-recorded use.
     bindings_by_use: IndexVec<ScopedUseId, Bindings>,
 
     /// Tracks whether or not the current point in control flow is reachable from the
     /// start of the scope.
-    pub(super) reachability: ScopedReachabilityConstraintId,
+    pub reachability: ScopedReachabilityConstraintId,
 
     /// Tracks whether or not a given AST node is reachable from the start of the scope.
     node_reachability: FxHashMap<NodeKey, ScopedReachabilityConstraintId>,
@@ -922,7 +916,7 @@ pub(super) struct UseDefMapBuilder<'db> {
 }
 
 impl<'db> UseDefMapBuilder<'db> {
-    pub(super) fn new(is_class_scope: bool) -> Self {
+    pub fn new(is_class_scope: bool) -> Self {
         Self {
             all_definitions: IndexVec::from_iter([DefinitionState::Undefined]),
             predicates: PredicatesBuilder::default(),
@@ -941,7 +935,7 @@ impl<'db> UseDefMapBuilder<'db> {
         }
     }
 
-    pub(super) fn mark_unreachable(&mut self) {
+    pub fn mark_unreachable(&mut self) {
         self.reachability = ScopedReachabilityConstraintId::ALWAYS_FALSE;
 
         for state in &mut self.symbol_states {
@@ -959,7 +953,7 @@ impl<'db> UseDefMapBuilder<'db> {
         }
     }
 
-    pub(super) fn add_place(&mut self, place: ScopedPlaceId) {
+    pub fn add_place(&mut self, place: ScopedPlaceId) {
         match place {
             ScopedPlaceId::Symbol(symbol) => {
                 let new_place = self
@@ -990,11 +984,11 @@ impl<'db> UseDefMapBuilder<'db> {
         }
     }
 
-    pub(super) fn next_definition_id(&self) -> ScopedDefinitionId {
+    pub fn next_definition_id(&self) -> ScopedDefinitionId {
         self.all_definitions.next_index()
     }
 
-    pub(super) fn record_binding(
+    pub fn record_binding(
         &mut self,
         place: ScopedPlaceId,
         binding: Definition<'db>,
@@ -1042,10 +1036,7 @@ impl<'db> UseDefMapBuilder<'db> {
         );
     }
 
-    pub(super) fn add_predicate(
-        &mut self,
-        predicate: PredicateOrLiteral<'db>,
-    ) -> ScopedPredicateId {
+    pub fn add_predicate(&mut self, predicate: PredicateOrLiteral<'db>) -> ScopedPredicateId {
         match predicate {
             PredicateOrLiteral::Predicate(predicate) => self.predicates.add_predicate(predicate),
             PredicateOrLiteral::Literal(true) => ScopedPredicateId::ALWAYS_TRUE,
@@ -1054,7 +1045,7 @@ impl<'db> UseDefMapBuilder<'db> {
     }
 
     /// Records a narrowing constraint for only the specified places.
-    pub(super) fn record_narrowing_constraint_for_places(
+    pub fn record_narrowing_constraint_for_places(
         &mut self,
         predicate: ScopedPredicateId,
         places: &PossiblyNarrowedPlaces,
@@ -1076,7 +1067,7 @@ impl<'db> UseDefMapBuilder<'db> {
     /// for the negated predicate. This ensures that `atom(P) OR NOT(atom(P))` simplifies to
     /// `ALWAYS_TRUE` in the TDD, so narrowing is correctly cancelled out after complete
     /// if/else blocks.
-    pub(super) fn record_negated_narrowing_constraint_for_places(
+    pub fn record_negated_narrowing_constraint_for_places(
         &mut self,
         predicate: ScopedPredicateId,
         places: &PossiblyNarrowedPlaces,
@@ -1126,7 +1117,7 @@ impl<'db> UseDefMapBuilder<'db> {
     /// This is only used for `*`-import reachability constraints, which are handled differently
     /// to most other reachability constraints. See the doc-comment for
     /// [`Self::record_and_negate_star_import_reachability_constraint`] for more details.
-    pub(super) fn single_symbol_snapshot(
+    pub fn single_symbol_snapshot(
         &self,
         symbol: ScopedSymbolId,
         associated_member_ids: &[ScopedMemberId],
@@ -1171,7 +1162,7 @@ impl<'db> UseDefMapBuilder<'db> {
     ///   predicate cannot create a terminal statement inside either branch.
     ///
     /// [significant regressions]: https://github.com/astral-sh/ruff/pull/17286#issuecomment-2786755746
-    pub(super) fn record_and_negate_star_import_reachability_constraint(
+    pub fn record_and_negate_star_import_reachability_constraint(
         &mut self,
         reachability_id: ScopedReachabilityConstraintId,
         symbol: ScopedSymbolId,
@@ -1221,7 +1212,7 @@ impl<'db> UseDefMapBuilder<'db> {
     /// This is used to gate narrowing by `ReturnsNever` constraints: when a branch contains
     /// a call to a `NoReturn` function, all narrowing in that branch should be conditional
     /// on the call actually returning `Never`.
-    pub(super) fn record_narrowing_constraint_for_all_places(
+    pub fn record_narrowing_constraint_for_all_places(
         &mut self,
         constraint: ScopedNarrowingConstraint,
     ) {
@@ -1234,10 +1225,7 @@ impl<'db> UseDefMapBuilder<'db> {
         }
     }
 
-    pub(super) fn record_reachability_constraint(
-        &mut self,
-        constraint: ScopedReachabilityConstraintId,
-    ) {
+    pub fn record_reachability_constraint(&mut self, constraint: ScopedReachabilityConstraintId) {
         self.reachability = self
             .reachability_constraints
             .add_and_constraint(self.reachability, constraint);
@@ -1251,11 +1239,7 @@ impl<'db> UseDefMapBuilder<'db> {
         }
     }
 
-    pub(super) fn record_declaration(
-        &mut self,
-        place: ScopedPlaceId,
-        declaration: Definition<'db>,
-    ) {
+    pub fn record_declaration(&mut self, place: ScopedPlaceId, declaration: Definition<'db>) {
         let def_id = self
             .all_definitions
             .push(DefinitionState::Defined(declaration));
@@ -1281,7 +1265,7 @@ impl<'db> UseDefMapBuilder<'db> {
         );
     }
 
-    pub(super) fn record_declaration_and_binding(
+    pub fn record_declaration_and_binding(
         &mut self,
         place: ScopedPlaceId,
         definition: Definition<'db>,
@@ -1323,7 +1307,7 @@ impl<'db> UseDefMapBuilder<'db> {
         );
     }
 
-    pub(super) fn delete_binding(&mut self, place: ScopedPlaceId) {
+    pub fn delete_binding(&mut self, place: ScopedPlaceId) {
         let def_id = self.all_definitions.push(DefinitionState::Deleted);
         let place_state = match place {
             ScopedPlaceId::Symbol(symbol) => &mut self.symbol_states[symbol],
@@ -1339,12 +1323,7 @@ impl<'db> UseDefMapBuilder<'db> {
         );
     }
 
-    pub(super) fn record_use(
-        &mut self,
-        place: ScopedPlaceId,
-        use_id: ScopedUseId,
-        node_key: NodeKey,
-    ) {
+    pub fn record_use(&mut self, place: ScopedPlaceId, use_id: ScopedUseId, node_key: NodeKey) {
         let bindings = match place {
             ScopedPlaceId::Symbol(symbol) => &mut self.symbol_states[symbol].bindings(),
             ScopedPlaceId::Member(member) => &mut self.member_states[member].bindings(),
@@ -1359,11 +1338,11 @@ impl<'db> UseDefMapBuilder<'db> {
         self.record_node_reachability(node_key);
     }
 
-    pub(super) fn record_node_reachability(&mut self, node_key: NodeKey) {
+    pub fn record_node_reachability(&mut self, node_key: NodeKey) {
         self.node_reachability.insert(node_key, self.reachability);
     }
 
-    pub(super) fn snapshot_enclosing_state(
+    pub fn snapshot_enclosing_state(
         &mut self,
         enclosing_place: ScopedPlaceId,
         enclosing_scope: ScopeKind,
@@ -1390,7 +1369,7 @@ impl<'db> UseDefMapBuilder<'db> {
         }
     }
 
-    pub(super) fn update_enclosing_snapshot(
+    pub fn update_enclosing_snapshot(
         &mut self,
         snapshot_id: ScopedEnclosingSnapshotId,
         enclosing_symbol: ScopedSymbolId,
@@ -1411,7 +1390,7 @@ impl<'db> UseDefMapBuilder<'db> {
     }
 
     /// Take a snapshot of the current visible-places state.
-    pub(super) fn snapshot(&self) -> FlowSnapshot {
+    pub fn snapshot(&self) -> FlowSnapshot {
         FlowSnapshot {
             symbol_states: self.symbol_states.clone(),
             member_states: self.member_states.clone(),
@@ -1422,7 +1401,7 @@ impl<'db> UseDefMapBuilder<'db> {
     /// Get a snapshot of the current bindings for a place. We use this at the end of loop bodies
     /// to populate the loop header definitions (bindings in the loop body that are visible via
     /// loop-back to prior uses in the loop body and also to the loop condition).
-    pub(super) fn loop_back_bindings(
+    pub fn loop_back_bindings(
         &self,
         place: ScopedPlaceId,
     ) -> impl Iterator<Item = LiveBinding> + '_ {
@@ -1435,7 +1414,7 @@ impl<'db> UseDefMapBuilder<'db> {
     }
 
     /// Restore the current builder places state to the given snapshot.
-    pub(super) fn restore(&mut self, snapshot: FlowSnapshot) {
+    pub fn restore(&mut self, snapshot: FlowSnapshot) {
         // We never remove places from `place_states` (it's an IndexVec, and the place
         // IDs must line up), so the current number of known places must always be equal to or
         // greater than the number of known places in a previously-taken snapshot.
@@ -1461,7 +1440,7 @@ impl<'db> UseDefMapBuilder<'db> {
     /// Merge the given snapshot into the current state, reflecting that we might have taken either
     /// path to get here. The new state for each place should include definitions from both the
     /// prior state and the snapshot.
-    pub(super) fn merge(&mut self, snapshot: FlowSnapshot) {
+    pub fn merge(&mut self, snapshot: FlowSnapshot) {
         // As an optimization, if we know statically that either of the snapshots is always
         // unreachable, we can leave it out of the merged result entirely. Note that we cannot
         // perform any type inference at this point, so this is largely limited to unreachability
@@ -1514,7 +1493,7 @@ impl<'db> UseDefMapBuilder<'db> {
             .add_or_constraint(self.reachability, snapshot.reachability);
     }
 
-    pub(super) fn finish(mut self) -> UseDefMap<'db> {
+    pub fn finish(mut self) -> UseDefMap<'db> {
         self.all_definitions.shrink_to_fit();
         self.symbol_states.shrink_to_fit();
         self.member_states.shrink_to_fit();

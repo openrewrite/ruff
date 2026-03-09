@@ -21,26 +21,22 @@ use crate::{
 };
 
 impl<'db> Type<'db> {
-    pub(crate) const fn is_type_var(self) -> bool {
+    pub const fn is_type_var(self) -> bool {
         matches!(self, Type::TypeVar(_))
     }
 
-    pub(crate) const fn as_typevar(self) -> Option<BoundTypeVarInstance<'db>> {
+    pub const fn as_typevar(self) -> Option<BoundTypeVarInstance<'db>> {
         match self {
             Type::TypeVar(bound_typevar) => Some(bound_typevar),
             _ => None,
         }
     }
 
-    pub(crate) fn has_typevar(self, db: &'db dyn Db) -> bool {
+    pub fn has_typevar(self, db: &'db dyn Db) -> bool {
         any_over_type(db, self, false, |ty| matches!(ty, Type::TypeVar(_)))
     }
 
-    pub(crate) fn references_typevar(
-        self,
-        db: &'db dyn Db,
-        typevar_id: TypeVarIdentity<'db>,
-    ) -> bool {
+    pub fn references_typevar(self, db: &'db dyn Db, typevar_id: TypeVarIdentity<'db>) -> bool {
         any_over_type(db, self, false, |ty| match ty {
             Type::TypeVar(bound_typevar) => typevar_id == bound_typevar.typevar(db).identity(db),
             Type::KnownInstance(KnownInstanceType::TypeVar(typevar)) => {
@@ -50,7 +46,7 @@ impl<'db> Type<'db> {
         })
     }
 
-    pub(crate) fn has_non_self_typevar(self, db: &'db dyn Db) -> bool {
+    pub fn has_non_self_typevar(self, db: &'db dyn Db) -> bool {
         any_over_type(
             db,
             self,
@@ -59,7 +55,7 @@ impl<'db> Type<'db> {
         )
     }
 
-    pub(crate) fn has_typevar_or_typevar_instance(self, db: &'db dyn Db) -> bool {
+    pub fn has_typevar_or_typevar_instance(self, db: &'db dyn Db) -> bool {
         any_over_type(db, self, false, |ty| {
             matches!(
                 ty,
@@ -68,7 +64,7 @@ impl<'db> Type<'db> {
         })
     }
 
-    pub(crate) fn has_unspecialized_type_var(self, db: &'db dyn Db) -> bool {
+    pub fn has_unspecialized_type_var(self, db: &'db dyn Db) -> bool {
         any_over_type(db, self, false, |ty| {
             matches!(ty, Type::Dynamic(DynamicType::UnspecializedTypeVar))
         })
@@ -110,7 +106,7 @@ impl<'db> Type<'db> {
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct TypeVarInstance<'db> {
     /// The identity of this typevar
-    pub(crate) identity: TypeVarIdentity<'db>,
+    pub identity: TypeVarIdentity<'db>,
 
     /// The upper bound or constraint on the type of this TypeVar, if any. Don't use this field
     /// directly; use the `bound_or_constraints` (or `upper_bound` and `constraints`) methods
@@ -118,7 +114,7 @@ pub struct TypeVarInstance<'db> {
     _bound_or_constraints: Option<TypeVarBoundOrConstraintsEvaluation<'db>>,
 
     /// The explicitly specified variance of the TypeVar
-    pub(super) explicit_variance: Option<TypeVarVariance>,
+    pub explicit_variance: Option<TypeVarVariance>,
 
     /// The default type for this TypeVar, if any. Don't use this field directly, use the
     /// `default_type` method instead (to evaluate any lazy default).
@@ -128,7 +124,7 @@ pub struct TypeVarInstance<'db> {
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for TypeVarInstance<'_> {}
 
-pub(super) fn walk_type_var_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_type_var_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     typevar: TypeVarInstance<'db>,
     visitor: &V,
@@ -160,7 +156,7 @@ pub(super) fn walk_type_var_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
 
 #[salsa::tracked]
 impl<'db> TypeVarInstance<'db> {
-    pub(crate) fn with_binding_context(
+    pub fn with_binding_context(
         self,
         db: &'db dyn Db,
         binding_context: Definition<'db>,
@@ -178,7 +174,7 @@ impl<'db> TypeVarInstance<'db> {
         )
     }
 
-    pub(super) fn with_identity(self, db: &'db dyn Db, identity: TypeVarIdentity<'db>) -> Self {
+    pub fn with_identity(self, db: &'db dyn Db, identity: TypeVarIdentity<'db>) -> Self {
         Self::new(
             db,
             identity,
@@ -188,11 +184,11 @@ impl<'db> TypeVarInstance<'db> {
         )
     }
 
-    pub(crate) fn name(self, db: &'db dyn Db) -> &'db Name {
+    pub fn name(self, db: &'db dyn Db) -> &'db Name {
         self.identity(db).name(db)
     }
 
-    pub(crate) fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
+    pub fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
         self.identity(db).definition(db)
     }
 
@@ -200,15 +196,15 @@ impl<'db> TypeVarInstance<'db> {
         self.identity(db).kind(db)
     }
 
-    pub(crate) fn is_self(self, db: &'db dyn Db) -> bool {
+    pub fn is_self(self, db: &'db dyn Db) -> bool {
         matches!(self.kind(db), TypeVarKind::TypingSelf)
     }
 
-    pub(crate) fn is_paramspec(self, db: &'db dyn Db) -> bool {
+    pub fn is_paramspec(self, db: &'db dyn Db) -> bool {
         self.kind(db).is_paramspec()
     }
 
-    pub(crate) fn upper_bound(self, db: &'db dyn Db) -> Option<Type<'db>> {
+    pub fn upper_bound(self, db: &'db dyn Db) -> Option<Type<'db>> {
         if let Some(TypeVarBoundOrConstraints::UpperBound(ty)) = self.bound_or_constraints(db) {
             Some(ty)
         } else {
@@ -216,7 +212,7 @@ impl<'db> TypeVarInstance<'db> {
         }
     }
 
-    pub(crate) fn constraints(self, db: &'db dyn Db) -> Option<&'db [Type<'db>]> {
+    pub fn constraints(self, db: &'db dyn Db) -> Option<&'db [Type<'db>]> {
         if let Some(TypeVarBoundOrConstraints::Constraints(tuple)) = self.bound_or_constraints(db) {
             Some(tuple.elements(db))
         } else {
@@ -224,10 +220,7 @@ impl<'db> TypeVarInstance<'db> {
         }
     }
 
-    pub(crate) fn bound_or_constraints(
-        self,
-        db: &'db dyn Db,
-    ) -> Option<TypeVarBoundOrConstraints<'db>> {
+    pub fn bound_or_constraints(self, db: &'db dyn Db) -> Option<TypeVarBoundOrConstraints<'db>> {
         self._bound_or_constraints(db).and_then(|w| match w {
             TypeVarBoundOrConstraintsEvaluation::Eager(bound_or_constraints) => {
                 Some(bound_or_constraints)
@@ -243,15 +236,12 @@ impl<'db> TypeVarInstance<'db> {
 
     /// Returns the bounds or constraints of this typevar. If the typevar is unbounded, returns
     /// `object` as its upper bound.
-    pub(crate) fn require_bound_or_constraints(
-        self,
-        db: &'db dyn Db,
-    ) -> TypeVarBoundOrConstraints<'db> {
+    pub fn require_bound_or_constraints(self, db: &'db dyn Db) -> TypeVarBoundOrConstraints<'db> {
         self.bound_or_constraints(db)
             .unwrap_or_else(|| TypeVarBoundOrConstraints::UpperBound(Type::object()))
     }
 
-    pub(crate) fn default_type(self, db: &'db dyn Db) -> Option<Type<'db>> {
+    pub fn default_type(self, db: &'db dyn Db) -> Option<Type<'db>> {
         let visitor = TypeVarDefaultVisitor::new(None);
         self.default_type_impl(db, &visitor)
     }
@@ -643,17 +633,17 @@ impl<'db> TypeVarInstance<'db> {
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct BoundTypeVarInstance<'db> {
     pub typevar: TypeVarInstance<'db>,
-    pub(super) binding_context: BindingContext<'db>,
+    pub binding_context: BindingContext<'db>,
     /// If [`Some`], this indicates that this type variable is the `args` or `kwargs` component
     /// of a `ParamSpec` i.e., `P.args` or `P.kwargs`.
-    pub(super) paramspec_attr: Option<ParamSpecAttrKind>,
+    pub paramspec_attr: Option<ParamSpecAttrKind>,
 }
 
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for BoundTypeVarInstance<'_> {}
 
 impl<'db> BoundTypeVarInstance<'db> {
-    pub(crate) fn with_name_suffix(self, db: &'db dyn Db, suffix: &str) -> Self {
+    pub fn with_name_suffix(self, db: &'db dyn Db, suffix: &str) -> Self {
         Self::new(
             db,
             self.typevar(db).with_name_suffix(db, suffix),
@@ -666,7 +656,7 @@ impl<'db> BoundTypeVarInstance<'db> {
     ///
     /// This is used for comparing whether two bound typevars represent the same logical typevar,
     /// regardless of e.g. differences in their bounds or constraints due to materialization.
-    pub(crate) fn identity(self, db: &'db dyn Db) -> BoundTypeVarIdentity<'db> {
+    pub fn identity(self, db: &'db dyn Db) -> BoundTypeVarIdentity<'db> {
         BoundTypeVarIdentity {
             identity: self.typevar(db).identity(db),
             binding_context: self.binding_context(db),
@@ -674,15 +664,15 @@ impl<'db> BoundTypeVarInstance<'db> {
         }
     }
 
-    pub(crate) fn name(self, db: &'db dyn Db) -> &'db Name {
+    pub fn name(self, db: &'db dyn Db) -> &'db Name {
         self.typevar(db).name(db)
     }
 
-    pub(crate) fn kind(self, db: &'db dyn Db) -> TypeVarKind {
+    pub fn kind(self, db: &'db dyn Db) -> TypeVarKind {
         self.typevar(db).kind(db)
     }
 
-    pub(crate) fn is_paramspec(self, db: &'db dyn Db) -> bool {
+    pub fn is_paramspec(self, db: &'db dyn Db) -> bool {
         self.kind(db).is_paramspec()
     }
 
@@ -694,7 +684,7 @@ impl<'db> BoundTypeVarInstance<'db> {
     ///
     /// It's the caller's responsibility to ensure that this method is only called on a `ParamSpec`
     /// type variable.
-    pub(crate) fn with_paramspec_attr(self, db: &'db dyn Db, kind: ParamSpecAttrKind) -> Self {
+    pub fn with_paramspec_attr(self, db: &'db dyn Db, kind: ParamSpecAttrKind) -> Self {
         debug_assert!(
             self.is_paramspec(db),
             "Expected a ParamSpec, got {:?}",
@@ -726,7 +716,7 @@ impl<'db> BoundTypeVarInstance<'db> {
     ///
     /// It's the caller's responsibility to ensure that this method is only called on a `ParamSpec`
     /// type variable.
-    pub(crate) fn without_paramspec_attr(self, db: &'db dyn Db) -> Self {
+    pub fn without_paramspec_attr(self, db: &'db dyn Db) -> Self {
         debug_assert!(
             self.is_paramspec(db),
             "Expected a ParamSpec, got {:?}",
@@ -749,13 +739,13 @@ impl<'db> BoundTypeVarInstance<'db> {
 
     /// Returns whether two bound typevars represent the same logical typevar, regardless of e.g.
     /// differences in their bounds or constraints due to materialization.
-    pub(crate) fn is_same_typevar_as(self, db: &'db dyn Db, other: Self) -> bool {
+    pub fn is_same_typevar_as(self, db: &'db dyn Db, other: Self) -> bool {
         self.identity(db) == other.identity(db)
     }
 
     /// Create a new PEP 695 type variable that can be used in signatures
     /// of synthetic generic functions.
-    pub(crate) fn synthetic(db: &'db dyn Db, name: Name, variance: TypeVarVariance) -> Self {
+    pub fn synthetic(db: &'db dyn Db, name: Name, variance: TypeVarVariance) -> Self {
         let identity = TypeVarIdentity::new(
             db,
             name,
@@ -773,7 +763,7 @@ impl<'db> BoundTypeVarInstance<'db> {
     }
 
     /// Create a new synthetic `Self` type variable with the given upper bound.
-    pub(crate) fn synthetic_self(
+    pub fn synthetic_self(
         db: &'db dyn Db,
         upper_bound: Type<'db>,
         binding_context: BindingContext<'db>,
@@ -796,7 +786,7 @@ impl<'db> BoundTypeVarInstance<'db> {
 
     /// Returns an identical type variable with its `TypeVarBoundOrConstraints` mapped by the
     /// provided closure.
-    pub(crate) fn map_bound_or_constraints(
+    pub fn map_bound_or_constraints(
         self,
         db: &'db dyn Db,
         f: impl FnOnce(Option<TypeVarBoundOrConstraints<'db>>) -> Option<TypeVarBoundOrConstraints<'db>>,
@@ -818,7 +808,7 @@ impl<'db> BoundTypeVarInstance<'db> {
         )
     }
 
-    pub(crate) fn variance_with_polarity(
+    pub fn variance_with_polarity(
         self,
         db: &'db dyn Db,
         polarity: TypeVarVariance,
@@ -839,7 +829,7 @@ impl<'db> BoundTypeVarInstance<'db> {
         self.variance_with_polarity(db, TypeVarVariance::Covariant)
     }
 
-    pub(super) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -916,7 +906,7 @@ impl<'db> BoundTypeVarInstance<'db> {
     }
 }
 
-pub(super) fn walk_bound_type_var_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_bound_type_var_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     bound_typevar: BoundTypeVarInstance<'db>,
     visitor: &V,
@@ -947,7 +937,7 @@ impl<'db> BoundTypeVarInstance<'db> {
     /// By using `U` in the generic class, it becomes bound, and so we have a
     /// `BoundTypeVarInstance`. As part of binding `U` we must also bind its default value
     /// (resulting in `T@C`).
-    pub(crate) fn default_type(self, db: &'db dyn Db) -> Option<Type<'db>> {
+    pub fn default_type(self, db: &'db dyn Db) -> Option<Type<'db>> {
         bound_typevar_default_type(db, self)
     }
 
@@ -966,7 +956,7 @@ impl<'db> BoundTypeVarInstance<'db> {
         )
     }
 
-    pub(super) fn to_instance(self, db: &'db dyn Db) -> Option<Self> {
+    pub fn to_instance(self, db: &'db dyn Db) -> Option<Self> {
         Some(Self::new(
             db,
             self.typevar(db).to_instance(db)?,
@@ -995,11 +985,11 @@ pub enum TypeVarKind {
 }
 
 impl TypeVarKind {
-    pub(super) const fn is_self(self) -> bool {
+    pub const fn is_self(self) -> bool {
         matches!(self, Self::TypingSelf)
     }
 
-    pub(super) const fn is_paramspec(self) -> bool {
+    pub const fn is_paramspec(self) -> bool {
         matches!(self, Self::ParamSpec | Self::Pep695ParamSpec)
     }
 }
@@ -1013,13 +1003,13 @@ impl TypeVarKind {
 pub struct TypeVarIdentity<'db> {
     /// The name of this TypeVar (e.g. `T`)
     #[returns(ref)]
-    pub(crate) name: Name,
+    pub name: Name,
 
     /// The type var's definition (None if synthesized)
-    pub(crate) definition: Option<Definition<'db>>,
+    pub definition: Option<Definition<'db>>,
 
     /// The kind of typevar (PEP 695, Legacy, or TypingSelf)
-    pub(crate) kind: TypeVarKind,
+    pub kind: TypeVarKind,
 }
 
 impl get_size2::GetSize for TypeVarIdentity<'_> {}
@@ -1097,14 +1087,14 @@ impl<'db> From<Definition<'db>> for BindingContext<'db> {
 }
 
 impl<'db> BindingContext<'db> {
-    pub(crate) fn definition(self) -> Option<Definition<'db>> {
+    pub fn definition(self) -> Option<Definition<'db>> {
         match self {
             BindingContext::Definition(definition) => Some(definition),
             BindingContext::Synthetic => None,
         }
     }
 
-    pub(super) fn name(self, db: &'db dyn Db) -> Option<String> {
+    pub fn name(self, db: &'db dyn Db) -> Option<String> {
         self.definition().and_then(|definition| definition.name(db))
     }
 }
@@ -1132,11 +1122,11 @@ impl std::fmt::Display for ParamSpecAttrKind {
 /// have been materialized differently.
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq, get_size2::GetSize, salsa::Update)]
 pub struct BoundTypeVarIdentity<'db> {
-    pub(crate) identity: TypeVarIdentity<'db>,
-    pub(crate) binding_context: BindingContext<'db>,
+    pub identity: TypeVarIdentity<'db>,
+    pub binding_context: BindingContext<'db>,
     /// If [`Some`], this indicates that this type variable is the `args` or `kwargs` component
     /// of a `ParamSpec` i.e., `P.args` or `P.kwargs`.
-    pub(super) paramspec_attr: Option<ParamSpecAttrKind>,
+    pub paramspec_attr: Option<ParamSpecAttrKind>,
 }
 
 #[salsa::tracked(
@@ -1206,7 +1196,7 @@ impl<'db> From<TypeVarBoundOrConstraints<'db>> for TypeVarBoundOrConstraintsEval
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct TypeVarConstraints<'db> {
     #[returns(ref)]
-    pub(super) elements: Box<[Type<'db>]>,
+    pub elements: Box<[Type<'db>]>,
 }
 
 impl get_size2::GetSize for TypeVarConstraints<'_> {}
@@ -1222,7 +1212,7 @@ fn walk_type_var_constraints<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
 }
 
 impl<'db> TypeVarConstraints<'db> {
-    pub(super) fn as_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn as_type(self, db: &'db dyn Db) -> Type<'db> {
         UnionType::from_elements(db, self.elements(db))
     }
 
@@ -1237,11 +1227,7 @@ impl<'db> TypeVarConstraints<'db> {
         ))
     }
 
-    pub(super) fn map(
-        self,
-        db: &'db dyn Db,
-        transform_fn: impl FnMut(&Type<'db>) -> Type<'db>,
-    ) -> Self {
+    pub fn map(self, db: &'db dyn Db, transform_fn: impl FnMut(&Type<'db>) -> Type<'db>) -> Self {
         let mapped = self
             .elements(db)
             .iter()
@@ -1250,7 +1236,7 @@ impl<'db> TypeVarConstraints<'db> {
         TypeVarConstraints::new(db, mapped)
     }
 
-    pub(crate) fn map_with_boundness_and_qualifiers(
+    pub fn map_with_boundness_and_qualifiers(
         self,
         db: &'db dyn Db,
         mut transform_fn: impl FnMut(&Type<'db>) -> PlaceAndQualifiers<'db>,
@@ -1351,7 +1337,7 @@ pub enum TypeVarBoundOrConstraints<'db> {
     Constraints(TypeVarConstraints<'db>),
 }
 
-pub(super) fn walk_type_var_bounds<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_type_var_bounds<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     bounds: TypeVarBoundOrConstraints<'db>,
     visitor: &V,
@@ -1387,6 +1373,6 @@ impl<'db> TypeVarBoundOrConstraints<'db> {
 }
 
 /// A [`CycleDetector`] that is used in `TypeVarInstance::default_type`.
-pub(crate) type TypeVarDefaultVisitor<'db> =
+pub type TypeVarDefaultVisitor<'db> =
     CycleDetector<VisitTypeVarDefault, TypeVarInstance<'db>, Option<Type<'db>>>;
-pub(crate) struct VisitTypeVarDefault;
+pub struct VisitTypeVarDefault;

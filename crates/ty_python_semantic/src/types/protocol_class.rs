@@ -35,7 +35,7 @@ use crate::{
 
 impl<'db> StaticClassLiteral<'db> {
     /// Returns `Some` if this is a protocol class, `None` otherwise.
-    pub(super) fn into_protocol_class(self, db: &'db dyn Db) -> Option<ProtocolClass<'db>> {
+    pub fn into_protocol_class(self, db: &'db dyn Db) -> Option<ProtocolClass<'db>> {
         self.is_protocol(db)
             .then_some(ProtocolClass(ClassType::NonGeneric(self.into())))
     }
@@ -43,14 +43,14 @@ impl<'db> StaticClassLiteral<'db> {
 
 impl<'db> ClassType<'db> {
     /// Returns `Some` if this is a protocol class, `None` otherwise.
-    pub(super) fn into_protocol_class(self, db: &'db dyn Db) -> Option<ProtocolClass<'db>> {
+    pub fn into_protocol_class(self, db: &'db dyn Db) -> Option<ProtocolClass<'db>> {
         self.is_protocol(db).then_some(ProtocolClass(self))
     }
 }
 
 /// Representation of a single `Protocol` class definition.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, salsa::Update, get_size2::GetSize)]
-pub(super) struct ProtocolClass<'db>(ClassType<'db>);
+pub struct ProtocolClass<'db>(ClassType<'db>);
 
 impl<'db> ProtocolClass<'db> {
     /// Returns the protocol members of this class.
@@ -67,12 +67,12 @@ impl<'db> ProtocolClass<'db> {
     /// It is illegal for a protocol class to have any instance attributes that are not declared
     /// in the protocol's class body. If any are assigned to, they are not taken into account in
     /// the protocol's list of members.
-    pub(super) fn interface(self, db: &'db dyn Db) -> ProtocolInterface<'db> {
+    pub fn interface(self, db: &'db dyn Db) -> ProtocolInterface<'db> {
         let _span = tracing::trace_span!("protocol_members", "class='{}'", self.name(db)).entered();
         cached_protocol_interface(db, *self)
     }
 
-    pub(super) fn is_runtime_checkable(self, db: &'db dyn Db) -> bool {
+    pub fn is_runtime_checkable(self, db: &'db dyn Db) -> bool {
         self.static_class_literal(db)
             .is_some_and(|(class_literal, _)| {
                 class_literal
@@ -84,7 +84,7 @@ impl<'db> ProtocolClass<'db> {
     /// Iterate through the body of the protocol class. Check that all definitions
     /// in the protocol class body are either explicitly declared directly in the
     /// class body, or are declared in a superclass of the protocol class.
-    pub(super) fn validate_members(self, context: &InferContext) {
+    pub fn validate_members(self, context: &InferContext) {
         let db = context.db();
         let interface = self.interface(db);
         let Some((class_literal, _)) = self.static_class_literal(db) else {
@@ -141,7 +141,7 @@ impl<'db> ProtocolClass<'db> {
         }
     }
 
-    pub(super) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -154,7 +154,7 @@ impl<'db> ProtocolClass<'db> {
         )
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -182,14 +182,14 @@ impl<'db> From<ProtocolClass<'db>> for Type<'db> {
 
 /// The interface of a protocol: the members of that protocol, and the types of those members.
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(super) struct ProtocolInterface<'db> {
+pub struct ProtocolInterface<'db> {
     #[returns(ref)]
     inner: BTreeMap<Name, ProtocolMemberData<'db>>,
 }
 
 impl get_size2::GetSize for ProtocolInterface<'_> {}
 
-pub(super) fn walk_protocol_interface<'db, V: super::visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_protocol_interface<'db, V: super::visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     interface: ProtocolInterface<'db>,
     visitor: &V,
@@ -204,7 +204,7 @@ impl<'db> ProtocolInterface<'db> {
     ///
     /// All created members will be covariant, read-only property members
     /// rather than method members or mutable attribute members.
-    pub(super) fn with_property_members<'a, M>(db: &'db dyn Db, members: M) -> Self
+    pub fn with_property_members<'a, M>(db: &'db dyn Db, members: M) -> Self
     where
         M: IntoIterator<Item = (&'a str, Type<'db>)>,
     {
@@ -239,7 +239,7 @@ impl<'db> ProtocolInterface<'db> {
         Self::new(db, BTreeMap::default())
     }
 
-    pub(super) fn members<'a>(
+    pub fn members<'a>(
         self,
         db: &'db dyn Db,
     ) -> impl ExactSizeIterator<Item = ProtocolMember<'a, 'db>>
@@ -254,7 +254,7 @@ impl<'db> ProtocolInterface<'db> {
         })
     }
 
-    pub(super) fn non_method_members(self, db: &'db dyn Db) -> Vec<ProtocolMember<'db, 'db>> {
+    pub fn non_method_members(self, db: &'db dyn Db) -> Vec<ProtocolMember<'db, 'db>> {
         self.members(db)
             .filter(|member| !member.is_method() && !member.ty().is_todo())
             .collect()
@@ -269,12 +269,12 @@ impl<'db> ProtocolInterface<'db> {
         })
     }
 
-    pub(super) fn includes_member(self, db: &'db dyn Db, name: &str) -> bool {
+    pub fn includes_member(self, db: &'db dyn Db, name: &str) -> bool {
         self.inner(db).contains_key(name)
     }
 
     /// Returns the `__call__` method's callable type if this protocol has a `__call__` method member.
-    pub(super) fn call_method(self, db: &'db dyn Db) -> Option<CallableType<'db>> {
+    pub fn call_method(self, db: &'db dyn Db) -> Option<CallableType<'db>> {
         self.member_by_name(db, "__call__")
             .and_then(|member| match member.kind {
                 ProtocolMemberKind::Method(callable) => Some(callable),
@@ -282,7 +282,7 @@ impl<'db> ProtocolInterface<'db> {
             })
     }
 
-    pub(super) fn instance_member(self, db: &'db dyn Db, name: &str) -> PlaceAndQualifiers<'db> {
+    pub fn instance_member(self, db: &'db dyn Db, name: &str) -> PlaceAndQualifiers<'db> {
         self.member_by_name(db, name)
             .map(|member| PlaceAndQualifiers {
                 place: Place::bound(member.ty()),
@@ -292,7 +292,7 @@ impl<'db> ProtocolInterface<'db> {
     }
 
     #[expect(clippy::too_many_arguments)]
-    pub(super) fn has_relation_to_impl<'c>(
+    pub fn has_relation_to_impl<'c>(
         self,
         db: &'db dyn Db,
         other: Self,
@@ -404,7 +404,7 @@ impl<'db> ProtocolInterface<'db> {
         })
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -424,7 +424,7 @@ impl<'db> ProtocolInterface<'db> {
         ))
     }
 
-    pub(super) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -445,7 +445,7 @@ impl<'db> ProtocolInterface<'db> {
         )
     }
 
-    pub(super) fn find_legacy_typevars_impl(
+    pub fn find_legacy_typevars_impl(
         self,
         db: &'db dyn Db,
         binding_context: Option<Definition<'db>>,
@@ -457,7 +457,7 @@ impl<'db> ProtocolInterface<'db> {
         }
     }
 
-    pub(super) fn display(self, db: &'db dyn Db) -> impl std::fmt::Display {
+    pub fn display(self, db: &'db dyn Db) -> impl std::fmt::Display {
         struct ProtocolInterfaceDisplay<'db> {
             db: &'db dyn Db,
             interface: ProtocolInterface<'db>,
@@ -493,7 +493,7 @@ impl<'db> VarianceInferable<'db> for ProtocolInterface<'db> {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, salsa::Update, get_size2::GetSize)]
-pub(super) struct ProtocolMemberData<'db> {
+pub struct ProtocolMemberData<'db> {
     kind: ProtocolMemberKind<'db>,
     qualifiers: TypeQualifiers,
     definition: Option<Definition<'db>>,
@@ -651,7 +651,7 @@ impl<'db> ProtocolMemberKind<'db> {
 
 /// A single member of a protocol interface.
 #[derive(Debug, PartialEq, Eq)]
-pub(super) struct ProtocolMember<'a, 'db> {
+pub struct ProtocolMember<'a, 'db> {
     name: &'a str,
     kind: ProtocolMemberKind<'db>,
     qualifiers: TypeQualifiers,
@@ -673,19 +673,19 @@ fn walk_protocol_member<'db, V: super::visitor::TypeVisitor<'db> + ?Sized>(
 }
 
 impl<'a, 'db> ProtocolMember<'a, 'db> {
-    pub(super) fn name(&self) -> &'a str {
+    pub fn name(&self) -> &'a str {
         self.name
     }
 
-    pub(super) fn qualifiers(&self) -> TypeQualifiers {
+    pub fn qualifiers(&self) -> TypeQualifiers {
         self.qualifiers
     }
 
-    pub(super) const fn is_method(&self) -> bool {
+    pub const fn is_method(&self) -> bool {
         matches!(self.kind, ProtocolMemberKind::Method(_))
     }
 
-    pub(super) fn definition(&self) -> Option<Definition<'db>> {
+    pub fn definition(&self) -> Option<Definition<'db>> {
         self.definition
     }
 
@@ -697,7 +697,7 @@ impl<'a, 'db> ProtocolMember<'a, 'db> {
         }
     }
 
-    pub(super) fn has_disjoint_type_from<'c>(
+    pub fn has_disjoint_type_from<'c>(
         &self,
         db: &'db dyn Db,
         other: Type<'db>,
@@ -725,7 +725,7 @@ impl<'a, 'db> ProtocolMember<'a, 'db> {
     /// Return `true` if `other` contains an attribute/method/property that satisfies
     /// the part of the interface defined by this protocol member.
     #[expect(clippy::too_many_arguments)]
-    pub(super) fn is_satisfied_by<'c>(
+    pub fn is_satisfied_by<'c>(
         &self,
         db: &'db dyn Db,
         other: Type<'db>,

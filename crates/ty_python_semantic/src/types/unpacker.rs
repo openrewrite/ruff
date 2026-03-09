@@ -16,17 +16,13 @@ use super::context::InferContext;
 use super::diagnostic::INVALID_ASSIGNMENT;
 
 /// Unpacks the value expression type to their respective targets.
-pub(crate) struct Unpacker<'db, 'ast> {
+pub struct Unpacker<'db, 'ast> {
     context: InferContext<'db, 'ast>,
     targets: FxHashMap<ExpressionNodeKey, Type<'db>>,
 }
 
 impl<'db, 'ast> Unpacker<'db, 'ast> {
-    pub(crate) fn new(
-        db: &'db dyn Db,
-        target_scope: ScopeId<'db>,
-        module: &'ast ParsedModuleRef,
-    ) -> Self {
+    pub fn new(db: &'db dyn Db, target_scope: ScopeId<'db>, module: &'ast ParsedModuleRef) -> Self {
         Self {
             context: InferContext::new(db, target_scope, module),
             targets: FxHashMap::default(),
@@ -42,7 +38,7 @@ impl<'db, 'ast> Unpacker<'db, 'ast> {
     }
 
     /// Unpack the value to the target expression.
-    pub(crate) fn unpack(&mut self, target: &ast::Expr, value: UnpackValue<'db>) {
+    pub fn unpack(&mut self, target: &ast::Expr, value: UnpackValue<'db>) {
         debug_assert!(
             matches!(target, ast::Expr::List(_) | ast::Expr::Tuple(_)),
             "Unpacking target must be a list or tuple expression"
@@ -178,7 +174,7 @@ impl<'db, 'ast> Unpacker<'db, 'ast> {
         }
     }
 
-    pub(crate) fn finish(mut self) -> UnpackResult<'db> {
+    pub fn finish(mut self) -> UnpackResult<'db> {
         self.targets.shrink_to_fit();
 
         UnpackResult {
@@ -190,7 +186,7 @@ impl<'db, 'ast> Unpacker<'db, 'ast> {
 }
 
 #[derive(Debug, Default, PartialEq, Eq, salsa::Update, get_size2::GetSize)]
-pub(crate) struct UnpackResult<'db> {
+pub struct UnpackResult<'db> {
     targets: FxHashMap<ExpressionNodeKey, Type<'db>>,
     diagnostics: TypeCheckDiagnostics,
 
@@ -209,17 +205,14 @@ impl<'db> UnpackResult<'db> {
     /// May panic if a scoped expression ID is passed in that does not correspond to a sub-
     /// expression of the target.
     #[track_caller]
-    pub(crate) fn expression_type(&self, expr_id: impl Into<ExpressionNodeKey>) -> Type<'db> {
+    pub fn expression_type(&self, expr_id: impl Into<ExpressionNodeKey>) -> Type<'db> {
         self.try_expression_type(expr_id).expect(
             "expression should belong to this `UnpackResult` and \
             `Unpacker` should have inferred a type for it",
         )
     }
 
-    pub(crate) fn try_expression_type(
-        &self,
-        expr: impl Into<ExpressionNodeKey>,
-    ) -> Option<Type<'db>> {
+    pub fn try_expression_type(&self, expr: impl Into<ExpressionNodeKey>) -> Option<Type<'db>> {
         self.targets
             .get(&expr.into())
             .copied()
@@ -227,11 +220,11 @@ impl<'db> UnpackResult<'db> {
     }
 
     /// Returns the diagnostics in this unpacking assignment.
-    pub(crate) fn diagnostics(&self) -> &TypeCheckDiagnostics {
+    pub fn diagnostics(&self) -> &TypeCheckDiagnostics {
         &self.diagnostics
     }
 
-    pub(crate) fn cycle_initial(cycle_recovery: Type<'db>) -> Self {
+    pub fn cycle_initial(cycle_recovery: Type<'db>) -> Self {
         Self {
             targets: FxHashMap::default(),
             diagnostics: TypeCheckDiagnostics::default(),
@@ -239,7 +232,7 @@ impl<'db> UnpackResult<'db> {
         }
     }
 
-    pub(crate) fn cycle_normalized(
+    pub fn cycle_normalized(
         mut self,
         db: &'db dyn Db,
         previous_cycle_result: &UnpackResult<'db>,

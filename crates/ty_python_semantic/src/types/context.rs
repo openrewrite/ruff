@@ -34,7 +34,7 @@ use crate::{
 /// It's important that the context is explicitly consumed before dropping by calling
 /// [`InferContext::finish`] and the returned diagnostics must be stored
 /// on the current inference result.
-pub(crate) struct InferContext<'db, 'ast> {
+pub struct InferContext<'db, 'ast> {
     db: &'db dyn Db,
     scope: ScopeId<'db>,
     file: File,
@@ -46,7 +46,7 @@ pub(crate) struct InferContext<'db, 'ast> {
 }
 
 impl<'db, 'ast> InferContext<'db, 'ast> {
-    pub(crate) fn new(db: &'db dyn Db, scope: ScopeId<'db>, module: &'ast ParsedModuleRef) -> Self {
+    pub fn new(db: &'db dyn Db, scope: ScopeId<'db>, module: &'ast ParsedModuleRef) -> Self {
         Self {
             db,
             scope,
@@ -62,16 +62,16 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     }
 
     /// The file for which the types are inferred.
-    pub(crate) fn file(&self) -> File {
+    pub fn file(&self) -> File {
         self.file
     }
 
     /// The module for which the types are inferred.
-    pub(crate) fn module(&self) -> &'ast ParsedModuleRef {
+    pub fn module(&self) -> &'ast ParsedModuleRef {
         self.module
     }
 
-    pub(crate) fn scope(&self) -> ScopeId<'db> {
+    pub fn scope(&self) -> ScopeId<'db> {
         self.scope
     }
 
@@ -81,7 +81,7 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     /// If you're creating a diagnostic with snippets in files
     /// other than this one, you should create the span directly
     /// and not use this convenience API.
-    pub(crate) fn span<T: Ranged>(&self, ranged: T) -> Span {
+    pub fn span<T: Ranged>(&self, ranged: T) -> Span {
         Span::from(self.file()).with_range(ranged.range())
     }
 
@@ -89,21 +89,21 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     /// the file currently being type checked.
     ///
     /// The annotation returned has no message attached to it.
-    pub(crate) fn secondary<T: Ranged>(&self, ranged: T) -> Annotation {
+    pub fn secondary<T: Ranged>(&self, ranged: T) -> Annotation {
         Annotation::secondary(self.span(ranged))
     }
 
-    pub(crate) fn db(&self) -> &'db dyn Db {
+    pub fn db(&self) -> &'db dyn Db {
         self.db
     }
 
-    pub(crate) fn extend(&mut self, other: &TypeCheckDiagnostics) {
+    pub fn extend(&mut self, other: &TypeCheckDiagnostics) {
         if !self.is_in_multi_inference() {
             self.diagnostics.get_mut().extend(other);
         }
     }
 
-    pub(super) fn is_lint_enabled(&self, lint: &'static LintMetadata) -> bool {
+    pub fn is_lint_enabled(&self, lint: &'static LintMetadata) -> bool {
         LintDiagnosticGuardBuilder::severity_and_source(self, LintId::of(lint)).is_some()
     }
 
@@ -135,7 +135,7 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     ///
     /// If callers need to create a non-lint diagnostic, you'll want to use the
     /// lower level `InferContext::report_diagnostic` routine.
-    pub(super) fn report_lint<'ctx, T: Ranged>(
+    pub fn report_lint<'ctx, T: Ranged>(
         &'ctx self,
         lint: &'static LintMetadata,
         ranged: T,
@@ -157,7 +157,7 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     ///
     /// Callers should generally prefer adding a lint diagnostic via
     /// `InferContext::report_lint` whenever possible.
-    pub(super) fn report_diagnostic<'ctx>(
+    pub fn report_diagnostic<'ctx>(
         &'ctx self,
         id: DiagnosticId,
         severity: Severity,
@@ -168,16 +168,16 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     /// Returns `true` if the current expression is being inferred for a second
     /// (or subsequent) time, with a potentially different bidirectional type
     /// context.
-    pub(super) fn is_in_multi_inference(&self) -> bool {
+    pub fn is_in_multi_inference(&self) -> bool {
         self.multi_inference
     }
 
     /// Set the multi-inference state, returning the previous value.
-    pub(super) fn set_multi_inference(&mut self, multi_inference: bool) -> bool {
+    pub fn set_multi_inference(&mut self, multi_inference: bool) -> bool {
         std::mem::replace(&mut self.multi_inference, multi_inference)
     }
 
-    pub(super) fn set_in_no_type_check(&mut self, no_type_check: InNoTypeCheck) -> InNoTypeCheck {
+    pub fn set_in_no_type_check(&mut self, no_type_check: InNoTypeCheck) -> InNoTypeCheck {
         std::mem::replace(&mut self.no_type_check, no_type_check)
     }
 
@@ -212,12 +212,12 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     }
 
     /// Are we currently inferring types in a stub file?
-    pub(crate) fn in_stub(&self) -> bool {
+    pub fn in_stub(&self) -> bool {
         self.file.is_stub(self.db())
     }
 
     #[must_use]
-    pub(crate) fn finish(mut self) -> TypeCheckDiagnostics {
+    pub fn finish(mut self) -> TypeCheckDiagnostics {
         self.bomb.defuse();
         let mut diagnostics = self.diagnostics.into_inner();
         diagnostics.shrink_to_fit();
@@ -236,7 +236,7 @@ impl fmt::Debug for InferContext<'_, '_> {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default)]
-pub(crate) enum InNoTypeCheck {
+pub enum InNoTypeCheck {
     /// The inference might be in a `no_type_check` block but only if any
     /// ancestor function is decorated with `@no_type_check`.
     #[default]
@@ -257,7 +257,7 @@ pub(crate) enum InNoTypeCheck {
 /// * Some convenience methods for mutating the underlying `Diagnostic`
 ///   in lint context. For example, `LintDiagnosticGuard::set_primary_message`
 ///   will attach a message to the primary span on the diagnostic.
-pub(super) struct LintDiagnosticGuard<'db, 'ctx> {
+pub struct LintDiagnosticGuard<'db, 'ctx> {
     /// The typing context.
     ctx: &'ctx InferContext<'db, 'ctx>,
     /// The diagnostic that we want to report.
@@ -281,7 +281,7 @@ impl LintDiagnosticGuard<'_, '_> {
     ///
     /// Callers can add additional primary or secondary annotations via the
     /// `DerefMut` trait implementation to a `Diagnostic`.
-    pub(super) fn set_primary_message(&mut self, message: impl IntoDiagnosticMessage) {
+    pub fn set_primary_message(&mut self, message: impl IntoDiagnosticMessage) {
         // N.B. It is normally bad juju to define `self` methods
         // on types that implement `Deref`. Instead, it's idiomatic
         // to do `fn foo(this: &mut LintDiagnosticGuard)`, which in
@@ -314,7 +314,7 @@ impl LintDiagnosticGuard<'_, '_> {
     ///
     /// Callers can add additional primary or secondary annotations via the
     /// `DerefMut` trait implementation to a `Diagnostic`.
-    pub(super) fn add_primary_tag(&mut self, tag: DiagnosticTag) {
+    pub fn add_primary_tag(&mut self, tag: DiagnosticTag) {
         let ann = self.primary_annotation_mut().unwrap();
         ann.push_tag(tag);
     }
@@ -402,7 +402,7 @@ impl Drop for LintDiagnosticGuard<'_, '_> {
 /// When a builder is not returned by `InferContext::report_lint`, then
 /// it is known that the diagnostic should not be reported. This can happen
 /// when the diagnostic is disabled or suppressed (among other reasons).
-pub(super) struct LintDiagnosticGuardBuilder<'db, 'ctx> {
+pub struct LintDiagnosticGuardBuilder<'db, 'ctx> {
     ctx: &'ctx InferContext<'db, 'ctx>,
     id: LintId,
     severity: Severity,
@@ -480,7 +480,7 @@ impl<'db, 'ctx> LintDiagnosticGuardBuilder<'db, 'ctx> {
     ///
     /// The diagnostic can be further mutated on the guard via its `DerefMut`
     /// impl to `Diagnostic`.
-    pub(super) fn into_diagnostic(
+    pub fn into_diagnostic(
         self,
         message: impl std::fmt::Display,
     ) -> LintDiagnosticGuard<'db, 'ctx> {
@@ -509,7 +509,7 @@ impl<'db, 'ctx> LintDiagnosticGuardBuilder<'db, 'ctx> {
 /// this builder further requires a message (with those three things being the
 /// minimal amount of information with which to construct a diagnostic) before
 /// one can mutate the diagnostic.
-pub(super) struct DiagnosticGuardBuilder<'db, 'ctx> {
+pub struct DiagnosticGuardBuilder<'db, 'ctx> {
     ctx: &'ctx InferContext<'db, 'ctx>,
     id: DiagnosticId,
     severity: Severity,
@@ -539,7 +539,7 @@ impl<'db, 'ctx> DiagnosticGuardBuilder<'db, 'ctx> {
     ///
     /// The diagnostic can be further mutated on the guard via its `DerefMut`
     /// impl to `Diagnostic`.
-    pub(super) fn into_diagnostic(self, message: impl std::fmt::Display) -> DiagnosticGuard<'ctx> {
+    pub fn into_diagnostic(self, message: impl std::fmt::Display) -> DiagnosticGuard<'ctx> {
         let diag = Diagnostic::new(self.id, self.severity, message);
 
         DiagnosticGuard::new(self.ctx.file, &self.ctx.diagnostics, diag)

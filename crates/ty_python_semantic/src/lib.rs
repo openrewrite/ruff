@@ -39,7 +39,7 @@ mod db;
 mod dunder_all;
 pub mod lint;
 mod node_key;
-pub(crate) mod place;
+pub mod place;
 mod program;
 mod python_platform;
 mod rank;

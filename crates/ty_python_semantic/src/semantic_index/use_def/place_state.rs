@@ -54,7 +54,7 @@ use crate::semantic_index::reachability_constraints::{
 /// A newtype-index for a definition in a particular scope.
 #[newtype_index]
 #[derive(Ord, PartialOrd, salsa::Update, get_size2::GetSize)]
-pub(crate) struct ScopedDefinitionId;
+pub struct ScopedDefinitionId;
 
 impl ScopedDefinitionId {
     /// A special ID that is used to describe an implicit start-of-scope state. When
@@ -62,9 +62,9 @@ impl ScopedDefinitionId {
     /// unbound or undeclared at a given usage site.
     /// When creating a use-def-map builder, we always add an empty `DefinitionState::Undefined` definition
     /// at index 0, so this ID is always present.
-    pub(crate) const UNBOUND: ScopedDefinitionId = ScopedDefinitionId::from_u32(0);
+    pub const UNBOUND: ScopedDefinitionId = ScopedDefinitionId::from_u32(0);
 
-    pub(crate) fn is_unbound(self) -> bool {
+    pub fn is_unbound(self) -> bool {
         self == Self::UNBOUND
     }
 }
@@ -72,34 +72,34 @@ impl ScopedDefinitionId {
 /// Live declarations for a single place at some point in control flow, with their
 /// corresponding reachability constraints.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash, salsa::Update, get_size2::GetSize)]
-pub(super) struct Declarations {
+pub struct Declarations {
     /// A list of live declarations for this place, sorted by their `ScopedDefinitionId`
     live_declarations: SmallVec<[LiveDeclaration; 2]>,
 }
 
 /// One of the live declarations for a single place at some point in control flow.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, get_size2::GetSize)]
-pub(super) struct LiveDeclaration {
-    pub(super) declaration: ScopedDefinitionId,
-    pub(super) reachability_constraint: ScopedReachabilityConstraintId,
+pub struct LiveDeclaration {
+    pub declaration: ScopedDefinitionId,
+    pub reachability_constraint: ScopedReachabilityConstraintId,
 }
 
-pub(super) type LiveDeclarationsIterator<'a> = std::slice::Iter<'a, LiveDeclaration>;
+pub type LiveDeclarationsIterator<'a> = std::slice::Iter<'a, LiveDeclaration>;
 
 #[derive(Clone, Copy, Debug)]
-pub(in crate::semantic_index) enum PreviousDefinitions {
+pub enum PreviousDefinitions {
     AreShadowed,
     AreKept,
 }
 
 impl PreviousDefinitions {
-    pub(super) fn are_shadowed(self) -> bool {
+    pub fn are_shadowed(self) -> bool {
         matches!(self, PreviousDefinitions::AreShadowed)
     }
 }
 
 impl Declarations {
-    pub(super) fn undeclared(reachability_constraint: ScopedReachabilityConstraintId) -> Self {
+    pub fn undeclared(reachability_constraint: ScopedReachabilityConstraintId) -> Self {
         let initial_declaration = LiveDeclaration {
             declaration: ScopedDefinitionId::UNBOUND,
             reachability_constraint,
@@ -110,7 +110,7 @@ impl Declarations {
     }
 
     /// Record a newly-encountered declaration for this place.
-    pub(super) fn record_declaration(
+    pub fn record_declaration(
         &mut self,
         declaration: ScopedDefinitionId,
         reachability_constraint: ScopedReachabilityConstraintId,
@@ -127,7 +127,7 @@ impl Declarations {
     }
 
     /// Add given reachability constraint to all live declarations.
-    pub(super) fn record_reachability_constraint(
+    pub fn record_reachability_constraint(
         &mut self,
         reachability_constraints: &mut ReachabilityConstraintsBuilder,
         constraint: ScopedReachabilityConstraintId,
@@ -139,7 +139,7 @@ impl Declarations {
     }
 
     /// Return an iterator over live declarations for this place.
-    pub(super) fn iter(&self) -> LiveDeclarationsIterator<'_> {
+    pub fn iter(&self) -> LiveDeclarationsIterator<'_> {
         self.live_declarations.iter()
     }
 
@@ -171,7 +171,7 @@ impl Declarations {
         }
     }
 
-    pub(super) fn finish(&mut self, reachability_constraints: &mut ReachabilityConstraintsBuilder) {
+    pub fn finish(&mut self, reachability_constraints: &mut ReachabilityConstraintsBuilder) {
         self.live_declarations.shrink_to_fit();
         for declaration in &self.live_declarations {
             reachability_constraints.mark_used(declaration.reachability_constraint);
@@ -185,7 +185,7 @@ impl Declarations {
 /// bindings, the current narrowing constraint is necessary for narrowing, so it's stored in
 /// `Constraint`.
 #[derive(Clone, Debug, PartialEq, Eq, Hash, salsa::Update, get_size2::GetSize)]
-pub(super) enum EnclosingSnapshot {
+pub enum EnclosingSnapshot {
     Constraint(ScopedNarrowingConstraint),
     Bindings(Bindings),
 }
@@ -193,7 +193,7 @@ pub(super) enum EnclosingSnapshot {
 /// Live bindings for a single place at some point in control flow. Each live binding comes
 /// with a set of narrowing constraints and a reachability constraint.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash, salsa::Update, get_size2::GetSize)]
-pub(super) struct Bindings {
+pub struct Bindings {
     /// The narrowing constraint applicable to the "unbound" binding, if we need access to it even
     /// when it's not visible. This happens in class scopes, where local name bindings are not visible
     /// to nested scopes, but we still need to know what narrowing constraints were applied to the
@@ -204,12 +204,12 @@ pub(super) struct Bindings {
 }
 
 impl Bindings {
-    pub(super) fn unbound_narrowing_constraint(&self) -> ScopedNarrowingConstraint {
+    pub fn unbound_narrowing_constraint(&self) -> ScopedNarrowingConstraint {
         self.unbound_narrowing_constraint
             .unwrap_or(self.live_bindings[0].narrowing_constraint)
     }
 
-    pub(super) fn finish(&mut self, reachability_constraints: &mut ReachabilityConstraintsBuilder) {
+    pub fn finish(&mut self, reachability_constraints: &mut ReachabilityConstraintsBuilder) {
         self.live_bindings.shrink_to_fit();
         for binding in &self.live_bindings {
             reachability_constraints.mark_used(binding.reachability_constraint);
@@ -220,16 +220,16 @@ impl Bindings {
 
 /// One of the live bindings for a single place at some point in control flow.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, salsa::Update, get_size2::GetSize)]
-pub(crate) struct LiveBinding {
-    pub(crate) binding: ScopedDefinitionId,
-    pub(crate) narrowing_constraint: ScopedNarrowingConstraint,
-    pub(crate) reachability_constraint: ScopedReachabilityConstraintId,
+pub struct LiveBinding {
+    pub binding: ScopedDefinitionId,
+    pub narrowing_constraint: ScopedNarrowingConstraint,
+    pub reachability_constraint: ScopedReachabilityConstraintId,
 }
 
-pub(super) type LiveBindingsIterator<'a> = std::slice::Iter<'a, LiveBinding>;
+pub type LiveBindingsIterator<'a> = std::slice::Iter<'a, LiveBinding>;
 
 impl Bindings {
-    pub(super) fn unbound(reachability_constraint: ScopedReachabilityConstraintId) -> Self {
+    pub fn unbound(reachability_constraint: ScopedReachabilityConstraintId) -> Self {
         let initial_binding = LiveBinding {
             binding: ScopedDefinitionId::UNBOUND,
             narrowing_constraint: ScopedNarrowingConstraint::ALWAYS_TRUE,
@@ -242,7 +242,7 @@ impl Bindings {
     }
 
     /// Record a newly-encountered binding for this place.
-    pub(super) fn record_binding(
+    pub fn record_binding(
         &mut self,
         binding: ScopedDefinitionId,
         reachability_constraint: ScopedReachabilityConstraintId,
@@ -268,7 +268,7 @@ impl Bindings {
     }
 
     /// Add given constraint to all live bindings.
-    pub(super) fn record_narrowing_constraint(
+    pub fn record_narrowing_constraint(
         &mut self,
         reachability_constraints: &mut ReachabilityConstraintsBuilder,
         constraint: ScopedNarrowingConstraint,
@@ -280,7 +280,7 @@ impl Bindings {
     }
 
     /// Add given reachability constraint to all live bindings.
-    pub(super) fn record_reachability_constraint(
+    pub fn record_reachability_constraint(
         &mut self,
         reachability_constraints: &mut ReachabilityConstraintsBuilder,
         constraint: ScopedReachabilityConstraintId,
@@ -292,11 +292,11 @@ impl Bindings {
     }
 
     /// Iterate over currently live bindings for this place
-    pub(super) fn iter(&self) -> LiveBindingsIterator<'_> {
+    pub fn iter(&self) -> LiveBindingsIterator<'_> {
         self.live_bindings.iter()
     }
 
-    pub(super) fn merge(
+    pub fn merge(
         &mut self,
         b: Self,
         reachability_constraints: &mut ReachabilityConstraintsBuilder,
@@ -346,14 +346,14 @@ impl Bindings {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, get_size2::GetSize)]
-pub(in crate::semantic_index) struct PlaceState {
+pub struct PlaceState {
     declarations: Declarations,
     bindings: Bindings,
 }
 
 impl PlaceState {
     /// Return a new [`PlaceState`] representing an unbound, undeclared place.
-    pub(super) fn undefined(reachability: ScopedReachabilityConstraintId) -> Self {
+    pub fn undefined(reachability: ScopedReachabilityConstraintId) -> Self {
         Self {
             declarations: Declarations::undeclared(reachability),
             bindings: Bindings::unbound(reachability),
@@ -361,7 +361,7 @@ impl PlaceState {
     }
 
     /// Record a newly-encountered binding for this place.
-    pub(super) fn record_binding(
+    pub fn record_binding(
         &mut self,
         binding_id: ScopedDefinitionId,
         reachability_constraint: ScopedReachabilityConstraintId,
@@ -380,7 +380,7 @@ impl PlaceState {
     }
 
     /// Add given constraint to all live bindings.
-    pub(super) fn record_narrowing_constraint(
+    pub fn record_narrowing_constraint(
         &mut self,
         reachability_constraints: &mut ReachabilityConstraintsBuilder,
         constraint: ScopedNarrowingConstraint,
@@ -390,7 +390,7 @@ impl PlaceState {
     }
 
     /// Add given reachability constraint to all live bindings.
-    pub(super) fn record_reachability_constraint(
+    pub fn record_reachability_constraint(
         &mut self,
         reachability_constraints: &mut ReachabilityConstraintsBuilder,
         constraint: ScopedReachabilityConstraintId,
@@ -402,7 +402,7 @@ impl PlaceState {
     }
 
     /// Record a newly-encountered declaration of this place.
-    pub(super) fn record_declaration(
+    pub fn record_declaration(
         &mut self,
         declaration_id: ScopedDefinitionId,
         reachability_constraint: ScopedReachabilityConstraintId,
@@ -415,7 +415,7 @@ impl PlaceState {
     }
 
     /// Merge another [`PlaceState`] into this one.
-    pub(super) fn merge(
+    pub fn merge(
         &mut self,
         b: PlaceState,
         reachability_constraints: &mut ReachabilityConstraintsBuilder,
@@ -425,15 +425,15 @@ impl PlaceState {
             .merge(b.declarations, reachability_constraints);
     }
 
-    pub(super) fn bindings(&self) -> &Bindings {
+    pub fn bindings(&self) -> &Bindings {
         &self.bindings
     }
 
-    pub(super) fn declarations(&self) -> &Declarations {
+    pub fn declarations(&self) -> &Declarations {
         &self.declarations
     }
 
-    pub(super) fn finish(&mut self, reachability_constraints: &mut ReachabilityConstraintsBuilder) {
+    pub fn finish(&mut self, reachability_constraints: &mut ReachabilityConstraintsBuilder) {
         self.declarations.finish(reachability_constraints);
         self.bindings.finish(reachability_constraints);
     }
@@ -462,7 +462,7 @@ mod tests {
     }
 
     #[track_caller]
-    pub(crate) fn assert_declarations(place: &PlaceState, expected: &[&str]) {
+    pub fn assert_declarations(place: &PlaceState, expected: &[&str]) {
         let actual = place
             .declarations()
             .iter()

@@ -28,14 +28,14 @@ use super::{
 
 /// The kind of subscriptable type that had an out-of-bounds index.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum SubscriptKind {
+pub enum SubscriptKind {
     Tuple,
     String,
     BytesLiteral,
 }
 
 impl SubscriptKind {
-    pub(crate) const fn as_str(self) -> &'static str {
+    pub const fn as_str(self) -> &'static str {
         match self {
             Self::Tuple => "tuple",
             Self::String => "string",
@@ -52,7 +52,7 @@ impl Display for SubscriptKind {
 
 /// A dunder method used for subscripting.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum DunderMethod {
+pub enum DunderMethod {
     GetItem,
     ClassGetItem,
 }
@@ -64,7 +64,7 @@ impl Display for DunderMethod {
 }
 
 impl DunderMethod {
-    pub(crate) const fn as_str(self) -> &'static str {
+    pub const fn as_str(self) -> &'static str {
         match self {
             Self::GetItem => "__getitem__",
             Self::ClassGetItem => "__class_getitem__",
@@ -74,7 +74,7 @@ impl DunderMethod {
 
 /// The origin of a legacy generic subscription (`Generic` or `Protocol`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum LegacyGenericOrigin {
+pub enum LegacyGenericOrigin {
     Generic,
     Protocol,
 }
@@ -89,13 +89,13 @@ impl Display for LegacyGenericOrigin {
 }
 
 #[derive(Debug)]
-pub(crate) struct SubscriptError<'db> {
+pub struct SubscriptError<'db> {
     result_ty: Type<'db>,
     errors: Vec<SubscriptErrorKind<'db>>,
 }
 
 #[derive(Debug)]
-pub(crate) enum SubscriptErrorKind<'db> {
+pub enum SubscriptErrorKind<'db> {
     /// An index is out of bounds for a literal tuple/string/bytes subscript.
     IndexOutOfBounds {
         kind: SubscriptKind,
@@ -140,7 +140,7 @@ pub(crate) enum SubscriptErrorKind<'db> {
 }
 
 impl<'db> SubscriptError<'db> {
-    pub(crate) fn new(result_ty: Type<'db>, error: SubscriptErrorKind<'db>) -> Self {
+    pub fn new(result_ty: Type<'db>, error: SubscriptErrorKind<'db>) -> Self {
         Self {
             result_ty,
             errors: vec![error],
@@ -151,7 +151,7 @@ impl<'db> SubscriptError<'db> {
         Self { result_ty, errors }
     }
 
-    pub(crate) fn result_type(&self) -> Type<'db> {
+    pub fn result_type(&self) -> Type<'db> {
         self.result_ty
     }
 
@@ -164,7 +164,7 @@ impl<'db> SubscriptError<'db> {
         self.errors.iter().any(SubscriptErrorKind::method_available)
     }
 
-    pub(crate) fn report_diagnostics(
+    pub fn report_diagnostics(
         &self,
         context: &InferContext<'db, '_>,
         subscript: &ast::ExprSubscript,
@@ -412,7 +412,7 @@ where
 }
 
 impl<'db> Type<'db> {
-    pub(super) fn subscript(
+    pub fn subscript(
         self,
         db: &'db dyn Db,
         slice_ty: Type<'db>,

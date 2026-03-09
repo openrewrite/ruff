@@ -27,7 +27,7 @@ declare_lint! {
     /// def test(): -> "int":
     ///     ...
     /// ```
-    pub(crate) static FSTRING_TYPE_ANNOTATION = {
+    pub static FSTRING_TYPE_ANNOTATION = {
         summary: "detects F-strings in type annotation positions",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -52,7 +52,7 @@ declare_lint! {
     /// def test(): -> "int":
     ///     ...
     /// ```
-    pub(crate) static BYTE_STRING_TYPE_ANNOTATION = {
+    pub static BYTE_STRING_TYPE_ANNOTATION = {
         summary: "detects byte strings in type annotation positions",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -77,7 +77,7 @@ declare_lint! {
     /// def test(): -> "int":
     ///     ...
     /// ```
-    pub(crate) static RAW_STRING_TYPE_ANNOTATION = {
+    pub static RAW_STRING_TYPE_ANNOTATION = {
         summary: "detects raw strings in type annotation positions",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -102,7 +102,7 @@ declare_lint! {
     /// def test(): -> "Literal[5]":
     ///     ...
     /// ```
-    pub(crate) static IMPLICIT_CONCATENATED_STRING_TYPE_ANNOTATION = {
+    pub static IMPLICIT_CONCATENATED_STRING_TYPE_ANNOTATION = {
         summary: "detects implicit concatenated strings in type annotations",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -145,7 +145,7 @@ declare_lint! {
     /// ## References
     /// - [Typing spec: The meaning of annotations](https://typing.python.org/en/latest/spec/annotations.html#the-meaning-of-annotations)
     /// - [Typing spec: String annotations](https://typing.python.org/en/latest/spec/annotations.html#string-annotations)
-    pub(crate) static INVALID_SYNTAX_IN_FORWARD_ANNOTATION = {
+    pub static INVALID_SYNTAX_IN_FORWARD_ANNOTATION = {
         summary: "detects invalid syntax in forward annotations",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -164,7 +164,7 @@ declare_lint! {
     /// ```python
     /// def foo() -> "intt\b": ...
     /// ```
-    pub(crate) static ESCAPE_CHARACTER_IN_FORWARD_ANNOTATION = {
+    pub static ESCAPE_CHARACTER_IN_FORWARD_ANNOTATION = {
         summary: "detects forward type annotations with escape characters",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -172,7 +172,7 @@ declare_lint! {
 }
 
 /// Parses the given expression as a string annotation.
-pub(crate) fn parse_string_annotation(
+pub fn parse_string_annotation(
     context: &InferContext,
     string_expr: &ast::ExprStringLiteral,
 ) -> Option<Parsed<ModExpression>> {

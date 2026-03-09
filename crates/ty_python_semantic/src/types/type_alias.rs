@@ -24,13 +24,13 @@ pub struct PEP695TypeAliasType<'db> {
 
     rhs_scope: ScopeId<'db>,
 
-    pub(super) specialization: Option<Specialization<'db>>,
+    pub specialization: Option<Specialization<'db>>,
 }
 
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for PEP695TypeAliasType<'_> {}
 
-pub(super) fn walk_pep_695_type_alias<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_pep_695_type_alias<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     type_alias: PEP695TypeAliasType<'db>,
     visitor: &V,
@@ -40,14 +40,14 @@ pub(super) fn walk_pep_695_type_alias<'db, V: visitor::TypeVisitor<'db> + ?Sized
 
 #[salsa::tracked]
 impl<'db> PEP695TypeAliasType<'db> {
-    pub(crate) fn definition(self, db: &'db dyn Db) -> Definition<'db> {
+    pub fn definition(self, db: &'db dyn Db) -> Definition<'db> {
         let scope = self.rhs_scope(db);
         let type_alias_stmt_node = scope.node(db).expect_type_alias();
         semantic_index(db, scope.file(db)).expect_single_definition(type_alias_stmt_node)
     }
 
     /// The RHS type of a PEP-695 style type alias with specialization applied.
-    pub(crate) fn value_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn value_type(self, db: &'db dyn Db) -> Type<'db> {
         self.apply_function_specialization(db, self.raw_value_type(db))
     }
 
@@ -80,7 +80,7 @@ impl<'db> PEP695TypeAliasType<'db> {
         }
     }
 
-    pub(crate) fn apply_specialization(
+    pub fn apply_specialization(
         self,
         db: &'db dyn Db,
         f: impl FnOnce(GenericContext<'db>) -> Specialization<'db>,
@@ -105,12 +105,12 @@ impl<'db> PEP695TypeAliasType<'db> {
         }
     }
 
-    pub(crate) fn is_specialized(self, db: &'db dyn Db) -> bool {
+    pub fn is_specialized(self, db: &'db dyn Db) -> bool {
         self.specialization(db).is_some()
     }
 
     #[salsa::tracked(cycle_initial=|_, _, _| None, heap_size=ruff_memory_usage::heap_size)]
-    pub(crate) fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
+    pub fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
         let scope = self.rhs_scope(db);
         let file = scope.file(db);
         let parsed = parsed_module(db, file).load(db);
@@ -142,7 +142,7 @@ pub struct ManualPEP695TypeAliasType<'db> {
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for ManualPEP695TypeAliasType<'_> {}
 
-pub(super) fn walk_manual_pep_695_type_alias<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_manual_pep_695_type_alias<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     type_alias: ManualPEP695TypeAliasType<'db>,
     visitor: &V,
@@ -163,7 +163,7 @@ impl<'db> ManualPEP695TypeAliasType<'db> {
         },
         heap_size=ruff_memory_usage::heap_size
     )]
-    pub(crate) fn value_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn value_type(self, db: &'db dyn Db) -> Type<'db> {
         let definition = self.definition(db);
         let file = definition.file(db);
         let module = parsed_module(db, file).load(db);
@@ -190,7 +190,7 @@ pub enum TypeAliasType<'db> {
     ManualPEP695(ManualPEP695TypeAliasType<'db>),
 }
 
-pub(super) fn walk_type_alias_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_type_alias_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     type_alias: TypeAliasType<'db>,
     visitor: &V,
@@ -209,14 +209,14 @@ pub(super) fn walk_type_alias_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
 }
 
 impl<'db> TypeAliasType<'db> {
-    pub(crate) fn name(self, db: &'db dyn Db) -> &'db str {
+    pub fn name(self, db: &'db dyn Db) -> &'db str {
         match self {
             TypeAliasType::PEP695(type_alias) => type_alias.name(db),
             TypeAliasType::ManualPEP695(type_alias) => type_alias.name(db),
         }
     }
 
-    pub(crate) fn definition(self, db: &'db dyn Db) -> Definition<'db> {
+    pub fn definition(self, db: &'db dyn Db) -> Definition<'db> {
         match self {
             TypeAliasType::PEP695(type_alias) => type_alias.definition(db),
             TypeAliasType::ManualPEP695(type_alias) => type_alias.definition(db),
@@ -230,21 +230,21 @@ impl<'db> TypeAliasType<'db> {
         }
     }
 
-    pub(crate) fn raw_value_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn raw_value_type(self, db: &'db dyn Db) -> Type<'db> {
         match self {
             TypeAliasType::PEP695(type_alias) => type_alias.raw_value_type(db),
             TypeAliasType::ManualPEP695(type_alias) => type_alias.value_type(db),
         }
     }
 
-    pub(crate) fn as_pep_695_type_alias(self) -> Option<PEP695TypeAliasType<'db>> {
+    pub fn as_pep_695_type_alias(self) -> Option<PEP695TypeAliasType<'db>> {
         match self {
             TypeAliasType::PEP695(type_alias) => Some(type_alias),
             TypeAliasType::ManualPEP695(_) => None,
         }
     }
 
-    pub(crate) fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
+    pub fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
         // TODO: Add support for generic non-PEP695 type aliases.
         match self {
             TypeAliasType::PEP695(type_alias) => type_alias.generic_context(db),
@@ -252,21 +252,21 @@ impl<'db> TypeAliasType<'db> {
         }
     }
 
-    pub(crate) fn specialization(self, db: &'db dyn Db) -> Option<Specialization<'db>> {
+    pub fn specialization(self, db: &'db dyn Db) -> Option<Specialization<'db>> {
         match self {
             TypeAliasType::PEP695(type_alias) => type_alias.specialization(db),
             TypeAliasType::ManualPEP695(_) => None,
         }
     }
 
-    pub(super) fn apply_function_specialization(self, db: &'db dyn Db, ty: Type<'db>) -> Type<'db> {
+    pub fn apply_function_specialization(self, db: &'db dyn Db, ty: Type<'db>) -> Type<'db> {
         match self {
             TypeAliasType::PEP695(type_alias) => type_alias.apply_function_specialization(db, ty),
             TypeAliasType::ManualPEP695(_) => ty,
         }
     }
 
-    pub(crate) fn apply_specialization(
+    pub fn apply_specialization(
         self,
         db: &'db dyn Db,
         f: impl FnOnce(GenericContext<'db>) -> Specialization<'db>,
@@ -280,7 +280,7 @@ impl<'db> TypeAliasType<'db> {
     }
 
     /// Returns a struct that can display the fully qualified name of this type alias.
-    pub(crate) fn qualified_name(self, db: &'db dyn Db) -> QualifiedTypeAliasName<'db> {
+    pub fn qualified_name(self, db: &'db dyn Db) -> QualifiedTypeAliasName<'db> {
         QualifiedTypeAliasName::from_type_alias(db, self)
     }
 }
@@ -290,13 +290,13 @@ impl<'db> TypeAliasType<'db> {
 // have the same components. You'd expect them to compare equal, but they'd compare
 // unequal if `PartialEq`/`Eq` were naively derived.
 #[derive(Clone, Copy)]
-pub(crate) struct QualifiedTypeAliasName<'db> {
+pub struct QualifiedTypeAliasName<'db> {
     db: &'db dyn Db,
     type_alias: TypeAliasType<'db>,
 }
 
 impl<'db> QualifiedTypeAliasName<'db> {
-    pub(crate) fn from_type_alias(db: &'db dyn Db, type_alias: TypeAliasType<'db>) -> Self {
+    pub fn from_type_alias(db: &'db dyn Db, type_alias: TypeAliasType<'db>) -> Self {
         Self { db, type_alias }
     }
 
@@ -304,7 +304,7 @@ impl<'db> QualifiedTypeAliasName<'db> {
     ///
     /// For example, calling this method on a type alias `D` inside a class `C` in module `a.b`
     /// would return `["a", "b", "C"]`.
-    pub(crate) fn components_excluding_self(&self) -> Vec<String> {
+    pub fn components_excluding_self(&self) -> Vec<String> {
         let definition = self.type_alias.definition(self.db);
         let file = definition.file(self.db);
         let file_scope_id = definition.file_scope(self.db);

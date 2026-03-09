@@ -34,7 +34,7 @@ use itertools::Itertools;
 ///
 /// See [`ClassType::iter_mro`] for more details.
 #[derive(PartialEq, Eq, Clone, Debug, salsa::Update, get_size2::GetSize)]
-pub(crate) struct Mro<'db>(Box<[ClassBase<'db>]>);
+pub struct Mro<'db>(Box<[ClassBase<'db>]>);
 
 impl<'db> Mro<'db> {
     /// Attempt to resolve the MRO of a given class. Because we derive the MRO from the list of
@@ -51,7 +51,7 @@ impl<'db> Mro<'db> {
     ///
     /// (We emit a diagnostic warning about the runtime `TypeError` in
     /// [`super::infer::infer_scope_types`].)
-    pub(super) fn of_static_class(
+    pub fn of_static_class(
         db: &'db dyn Db,
         class_literal: StaticClassLiteral<'db>,
         specialization: Option<Specialization<'db>>,
@@ -323,7 +323,7 @@ impl<'db> Mro<'db> {
         }
     }
 
-    pub(super) fn from_error(db: &'db dyn Db, class: ClassType<'db>) -> Self {
+    pub fn from_error(db: &'db dyn Db, class: ClassType<'db>) -> Self {
         Self::from([
             ClassBase::Class(class),
             ClassBase::unknown(),
@@ -334,7 +334,7 @@ impl<'db> Mro<'db> {
     /// Attempt to resolve the MRO of a dynamic class (created via `type(name, bases, dict)`).
     ///
     /// Uses C3 linearization when possible, returning an error if the MRO cannot be resolved.
-    pub(super) fn of_dynamic_class(
+    pub fn of_dynamic_class(
         db: &'db dyn Db,
         dynamic: DynamicClassLiteral<'db>,
     ) -> Result<Self, DynamicMroError<'db>> {
@@ -422,7 +422,7 @@ impl<'db> Mro<'db> {
     /// Compute a fallback MRO for a dynamic class when `of_dynamic_class` fails.
     ///
     /// Iterates over base MROs sequentially with deduplication.
-    pub(super) fn dynamic_fallback(db: &'db dyn Db, dynamic: DynamicClassLiteral<'db>) -> Self {
+    pub fn dynamic_fallback(db: &'db dyn Db, dynamic: DynamicClassLiteral<'db>) -> Self {
         let self_base = ClassBase::Class(ClassType::NonGeneric(dynamic.into()));
         let mut result = vec![self_base];
         let mut seen = FxHashSet::default();
@@ -488,7 +488,7 @@ impl<'db> FromIterator<ClassBase<'db>> for Mro<'db> {
 /// Even for first-party code, where we will have to resolve the MRO for every class we encounter,
 /// loading the cached MRO comes with a certain amount of overhead, so it's best to avoid calling the
 /// Salsa-tracked [`StaticClassLiteral::try_mro`] method unless it's absolutely necessary.
-pub(crate) struct MroIterator<'db> {
+pub struct MroIterator<'db> {
     db: &'db dyn Db,
 
     /// The class whose MRO we're iterating over
@@ -509,7 +509,7 @@ pub(crate) struct MroIterator<'db> {
 }
 
 impl<'db> MroIterator<'db> {
-    pub(super) fn new(
+    pub fn new(
         db: &'db dyn Db,
         class: ClassLiteral<'db>,
         specialization: Option<Specialization<'db>>,
@@ -598,36 +598,36 @@ impl DoubleEndedIterator for MroIterator<'_> {
 }
 
 #[derive(Debug, PartialEq, Eq, salsa::Update, get_size2::GetSize)]
-pub(super) struct StaticMroError<'db> {
+pub struct StaticMroError<'db> {
     kind: StaticMroErrorKind<'db>,
     fallback_mro: Mro<'db>,
 }
 
 impl<'db> StaticMroError<'db> {
     /// Construct an MRO error of kind `InheritanceCycle`.
-    pub(super) fn cycle(db: &'db dyn Db, class: ClassType<'db>) -> Self {
+    pub fn cycle(db: &'db dyn Db, class: ClassType<'db>) -> Self {
         StaticMroErrorKind::InheritanceCycle.into_mro_error(db, class)
     }
 
-    pub(super) fn is_cycle(&self) -> bool {
+    pub fn is_cycle(&self) -> bool {
         matches!(self.kind, StaticMroErrorKind::InheritanceCycle)
     }
 
     /// Return an [`StaticMroErrorKind`] variant describing why we could not resolve the MRO for this class.
-    pub(super) fn reason(&self) -> &StaticMroErrorKind<'db> {
+    pub fn reason(&self) -> &StaticMroErrorKind<'db> {
         &self.kind
     }
 
     /// Return the fallback MRO we should infer for this class during type inference
     /// (since accurate resolution of its "true" MRO was impossible)
-    pub(super) fn fallback_mro(&self) -> &Mro<'db> {
+    pub fn fallback_mro(&self) -> &Mro<'db> {
         &self.fallback_mro
     }
 }
 
 /// Possible ways in which attempting to resolve the MRO of a statically-defined class might fail.
 #[derive(Debug, PartialEq, Eq, salsa::Update, get_size2::GetSize)]
-pub(super) enum StaticMroErrorKind<'db> {
+pub enum StaticMroErrorKind<'db> {
     /// The class inherits from one or more invalid bases.
     ///
     /// To avoid excessive complexity in our implementation,
@@ -665,11 +665,7 @@ pub(super) enum StaticMroErrorKind<'db> {
 }
 
 impl<'db> StaticMroErrorKind<'db> {
-    pub(super) fn into_mro_error(
-        self,
-        db: &'db dyn Db,
-        class: ClassType<'db>,
-    ) -> StaticMroError<'db> {
+    pub fn into_mro_error(self, db: &'db dyn Db, class: ClassType<'db>) -> StaticMroError<'db> {
         StaticMroError {
             kind: self,
             fallback_mro: Mro::from_error(db, class),
@@ -679,13 +675,13 @@ impl<'db> StaticMroErrorKind<'db> {
 
 /// Error recording the fact that a class definition was found to have duplicate bases.
 #[derive(Debug, PartialEq, Eq, salsa::Update, get_size2::GetSize)]
-pub(super) struct DuplicateBaseError<'db> {
+pub struct DuplicateBaseError<'db> {
     /// The base that is duplicated in the class's bases list.
-    pub(super) duplicate_base: ClassBase<'db>,
+    pub duplicate_base: ClassBase<'db>,
     /// The index of the first occurrence of the base in the class's bases list.
-    pub(super) first_index: usize,
+    pub first_index: usize,
     /// The indices of the base's later occurrences in the class's bases list.
-    pub(super) later_indices: Box<[usize]>,
+    pub later_indices: Box<[usize]>,
 }
 
 /// Implementation of the [C3-merge algorithm] for calculating a Python class's
@@ -779,19 +775,19 @@ fn check_generic_reorder_fixes_mro<'db>(
 ///
 /// Separate from [`StaticMroError`] because dynamic classes can only have a subset of MRO errors.
 #[derive(Debug, Clone, PartialEq, Eq, get_size2::GetSize, salsa::Update)]
-pub(crate) struct DynamicMroError<'db> {
+pub struct DynamicMroError<'db> {
     kind: DynamicMroErrorKind<'db>,
     fallback_mro: Mro<'db>,
 }
 
 impl<'db> DynamicMroError<'db> {
     /// Return the error kind describing why we could not resolve the MRO.
-    pub(crate) fn reason(&self) -> &DynamicMroErrorKind<'db> {
+    pub fn reason(&self) -> &DynamicMroErrorKind<'db> {
         &self.kind
     }
 
     /// Return the fallback MRO to use for type inference.
-    pub(crate) fn fallback_mro(&self) -> &Mro<'db> {
+    pub fn fallback_mro(&self) -> &Mro<'db> {
         &self.fallback_mro
     }
 }
@@ -800,7 +796,7 @@ impl<'db> DynamicMroError<'db> {
 ///
 /// These mirror the relevant variants from `MroErrorKind` for static classes.
 #[derive(Debug, Clone, PartialEq, Eq, get_size2::GetSize, salsa::Update)]
-pub(crate) enum DynamicMroErrorKind<'db> {
+pub enum DynamicMroErrorKind<'db> {
     /// The class inherits from one or more invalid bases.
     ///
     /// Similar to `StaticMroErrorKind::InvalidBases`, this records the indices

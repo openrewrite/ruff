@@ -87,7 +87,7 @@ struct ScopeInfo {
     current_loop: Option<Loop>,
 }
 
-pub(super) struct SemanticIndexBuilder<'db, 'ast> {
+pub struct SemanticIndexBuilder<'db, 'ast> {
     // Builder state
     db: &'db dyn Db,
     file: File,
@@ -139,7 +139,7 @@ pub(super) struct SemanticIndexBuilder<'db, 'ast> {
 }
 
 impl<'db, 'ast> SemanticIndexBuilder<'db, 'ast> {
-    pub(super) fn new(db: &'db dyn Db, file: File, module_ref: &'ast ParsedModuleRef) -> Self {
+    pub fn new(db: &'db dyn Db, file: File, module_ref: &'ast ParsedModuleRef) -> Self {
         let mut builder = Self {
             db,
             file,
@@ -1544,7 +1544,7 @@ impl<'db, 'ast> SemanticIndexBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn build(mut self) -> SemanticIndex<'db> {
+    pub fn build(mut self) -> SemanticIndex<'db> {
         self.visit_body(self.module.suite());
 
         // Pop the root scope

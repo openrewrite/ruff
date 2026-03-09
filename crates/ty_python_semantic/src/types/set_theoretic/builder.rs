@@ -328,7 +328,7 @@ const MAX_NON_RECURSIVE_UNION_LITERALS: usize = 256;
 /// if reachability analysis etc. fails when analysing these enums.
 const MAX_NON_RECURSIVE_UNION_ENUM_LITERALS: usize = 8192;
 
-pub(crate) struct UnionBuilder<'db> {
+pub struct UnionBuilder<'db> {
     elements: Vec<UnionElement<'db>>,
     db: &'db dyn Db,
     unpack_aliases: bool,
@@ -340,7 +340,7 @@ pub(crate) struct UnionBuilder<'db> {
 }
 
 impl<'db> UnionBuilder<'db> {
-    pub(crate) fn new(db: &'db dyn Db) -> Self {
+    pub fn new(db: &'db dyn Db) -> Self {
         Self {
             db,
             elements: vec![],
@@ -350,12 +350,12 @@ impl<'db> UnionBuilder<'db> {
         }
     }
 
-    pub(crate) fn unpack_aliases(mut self, val: bool) -> Self {
+    pub fn unpack_aliases(mut self, val: bool) -> Self {
         self.unpack_aliases = val;
         self
     }
 
-    pub(crate) fn cycle_recovery(mut self, val: bool) -> Self {
+    pub fn cycle_recovery(mut self, val: bool) -> Self {
         self.cycle_recovery = val;
         if self.cycle_recovery {
             self.unpack_aliases = false;
@@ -363,12 +363,12 @@ impl<'db> UnionBuilder<'db> {
         self
     }
 
-    pub(crate) fn recursively_defined(mut self, val: RecursivelyDefined) -> Self {
+    pub fn recursively_defined(mut self, val: RecursivelyDefined) -> Self {
         self.recursively_defined = val;
         self
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.elements.is_empty()
     }
 
@@ -404,17 +404,17 @@ impl<'db> UnionBuilder<'db> {
     }
 
     /// Adds a type to this union.
-    pub(crate) fn add(mut self, ty: Type<'db>) -> Self {
+    pub fn add(mut self, ty: Type<'db>) -> Self {
         self.add_in_place(ty);
         self
     }
 
     /// Adds a type to this union.
-    pub(crate) fn add_in_place(&mut self, ty: Type<'db>) {
+    pub fn add_in_place(&mut self, ty: Type<'db>) {
         self.add_in_place_impl(ty, &mut vec![]);
     }
 
-    pub(crate) fn add_in_place_impl(&mut self, ty: Type<'db>, seen_aliases: &mut Vec<Type<'db>>) {
+    pub fn add_in_place_impl(&mut self, ty: Type<'db>, seen_aliases: &mut Vec<Type<'db>>) {
         let cycle_recovery = self.cycle_recovery;
         let should_widen = |literals, recursively_defined: RecursivelyDefined| {
             if recursively_defined.is_yes() && cycle_recovery {
@@ -815,11 +815,11 @@ impl<'db> UnionBuilder<'db> {
         }
     }
 
-    pub(crate) fn build(self) -> Type<'db> {
+    pub fn build(self) -> Type<'db> {
         self.try_build().unwrap_or(Type::Never)
     }
 
-    pub(crate) fn try_build(self) -> Option<Type<'db>> {
+    pub fn try_build(self) -> Option<Type<'db>> {
         let mut types = vec![];
         for element in self.elements {
             match element {
@@ -859,7 +859,7 @@ impl<'db> UnionBuilder<'db> {
 }
 
 #[derive(Clone)]
-pub(crate) struct IntersectionBuilder<'db> {
+pub struct IntersectionBuilder<'db> {
     // Really this builds a union-of-intersections, because we always keep our set-theoretic types
     // in disjunctive normal form (DNF), a union of intersections. In the simplest case there's
     // just a single intersection in this vector, and we are building a single intersection type,
@@ -870,7 +870,7 @@ pub(crate) struct IntersectionBuilder<'db> {
 }
 
 impl<'db> IntersectionBuilder<'db> {
-    pub(crate) fn new(db: &'db dyn Db) -> Self {
+    pub fn new(db: &'db dyn Db) -> Self {
         Self {
             db,
             intersections: vec![InnerIntersectionBuilder::default()],
@@ -884,15 +884,11 @@ impl<'db> IntersectionBuilder<'db> {
         }
     }
 
-    pub(crate) fn add_positive(self, ty: Type<'db>) -> Self {
+    pub fn add_positive(self, ty: Type<'db>) -> Self {
         self.add_positive_impl(ty, &mut vec![])
     }
 
-    pub(crate) fn add_positive_impl(
-        mut self,
-        ty: Type<'db>,
-        seen_aliases: &mut Vec<Type<'db>>,
-    ) -> Self {
+    pub fn add_positive_impl(mut self, ty: Type<'db>, seen_aliases: &mut Vec<Type<'db>>) -> Self {
         match ty {
             Type::TypeAlias(alias) => {
                 if seen_aliases.contains(&ty) {
@@ -986,15 +982,11 @@ impl<'db> IntersectionBuilder<'db> {
         }
     }
 
-    pub(crate) fn add_negative(self, ty: Type<'db>) -> Self {
+    pub fn add_negative(self, ty: Type<'db>) -> Self {
         self.add_negative_impl(ty, &mut vec![])
     }
 
-    pub(crate) fn add_negative_impl(
-        mut self,
-        ty: Type<'db>,
-        seen_aliases: &mut Vec<Type<'db>>,
-    ) -> Self {
+    pub fn add_negative_impl(mut self, ty: Type<'db>, seen_aliases: &mut Vec<Type<'db>>) -> Self {
         // See comments above in `add_positive`; this is just the negated version.
         match ty {
             Type::TypeAlias(alias) => {
@@ -1120,7 +1112,7 @@ impl<'db> IntersectionBuilder<'db> {
         }
     }
 
-    pub(crate) fn positive_elements<I, T>(mut self, elements: I) -> Self
+    pub fn positive_elements<I, T>(mut self, elements: I) -> Self
     where
         I: IntoIterator<Item = T>,
         T: Into<Type<'db>>,
@@ -1131,7 +1123,7 @@ impl<'db> IntersectionBuilder<'db> {
         self
     }
 
-    pub(crate) fn build(mut self) -> Type<'db> {
+    pub fn build(mut self) -> Type<'db> {
         // Avoid allocating the UnionBuilder unnecessarily if we have just one intersection:
         if self.intersections.len() == 1 {
             self.intersections.pop().unwrap().build(self.db)

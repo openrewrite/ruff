@@ -676,7 +676,7 @@ impl HasType for ast::ExceptHandlerExceptHandler {
 }
 
 /// Implemented by types for which the semantic index tracks their scope.
-pub(crate) trait HasTrackedScope: HasNodeIndex {}
+pub trait HasTrackedScope: HasNodeIndex {}
 
 impl HasTrackedScope for ast::Expr {}
 

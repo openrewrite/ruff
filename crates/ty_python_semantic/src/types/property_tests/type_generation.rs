@@ -17,7 +17,7 @@ use ty_module_resolver::KnownModule;
 ///
 /// TODO: We should add some variants that exercise generic classes and specializations thereof.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum Ty {
+pub enum Ty {
     Never,
     Unknown,
     None,
@@ -68,13 +68,13 @@ pub(crate) enum Ty {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum CallableParams {
+pub enum CallableParams {
     GradualForm,
     List(Vec<Param>),
 }
 
 impl CallableParams {
-    pub(crate) fn into_parameters(self, db: &TestDb) -> Parameters<'_> {
+    pub fn into_parameters(self, db: &TestDb) -> Parameters<'_> {
         match self {
             CallableParams::GradualForm => Parameters::gradual_form(),
             CallableParams::List(params) => Parameters::new(
@@ -101,7 +101,7 @@ impl CallableParams {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Param {
+pub struct Param {
     kind: ParamKind,
     name: Option<Name>,
     annotated_ty: Ty,
@@ -131,7 +131,7 @@ fn create_bound_method<'db>(
 }
 
 impl Ty {
-    pub(crate) fn into_type(self, db: &TestDb) -> Type<'_> {
+    pub fn into_type(self, db: &TestDb) -> Type<'_> {
         match self {
             Ty::Never => Type::Never,
             Ty::Unknown => Type::unknown(),
@@ -240,10 +240,10 @@ impl Ty {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct FullyStaticTy(Ty);
+pub struct FullyStaticTy(Ty);
 
 impl FullyStaticTy {
-    pub(crate) fn into_type(self, db: &TestDb) -> Type<'_> {
+    pub fn into_type(self, db: &TestDb) -> Type<'_> {
         self.0.into_type(db)
     }
 }
@@ -559,13 +559,10 @@ impl Arbitrary for FullyStaticTy {
     }
 }
 
-pub(crate) fn intersection<'db>(
-    db: &'db TestDb,
-    tys: impl IntoIterator<Item = Type<'db>>,
-) -> Type<'db> {
+pub fn intersection<'db>(db: &'db TestDb, tys: impl IntoIterator<Item = Type<'db>>) -> Type<'db> {
     IntersectionType::from_elements(db, tys)
 }
 
-pub(crate) fn union<'db>(db: &'db TestDb, tys: impl IntoIterator<Item = Type<'db>>) -> Type<'db> {
+pub fn union<'db>(db: &'db TestDb, tys: impl IntoIterator<Item = Type<'db>>) -> Type<'db> {
     UnionType::from_elements(db, tys)
 }

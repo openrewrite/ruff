@@ -19,7 +19,7 @@ impl<'db> Type<'db> {
     ///
     /// This method should only be used outside of type checking because it omits any errors.
     /// For type checking, use [`try_iterate`](Self::try_iterate) instead.
-    pub(super) fn iterate(self, db: &'db dyn Db) -> Cow<'db, TupleSpec<'db>> {
+    pub fn iterate(self, db: &'db dyn Db) -> Cow<'db, TupleSpec<'db>> {
         self.try_iterate(db)
             .unwrap_or_else(|err| Cow::Owned(TupleSpec::homogeneous(err.fallback_element_type(db))))
     }
@@ -32,14 +32,14 @@ impl<'db> Type<'db> {
     /// ```python
     /// y(*x)
     /// ```
-    pub(super) fn try_iterate(
+    pub fn try_iterate(
         self,
         db: &'db dyn Db,
     ) -> Result<Cow<'db, TupleSpec<'db>>, IterationError<'db>> {
         self.try_iterate_with_mode(db, EvaluationMode::Sync)
     }
 
-    pub(super) fn try_iterate_with_mode(
+    pub fn try_iterate_with_mode(
         self,
         db: &'db dyn Db,
         mode: EvaluationMode,
@@ -367,7 +367,7 @@ impl<'db> Type<'db> {
 
 /// Error returned if a type is not (or may not be) iterable.
 #[derive(Debug)]
-pub(super) enum IterationError<'db> {
+pub enum IterationError<'db> {
     /// The object being iterated over has a bound `__(a)iter__` method,
     /// but calling it with the expected arguments results in an error.
     IterCallError {
@@ -412,7 +412,7 @@ pub(super) enum IterationError<'db> {
 }
 
 impl<'db> IterationError<'db> {
-    pub(super) fn fallback_element_type(&self, db: &'db dyn Db) -> Type<'db> {
+    pub fn fallback_element_type(&self, db: &'db dyn Db) -> Type<'db> {
         self.element_type(db).unwrap_or(Type::unknown())
     }
 
@@ -503,7 +503,7 @@ impl<'db> IterationError<'db> {
     }
 
     /// Reports the diagnostic for this error.
-    pub(super) fn report_diagnostic(
+    pub fn report_diagnostic(
         &self,
         context: &InferContext<'db, '_>,
         iterable_type: Type<'db>,

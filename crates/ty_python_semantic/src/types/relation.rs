@@ -21,7 +21,7 @@ use crate::{
 
 /// A non-exhaustive enumeration of relations that can exist between types.
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub(crate) enum TypeRelation {
+pub enum TypeRelation {
     /// The "subtyping" relation.
     ///
     /// A [fully static] type `B` is a subtype of a fully static type `A` if and only if
@@ -201,19 +201,19 @@ pub(crate) enum TypeRelation {
 }
 
 impl TypeRelation {
-    pub(crate) const fn is_assignability(self) -> bool {
+    pub const fn is_assignability(self) -> bool {
         matches!(self, TypeRelation::Assignability)
     }
 
-    pub(crate) const fn is_constraint_set_assignability(self) -> bool {
+    pub const fn is_constraint_set_assignability(self) -> bool {
         matches!(self, TypeRelation::ConstraintSetAssignability)
     }
 
-    pub(crate) const fn is_subtyping(self) -> bool {
+    pub const fn is_subtyping(self) -> bool {
         matches!(self, TypeRelation::Subtyping)
     }
 
-    pub(crate) const fn can_safely_assume_reflexivity(self, ty: Type) -> bool {
+    pub const fn can_safely_assume_reflexivity(self, ty: Type) -> bool {
         match self {
             TypeRelation::Assignability
             | TypeRelation::ConstraintSetAssignability
@@ -277,13 +277,13 @@ impl<'db> Type<'db> {
     /// Return true if this type is a subtype of type `target`.
     ///
     /// See [`TypeRelation::Subtyping`] for more details.
-    pub(crate) fn is_subtype_of(self, db: &'db dyn Db, target: Type<'db>) -> bool {
+    pub fn is_subtype_of(self, db: &'db dyn Db, target: Type<'db>) -> bool {
         let constraints = ConstraintSetBuilder::new();
         self.when_subtype_of(db, target, &constraints, InferableTypeVars::None)
             .is_always_satisfied(db)
     }
 
-    pub(super) fn when_subtype_of<'c>(
+    pub fn when_subtype_of<'c>(
         self,
         db: &'db dyn Db,
         target: Type<'db>,
@@ -297,7 +297,7 @@ impl<'db> Type<'db> {
     /// all of the restrictions in `constraints` hold.
     ///
     /// See [`TypeRelation::SubtypingAssuming`] for more details.
-    pub(super) fn when_subtype_of_assuming<'c>(
+    pub fn when_subtype_of_assuming<'c>(
         self,
         db: &'db dyn Db,
         target: Type<'db>,
@@ -336,7 +336,7 @@ impl<'db> Type<'db> {
             .is_always_satisfied(db)
     }
 
-    pub(super) fn when_assignable_to<'c>(
+    pub fn when_assignable_to<'c>(
         self,
         db: &'db dyn Db,
         target: Type<'db>,
@@ -352,7 +352,7 @@ impl<'db> Type<'db> {
         )
     }
 
-    pub(super) fn when_constraint_set_assignable_to<'c>(
+    pub fn when_constraint_set_assignable_to<'c>(
         self,
         db: &'db dyn Db,
         target: Type<'db>,
@@ -371,7 +371,7 @@ impl<'db> Type<'db> {
     /// Return `true` if it would be redundant to add `self` to a union that already contains `other`.
     ///
     /// See [`TypeRelation::Redundancy`] for more details.
-    pub(super) fn is_redundant_with(self, db: &'db dyn Db, other: Type<'db>) -> bool {
+    pub fn is_redundant_with(self, db: &'db dyn Db, other: Type<'db>) -> bool {
         #[salsa::tracked(cycle_initial=|_, _, _, _| true, heap_size=ruff_memory_usage::heap_size)]
         fn is_redundant_with_impl<'db>(
             db: &'db dyn Db,
@@ -397,7 +397,7 @@ impl<'db> Type<'db> {
         is_redundant_with_impl(db, self, other)
     }
 
-    pub(super) fn has_relation_to<'c>(
+    pub fn has_relation_to<'c>(
         self,
         db: &'db dyn Db,
         target: Type<'db>,
@@ -417,7 +417,7 @@ impl<'db> Type<'db> {
     }
 
     #[expect(clippy::too_many_arguments)]
-    pub(super) fn has_relation_to_impl<'c>(
+    pub fn has_relation_to_impl<'c>(
         self,
         db: &'db dyn Db,
         target: Type<'db>,
@@ -1802,13 +1802,13 @@ impl<'db> Type<'db> {
     /// > &mdash; [Summary of type relations]
     ///
     /// [equivalent to]: https://typing.python.org/en/latest/spec/glossary.html#term-equivalent
-    pub(crate) fn is_equivalent_to(self, db: &'db dyn Db, other: Type<'db>) -> bool {
+    pub fn is_equivalent_to(self, db: &'db dyn Db, other: Type<'db>) -> bool {
         let constraints = ConstraintSetBuilder::new();
         self.when_equivalent_to(db, other, &constraints)
             .is_always_satisfied(db)
     }
 
-    pub(crate) fn when_equivalent_to<'c>(
+    pub fn when_equivalent_to<'c>(
         self,
         db: &'db dyn Db,
         other: Type<'db>,
@@ -1825,7 +1825,7 @@ impl<'db> Type<'db> {
         )
     }
 
-    pub(crate) fn when_equivalent_to_impl<'c>(
+    pub fn when_equivalent_to_impl<'c>(
         self,
         db: &'db dyn Db,
         other: Type<'db>,
@@ -1870,13 +1870,13 @@ impl<'db> Type<'db> {
     ///
     /// This function aims to have no false positives, but might return wrong
     /// `false` answers in some cases.
-    pub(crate) fn is_disjoint_from(self, db: &'db dyn Db, other: Type<'db>) -> bool {
+    pub fn is_disjoint_from(self, db: &'db dyn Db, other: Type<'db>) -> bool {
         let constraints = ConstraintSetBuilder::new();
         self.when_disjoint_from(db, other, &constraints, InferableTypeVars::None)
             .is_always_satisfied(db)
     }
 
-    pub(crate) fn when_disjoint_from<'c>(
+    pub fn when_disjoint_from<'c>(
         self,
         db: &'db dyn Db,
         other: Type<'db>,
@@ -1893,7 +1893,7 @@ impl<'db> Type<'db> {
         )
     }
 
-    pub(crate) fn is_disjoint_from_impl<'c>(
+    pub fn is_disjoint_from_impl<'c>(
         self,
         db: &'db dyn Db,
         other: Type<'db>,
@@ -2770,7 +2770,7 @@ impl<'db> Type<'db> {
 }
 
 /// A [`PairVisitor`] that is used in `has_relation_to` methods.
-pub(crate) type HasRelationToVisitor<'db, 'c> = CycleDetector<
+pub type HasRelationToVisitor<'db, 'c> = CycleDetector<
     TypeRelation,
     (Type<'db>, Type<'db>, TypeRelation),
     ConstraintSet<'db, 'c>,
@@ -2778,11 +2778,11 @@ pub(crate) type HasRelationToVisitor<'db, 'c> = CycleDetector<
 >;
 
 impl<'db, 'c> HasRelationToVisitor<'db, 'c> {
-    pub(crate) fn default(constraints: &'c ConstraintSetBuilder<'db>) -> Self {
+    pub fn default(constraints: &'c ConstraintSetBuilder<'db>) -> Self {
         HasRelationToVisitor::with_given(constraints, ConstraintSet::from_bool(constraints, false))
     }
 
-    pub(crate) fn with_given(
+    pub fn with_given(
         constraints: &'c ConstraintSetBuilder<'db>,
         given: ConstraintSet<'db, 'c>,
     ) -> Self {
@@ -2792,13 +2792,13 @@ impl<'db, 'c> HasRelationToVisitor<'db, 'c> {
 }
 
 /// A [`PairVisitor`] that is used in `is_disjoint_from` methods.
-pub(crate) type IsDisjointVisitor<'db, 'c> = PairVisitor<'db, IsDisjoint, ConstraintSet<'db, 'c>>;
+pub type IsDisjointVisitor<'db, 'c> = PairVisitor<'db, IsDisjoint, ConstraintSet<'db, 'c>>;
 
 #[derive(Debug)]
-pub(crate) struct IsDisjoint;
+pub struct IsDisjoint;
 
 impl<'db, 'c> IsDisjointVisitor<'db, 'c> {
-    pub(crate) fn default(constraints: &'c ConstraintSetBuilder<'db>) -> Self {
+    pub fn default(constraints: &'c ConstraintSetBuilder<'db>) -> Self {
         IsDisjointVisitor::new(ConstraintSet::from_bool(constraints, false))
     }
 }

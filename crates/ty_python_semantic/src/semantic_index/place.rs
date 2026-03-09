@@ -12,7 +12,7 @@ use std::iter::FusedIterator;
 
 /// An expression that can be the target of a `Definition`.
 #[derive(Eq, PartialEq, Debug, get_size2::GetSize)]
-pub(crate) enum PlaceExpr {
+pub enum PlaceExpr {
     /// A simple symbol, e.g. `x`.
     Symbol(Symbol),
 
@@ -24,7 +24,7 @@ impl PlaceExpr {
     /// Create a new `PlaceExpr` from a name.
     ///
     /// This always returns a `PlaceExpr::Symbol` with empty flags and `name`.
-    pub(crate) fn from_expr_name(name: &ast::ExprName) -> Self {
+    pub fn from_expr_name(name: &ast::ExprName) -> Self {
         PlaceExpr::Symbol(Symbol::new(name.id.clone()))
     }
 
@@ -36,7 +36,7 @@ impl PlaceExpr {
     /// * name: `x`
     /// * attribute: `x.y`
     /// * subscripts with integer or string literals: `x[0]`, `x['key']`
-    pub(crate) fn try_from_expr<'e>(expr: impl Into<ast::ExprRef<'e>>) -> Option<Self> {
+    pub fn try_from_expr<'e>(expr: impl Into<ast::ExprRef<'e>>) -> Option<Self> {
         let expr = expr.into();
 
         // For named expressions (walrus operator), extract the target.
@@ -55,7 +55,7 @@ impl PlaceExpr {
     /// Tries to create a `PlaceExpr` from a member expression.
     ///
     /// Returns `None` if the expression is not a valid place expression and `Some` otherwise.
-    pub(super) fn try_from_member_expr(builder: MemberExprBuilder) -> Option<Self> {
+    pub fn try_from_member_expr(builder: MemberExprBuilder) -> Option<Self> {
         let member_expression = MemberExpr::try_from_builder(builder)?;
         Some(Self::Member(Member::new(member_expression)))
     }
@@ -74,14 +74,14 @@ impl std::fmt::Display for PlaceExpr {
 ///
 /// Needed so that we can iterate over all places without cloning them.
 #[derive(Eq, PartialEq, Debug, Copy, Clone)]
-pub(crate) enum PlaceExprRef<'a> {
+pub enum PlaceExprRef<'a> {
     Symbol(&'a Symbol),
     Member(&'a Member),
 }
 
 impl<'a> PlaceExprRef<'a> {
     /// Returns `Some` if the reference is a `Symbol`, otherwise `None`.
-    pub(crate) const fn as_symbol(self) -> Option<&'a Symbol> {
+    pub const fn as_symbol(self) -> Option<&'a Symbol> {
         if let PlaceExprRef::Symbol(symbol) = self {
             Some(symbol)
         } else {
@@ -90,25 +90,25 @@ impl<'a> PlaceExprRef<'a> {
     }
 
     /// Returns `true` if the reference is a `Symbol`, otherwise `false`.
-    pub(crate) const fn is_symbol(self) -> bool {
+    pub const fn is_symbol(self) -> bool {
         matches!(self, PlaceExprRef::Symbol(_))
     }
 
-    pub(crate) fn is_declared(self) -> bool {
+    pub fn is_declared(self) -> bool {
         match self {
             Self::Symbol(symbol) => symbol.is_declared(),
             Self::Member(member) => member.is_declared(),
         }
     }
 
-    pub(crate) const fn is_bound(self) -> bool {
+    pub const fn is_bound(self) -> bool {
         match self {
             PlaceExprRef::Symbol(symbol) => symbol.is_bound(),
             PlaceExprRef::Member(member) => member.is_bound(),
         }
     }
 
-    pub(crate) fn num_member_segments(self) -> usize {
+    pub fn num_member_segments(self) -> usize {
         match self {
             PlaceExprRef::Symbol(_) => 0,
             PlaceExprRef::Member(member) => member.expression().num_segments(),
@@ -154,7 +154,7 @@ pub enum ScopedPlaceId {
 }
 
 #[derive(Debug, Eq, PartialEq, salsa::Update, get_size2::GetSize)]
-pub(crate) struct PlaceTable {
+pub struct PlaceTable {
     symbols: SymbolTable,
     members: MemberTable,
 }
@@ -163,10 +163,7 @@ impl PlaceTable {
     /// Iterate over the "root" expressions of the place (e.g. `x.y.z`, `x.y`, `x` for `x.y.z[0]`).
     ///
     /// Note, this iterator may skip some parents if they are not defined in the current scope.
-    pub(crate) fn parents<'a>(
-        &'a self,
-        place_expr: impl Into<PlaceExprRef<'a>>,
-    ) -> ParentPlaceIter<'a> {
+    pub fn parents<'a>(&'a self, place_expr: impl Into<PlaceExprRef<'a>>) -> ParentPlaceIter<'a> {
         match place_expr.into() {
             PlaceExprRef::Symbol(_) => ParentPlaceIter::for_symbol(),
             PlaceExprRef::Member(member) => {
@@ -176,12 +173,12 @@ impl PlaceTable {
     }
 
     /// Iterator over all symbols in this scope.
-    pub(crate) fn symbols(&self) -> std::slice::Iter<'_, Symbol> {
+    pub fn symbols(&self) -> std::slice::Iter<'_, Symbol> {
         self.symbols.iter()
     }
 
     /// Iterator over all members in this scope.
-    pub(crate) fn members(&self) -> std::slice::Iter<'_, Member> {
+    pub fn members(&self) -> std::slice::Iter<'_, Member> {
         self.members.iter()
     }
 
@@ -190,14 +187,14 @@ impl PlaceTable {
     /// ## Panics
     /// If the symbol ID is not found in the table.
     #[track_caller]
-    pub(crate) fn symbol(&self, id: ScopedSymbolId) -> &Symbol {
+    pub fn symbol(&self, id: ScopedSymbolId) -> &Symbol {
         self.symbols.symbol(id)
     }
 
     /// Looks up a symbol by its name and returns a reference to it, if it exists.
     ///
     /// This should only be used in diagnostics and tests.
-    pub(crate) fn symbol_by_name(&self, name: &str) -> Option<&Symbol> {
+    pub fn symbol_by_name(&self, name: &str) -> Option<&Symbol> {
         self.symbols.symbol_id(name).map(|id| self.symbol(id))
     }
 
@@ -206,20 +203,17 @@ impl PlaceTable {
     /// ## Panics
     /// If the member ID is not found in the table.
     #[track_caller]
-    pub(crate) fn member(&self, id: ScopedMemberId) -> &Member {
+    pub fn member(&self, id: ScopedMemberId) -> &Member {
         self.members.member(id)
     }
 
     /// Returns the [`ScopedSymbolId`] of the place named `name`.
-    pub(crate) fn symbol_id(&self, name: &str) -> Option<ScopedSymbolId> {
+    pub fn symbol_id(&self, name: &str) -> Option<ScopedSymbolId> {
         self.symbols.symbol_id(name)
     }
 
     /// Returns the [`ScopedPlaceId`] of the place expression.
-    pub(crate) fn place_id<'e>(
-        &self,
-        place_expr: impl Into<PlaceExprRef<'e>>,
-    ) -> Option<ScopedPlaceId> {
+    pub fn place_id<'e>(&self, place_expr: impl Into<PlaceExprRef<'e>>) -> Option<ScopedPlaceId> {
         let place_expr = place_expr.into();
 
         match place_expr {
@@ -235,23 +229,20 @@ impl PlaceTable {
     /// ## Panics
     /// If the place ID is not found in the table.
     #[track_caller]
-    pub(crate) fn place(&self, place_id: impl Into<ScopedPlaceId>) -> PlaceExprRef<'_> {
+    pub fn place(&self, place_id: impl Into<ScopedPlaceId>) -> PlaceExprRef<'_> {
         match place_id.into() {
             ScopedPlaceId::Symbol(symbol) => self.symbol(symbol).into(),
             ScopedPlaceId::Member(member) => self.member(member).into(),
         }
     }
 
-    pub(crate) fn member_id_by_instance_attribute_name(
-        &self,
-        name: &str,
-    ) -> Option<ScopedMemberId> {
+    pub fn member_id_by_instance_attribute_name(&self, name: &str) -> Option<ScopedMemberId> {
         self.members.place_id_by_instance_attribute_name(name)
     }
 }
 
 #[derive(Default)]
-pub(crate) struct PlaceTableBuilder {
+pub struct PlaceTableBuilder {
     symbols: SymbolTableBuilder,
     member: MemberTableBuilder,
 
@@ -261,7 +252,7 @@ pub(crate) struct PlaceTableBuilder {
 
 impl PlaceTableBuilder {
     /// Looks up a place ID by its expression.
-    pub(crate) fn place_id(&self, expression: PlaceExprRef) -> Option<ScopedPlaceId> {
+    pub fn place_id(&self, expression: PlaceExprRef) -> Option<ScopedPlaceId> {
         match expression {
             PlaceExprRef::Symbol(symbol) => self.symbols.symbol_id(symbol.name()).map(Into::into),
             PlaceExprRef::Member(member) => {
@@ -271,51 +262,51 @@ impl PlaceTableBuilder {
     }
 
     #[track_caller]
-    pub(super) fn symbol(&self, id: ScopedSymbolId) -> &Symbol {
+    pub fn symbol(&self, id: ScopedSymbolId) -> &Symbol {
         self.symbols.symbol(id)
     }
 
-    pub(super) fn symbol_id(&self, name: &str) -> Option<ScopedSymbolId> {
+    pub fn symbol_id(&self, name: &str) -> Option<ScopedSymbolId> {
         self.symbols.symbol_id(name)
     }
 
     #[track_caller]
-    pub(super) fn symbol_mut(&mut self, id: ScopedSymbolId) -> &mut Symbol {
+    pub fn symbol_mut(&mut self, id: ScopedSymbolId) -> &mut Symbol {
         self.symbols.symbol_mut(id)
     }
 
     #[track_caller]
-    pub(super) fn member_mut(&mut self, id: ScopedMemberId) -> &mut Member {
+    pub fn member_mut(&mut self, id: ScopedMemberId) -> &mut Member {
         self.member.member_mut(id)
     }
 
     #[track_caller]
-    pub(crate) fn place(&self, place_id: impl Into<ScopedPlaceId>) -> PlaceExprRef<'_> {
+    pub fn place(&self, place_id: impl Into<ScopedPlaceId>) -> PlaceExprRef<'_> {
         match place_id.into() {
             ScopedPlaceId::Symbol(id) => PlaceExprRef::Symbol(self.symbols.symbol(id)),
             ScopedPlaceId::Member(id) => PlaceExprRef::Member(self.member.member(id)),
         }
     }
 
-    pub(crate) fn associated_place_ids(&self, place: ScopedPlaceId) -> &[ScopedMemberId] {
+    pub fn associated_place_ids(&self, place: ScopedPlaceId) -> &[ScopedMemberId] {
         match place {
             ScopedPlaceId::Symbol(symbol) => &self.associated_symbol_members[symbol],
             ScopedPlaceId::Member(member) => &self.associated_sub_members[member],
         }
     }
 
-    pub(crate) fn iter(&self) -> impl Iterator<Item = PlaceExprRef<'_>> {
+    pub fn iter(&self) -> impl Iterator<Item = PlaceExprRef<'_>> {
         self.symbols
             .iter()
             .map(Into::into)
             .chain(self.member.iter().map(PlaceExprRef::Member))
     }
 
-    pub(crate) fn symbols(&self) -> impl Iterator<Item = &Symbol> {
+    pub fn symbols(&self) -> impl Iterator<Item = &Symbol> {
         self.symbols.iter()
     }
 
-    pub(crate) fn add_symbol(&mut self, symbol: Symbol) -> (ScopedSymbolId, bool) {
+    pub fn add_symbol(&mut self, symbol: Symbol) -> (ScopedSymbolId, bool) {
         let (id, is_new) = self.symbols.add(symbol);
 
         if is_new {
@@ -326,7 +317,7 @@ impl PlaceTableBuilder {
         (id, is_new)
     }
 
-    pub(crate) fn add_member(&mut self, member: Member) -> (ScopedMemberId, bool) {
+    pub fn add_member(&mut self, member: Member) -> (ScopedMemberId, bool) {
         let (id, is_new) = self.member.add(member);
 
         if is_new {
@@ -353,7 +344,7 @@ impl PlaceTableBuilder {
         (id, is_new)
     }
 
-    pub(crate) fn add_place(&mut self, place: PlaceExpr) -> (ScopedPlaceId, bool) {
+    pub fn add_place(&mut self, place: PlaceExpr) -> (ScopedPlaceId, bool) {
         match place {
             PlaceExpr::Symbol(symbol) => {
                 let (id, is_new) = self.add_symbol(symbol);
@@ -367,7 +358,7 @@ impl PlaceTableBuilder {
     }
 
     #[track_caller]
-    pub(super) fn mark_bound(&mut self, id: ScopedPlaceId) {
+    pub fn mark_bound(&mut self, id: ScopedPlaceId) {
         match id {
             ScopedPlaceId::Symbol(symbol_id) => {
                 self.symbol_mut(symbol_id).mark_bound();
@@ -379,7 +370,7 @@ impl PlaceTableBuilder {
     }
 
     #[track_caller]
-    pub(super) fn mark_declared(&mut self, id: ScopedPlaceId) {
+    pub fn mark_declared(&mut self, id: ScopedPlaceId) {
         match id {
             ScopedPlaceId::Symbol(symbol_id) => {
                 self.symbol_mut(symbol_id).mark_declared();
@@ -390,7 +381,7 @@ impl PlaceTableBuilder {
         }
     }
 
-    pub(crate) fn finish(self) -> PlaceTable {
+    pub fn finish(self) -> PlaceTable {
         PlaceTable {
             symbols: self.symbols.build(),
             members: self.member.build(),
@@ -468,7 +459,7 @@ impl FilePlaceId {
         self.scope
     }
 
-    pub(crate) fn scoped_place_id(self) -> ScopedPlaceId {
+    pub fn scoped_place_id(self) -> ScopedPlaceId {
         self.scoped_place_id
     }
 }
@@ -479,7 +470,7 @@ impl From<FilePlaceId> for ScopedPlaceId {
     }
 }
 
-pub(crate) struct ParentPlaceIter<'a> {
+pub struct ParentPlaceIter<'a> {
     state: Option<ParentPlaceIterState<'a>>,
 }
 
@@ -516,11 +507,11 @@ impl<'a> ParentPlaceIterState<'a> {
 }
 
 impl<'a> ParentPlaceIter<'a> {
-    pub(super) fn for_symbol() -> Self {
+    pub fn for_symbol() -> Self {
         ParentPlaceIter { state: None }
     }
 
-    pub(super) fn for_member(
+    pub fn for_member(
         expression: &'a MemberExpr,
         symbol_table: &'a SymbolTable,
         member_table: &'a MemberTable,

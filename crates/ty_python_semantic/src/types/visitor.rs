@@ -30,7 +30,7 @@ use std::cell::{Cell, RefCell};
 /// The trait does not guard against infinite recursion out of the box,
 /// but it makes it easy for implementors of the trait to do so.
 /// See [`any_over_type`] for an example of how to do this.
-pub(crate) trait TypeVisitor<'db> {
+pub trait TypeVisitor<'db> {
     /// Should the visitor trigger inference of and visit lazily-inferred type attributes?
     fn should_visit_lazy_type_attributes(&self) -> bool;
 
@@ -123,7 +123,7 @@ pub(crate) trait TypeVisitor<'db> {
 
 /// Enumeration of types that may contain other types, such as unions, intersections, and generics.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-pub(super) enum NonAtomicType<'db> {
+pub enum NonAtomicType<'db> {
     Union(UnionType<'db>),
     Intersection(IntersectionType<'db>),
     FunctionLiteral(FunctionType<'db>),
@@ -145,7 +145,7 @@ pub(super) enum NonAtomicType<'db> {
     NewTypeInstance(NewType<'db>),
 }
 
-pub(super) enum TypeKind<'db> {
+pub enum TypeKind<'db> {
     Atomic,
     NonAtomic(NonAtomicType<'db>),
 }
@@ -215,7 +215,7 @@ impl<'db> From<Type<'db>> for TypeKind<'db> {
     }
 }
 
-pub(super) fn walk_non_atomic_type<'db, V: TypeVisitor<'db> + ?Sized>(
+pub fn walk_non_atomic_type<'db, V: TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     non_atomic_type: NonAtomicType<'db>,
     visitor: &V,
@@ -259,7 +259,7 @@ pub(super) fn walk_non_atomic_type<'db, V: TypeVisitor<'db> + ?Sized>(
     }
 }
 
-pub(crate) fn walk_type_with_recursion_guard<'db>(
+pub fn walk_type_with_recursion_guard<'db>(
     db: &'db dyn Db,
     ty: Type<'db>,
     visitor: &impl TypeVisitor<'db>,
@@ -278,10 +278,10 @@ pub(crate) fn walk_type_with_recursion_guard<'db>(
 }
 
 #[derive(Default, Debug)]
-pub(crate) struct TypeCollector<'db>(RefCell<FxHashSet<Type<'db>>>);
+pub struct TypeCollector<'db>(RefCell<FxHashSet<Type<'db>>>);
 
 impl<'db> TypeCollector<'db> {
-    pub(crate) fn type_was_already_seen(&self, ty: Type<'db>) -> bool {
+    pub fn type_was_already_seen(&self, ty: Type<'db>) -> bool {
         !self.0.borrow_mut().insert(ty)
     }
 }
@@ -345,7 +345,7 @@ where
 /// The `should_visit_lazy_type_attributes` parameter controls whether deferred type attributes
 /// (value of a type alias, attributes of a class-based protocol, bounds/constraints of a typevar)
 /// are visited or not.
-pub(super) fn any_over_type<'db>(
+pub fn any_over_type<'db>(
     db: &'db dyn Db,
     ty: Type<'db>,
     should_visit_lazy_type_attributes: bool,
@@ -367,7 +367,7 @@ pub(super) fn any_over_type<'db>(
 /// The `should_visit_lazy_type_attributes` parameter controls whether deferred type attributes
 /// (value of a type alias, attributes of a class-based protocol, bounds/constraints of a typevar)
 /// are visited or not.
-pub(super) fn find_over_type<'db, T>(
+pub fn find_over_type<'db, T>(
     db: &'db dyn Db,
     ty: Type<'db>,
     should_visit_lazy_type_attributes: bool,

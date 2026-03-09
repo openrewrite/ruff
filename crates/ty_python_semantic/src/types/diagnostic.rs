@@ -52,7 +52,7 @@ const RUNTIME_CHECKABLE_DOCS_URL: &str =
     "https://docs.python.org/3/library/typing.html#typing.runtime_checkable";
 
 /// Registers all known type check lints.
-pub(crate) fn register_lints(registry: &mut LintRegistryBuilder) {
+pub fn register_lints(registry: &mut LintRegistryBuilder) {
     registry.register_lint(&AMBIGUOUS_PROTOCOL_MEMBER);
     registry.register_lint(&CALL_NON_CALLABLE);
     registry.register_lint(&CALL_TOP_CALLABLE);
@@ -177,7 +177,7 @@ declare_lint! {
     /// ```python
     /// 4()  # TypeError: 'int' object is not callable
     /// ```
-    pub(crate) static CALL_NON_CALLABLE = {
+    pub static CALL_NON_CALLABLE = {
         summary: "detects calls to non-callable objects",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -202,7 +202,7 @@ declare_lint! {
     ///     if callable(x):
     ///         x()  # error: We know `x` is callable, but not what arguments it accepts
     /// ```
-    pub(crate) static CALL_TOP_CALLABLE = {
+    pub static CALL_TOP_CALLABLE = {
         summary: "detects calls to the top callable type",
         status: LintStatus::stable("0.0.7"),
         default_level: Level::Error,
@@ -228,7 +228,7 @@ declare_lint! {
     ///
     /// A()[0]  # TypeError: 'A' object is not subscriptable
     /// ```
-    pub(crate) static POSSIBLY_MISSING_IMPLICIT_CALL = {
+    pub static POSSIBLY_MISSING_IMPLICIT_CALL = {
         summary: "detects implicit calls to possibly missing methods",
         status: LintStatus::stable("0.0.1-alpha.22"),
         default_level: Level::Warn,
@@ -254,7 +254,7 @@ declare_lint! {
     ///
     /// f(int)  # error
     /// ```
-    pub(crate) static CONFLICTING_ARGUMENT_FORMS = {
+    pub static CONFLICTING_ARGUMENT_FORMS = {
         summary: "detects when an argument is used as both a value and a type form in a call",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -279,7 +279,7 @@ declare_lint! {
     ///
     /// a = 1
     /// ```
-    pub(crate) static CONFLICTING_DECLARATIONS = {
+    pub static CONFLICTING_DECLARATIONS = {
         summary: "detects conflicting declarations",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -305,7 +305,7 @@ declare_lint! {
     /// # TypeError: metaclass conflict
     /// class C(A, B): ...
     /// ```
-    pub(crate) static CONFLICTING_METACLASS = {
+    pub static CONFLICTING_METACLASS = {
         summary: "detects conflicting metaclasses",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -331,7 +331,7 @@ declare_lint! {
     /// ```
     ///
     /// [method resolution order]: https://docs.python.org/3/glossary.html#term-method-resolution-order
-    pub(crate) static CYCLIC_CLASS_DEFINITION = {
+    pub static CYCLIC_CLASS_DEFINITION = {
         summary: "detects cyclic class definitions",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -353,7 +353,7 @@ declare_lint! {
     /// type A = B
     /// type B = A
     /// ```
-    pub(crate) static CYCLIC_TYPE_ALIAS_DEFINITION = {
+    pub static CYCLIC_TYPE_ALIAS_DEFINITION = {
         summary: "detects cyclic type alias definitions",
         status: LintStatus::stable("0.0.1-alpha.29"),
         default_level: Level::Error,
@@ -375,7 +375,7 @@ declare_lint! {
     /// ```python
     /// 5 / 0
     /// ```
-    pub(crate) static DIVISION_BY_ZERO = {
+    pub static DIVISION_BY_ZERO = {
         summary: "detects division by zero",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Ignore,
@@ -396,7 +396,7 @@ declare_lint! {
     ///
     /// old_func()  # emits [deprecated] diagnostic
     /// ```
-    pub(crate) static DEPRECATED = {
+    pub static DEPRECATED = {
         summary: "detects uses of deprecated items",
         status: LintStatus::stable("0.0.1-alpha.16"),
         default_level: Level::Warn,
@@ -417,7 +417,7 @@ declare_lint! {
     /// # TypeError: duplicate base class
     /// class B(A, A): ...
     /// ```
-    pub(crate) static DUPLICATE_BASE = {
+    pub static DUPLICATE_BASE = {
         summary: "detects class definitions with duplicate bases",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -449,7 +449,7 @@ declare_lint! {
     ///     _2: KW_ONLY
     ///     d: bytes
     /// ```
-    pub(crate) static DUPLICATE_KW_ONLY = {
+    pub static DUPLICATE_KW_ONLY = {
         summary: "detects dataclass definitions with more than one usage of `KW_ONLY`",
         status: LintStatus::stable("0.0.1-alpha.12"),
         default_level: Level::Error,
@@ -475,7 +475,7 @@ declare_lint! {
     ///     x: int = 1    # Field with default value
     ///     y: str        # Error: Required field after field with default
     /// ```
-    pub(crate) static DATACLASS_FIELD_ORDER = {
+    pub static DATACLASS_FIELD_ORDER = {
         summary: "detects dataclass definitions with required fields after fields with default values",
         status: LintStatus::stable("0.0.15"),
         default_level: Level::Error,
@@ -501,7 +501,7 @@ declare_lint! {
     /// class A:
     ///     def __setattr__(self, name: str, value: object) -> None: ...
     /// ```
-    pub(crate) static INVALID_DATACLASS_OVERRIDE = {
+    pub static INVALID_DATACLASS_OVERRIDE = {
         summary: "detects dataclasses with `frozen=True` that have a custom `__setattr__` or `__delattr__` implementation",
         status: LintStatus::stable("0.0.13"),
         default_level: Level::Error,
@@ -532,7 +532,7 @@ declare_lint! {
     /// ```
     ///
     /// [explicitly not supported]: https://docs.python.org/3/howto/enum.html#dataclass-support
-    pub(crate) static INVALID_DATACLASS = {
+    pub static INVALID_DATACLASS = {
         summary: "detects invalid `@dataclass` applications",
         status: LintStatus::stable("0.0.12"),
         default_level: Level::Error,
@@ -614,7 +614,7 @@ declare_lint! {
     /// - [CPython documentation: Method Resolution Order](https://docs.python.org/3/glossary.html#term-method-resolution-order)
     ///
     /// [Method Resolution Order]: https://docs.python.org/3/glossary.html#term-method-resolution-order
-    pub(crate) static INSTANCE_LAYOUT_CONFLICT = {
+    pub static INSTANCE_LAYOUT_CONFLICT = {
         summary: "detects class definitions that raise `TypeError` due to instance layout conflict",
         status: LintStatus::stable("0.0.1-alpha.12"),
         default_level: Level::Error,
@@ -642,7 +642,7 @@ declare_lint! {
     ///     class Foo(int, Protocol): ...
     /// TypeError: Protocols can only inherit from other protocols, got <class 'int'>
     /// ```
-    pub(crate) static INVALID_PROTOCOL = {
+    pub static INVALID_PROTOCOL = {
         summary: "detects invalid protocol class definitions",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -678,7 +678,7 @@ declare_lint! {
     /// class SubProto(BaseProto, Protocol):
     ///     a = 42  # fine (declared in superclass)
     /// ```
-    pub(crate) static AMBIGUOUS_PROTOCOL_MEMBER = {
+    pub static AMBIGUOUS_PROTOCOL_MEMBER = {
         summary: "detects protocol classes with ambiguous interfaces",
         status: LintStatus::stable("0.0.1-alpha.20"),
         default_level: Level::Warn,
@@ -726,7 +726,7 @@ declare_lint! {
     /// ...     _asdict = 42
     /// AttributeError: Cannot overwrite NamedTuple attribute _asdict
     /// ```
-    pub(crate) static INVALID_NAMED_TUPLE = {
+    pub static INVALID_NAMED_TUPLE = {
         summary: "detects invalid `NamedTuple` class definitions",
         status: LintStatus::stable("0.0.1-alpha.19"),
         default_level: Level::Error,
@@ -750,7 +750,7 @@ declare_lint! {
     /// ```
     ///
     /// [method resolution order]: https://docs.python.org/3/glossary.html#term-method-resolution-order
-    pub(crate) static INCONSISTENT_MRO = {
+    pub static INCONSISTENT_MRO = {
         summary: "detects class definitions with an inconsistent MRO",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -770,7 +770,7 @@ declare_lint! {
     /// t = (0, 1, 2)
     /// t[3]  # IndexError: tuple index out of range
     /// ```
-    pub(crate) static INDEX_OUT_OF_BOUNDS = {
+    pub static INDEX_OUT_OF_BOUNDS = {
         summary: "detects index out of bounds errors",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -804,7 +804,7 @@ declare_lint! {
     ///
     /// carol = Person(name="Carol", age=25)  # typo!
     /// ```
-    pub(crate) static INVALID_KEY = {
+    pub static INVALID_KEY = {
         summary: "detects invalid subscript accesses or TypedDict literal keys",
         status: LintStatus::stable("0.0.1-alpha.17"),
         default_level: Level::Error,
@@ -852,7 +852,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Typing documentation: `@runtime_checkable`](https://docs.python.org/3/library/typing.html#typing.runtime_checkable)
-    pub(crate) static ISINSTANCE_AGAINST_PROTOCOL = {
+    pub static ISINSTANCE_AGAINST_PROTOCOL = {
         summary: "reports invalid runtime checks against protocol classes",
         status: LintStatus::stable("0.0.14"),
         default_level: Level::Error,
@@ -888,7 +888,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Typing specification: `TypedDict`](https://typing.python.org/en/latest/spec/typeddict.html)
-    pub(crate) static ISINSTANCE_AGAINST_TYPED_DICT = {
+    pub static ISINSTANCE_AGAINST_TYPED_DICT = {
         summary: "reports runtime checks against `TypedDict` classes",
         status: LintStatus::stable("0.0.15"),
         default_level: Level::Error,
@@ -909,7 +909,7 @@ declare_lint! {
     /// def func(x: int): ...
     /// func("foo")  # error: [invalid-argument-type]
     /// ```
-    pub(crate) static INVALID_ARGUMENT_TYPE = {
+    pub static INVALID_ARGUMENT_TYPE = {
         summary: "detects call arguments whose type is not assignable to the corresponding typed parameter",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -932,7 +932,7 @@ declare_lint! {
     /// def func() -> int:
     ///     return "a"  # error: [invalid-return-type]
     /// ```
-    pub(crate) static INVALID_RETURN_TYPE = {
+    pub static INVALID_RETURN_TYPE = {
         summary: "detects returned values that can't be assigned to the function's annotated return type",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -972,7 +972,7 @@ declare_lint! {
     ///     """A function that does nothing."""
     ///     pass  # error: [empty-body]
     /// ```
-    pub(crate) static EMPTY_BODY = {
+    pub static EMPTY_BODY = {
         summary: "detects functions with empty bodies that have a non-`None` return type annotation",
         status: LintStatus::stable("0.0.14"),
         default_level: Level::Error,
@@ -994,7 +994,7 @@ declare_lint! {
     /// ```
     ///
     /// [assignable to]: https://typing.python.org/en/latest/spec/glossary.html#term-assignable
-    pub(crate) static INVALID_ASSIGNMENT = {
+    pub static INVALID_ASSIGNMENT = {
         summary: "detects invalid assignments",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1024,7 +1024,7 @@ declare_lint! {
     /// ```
     ///
     /// [Awaitable]: https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable
-    pub(crate) static INVALID_AWAIT = {
+    pub static INVALID_AWAIT = {
         summary: "detects awaiting on types that don't support it",
         status: LintStatus::stable("0.0.1-alpha.19"),
         default_level: Level::Error,
@@ -1042,7 +1042,7 @@ declare_lint! {
     /// ```python
     /// class A(42): ...  # error: [invalid-base]
     /// ```
-    pub(crate) static INVALID_BASE = {
+    pub static INVALID_BASE = {
         summary: "detects class bases that will cause the class definition to raise an exception at runtime",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1075,7 +1075,7 @@ declare_lint! {
     /// ```
     ///
     /// [method resolution order]: https://docs.python.org/3/glossary.html#term-method-resolution-order
-    pub(crate) static UNSUPPORTED_BASE = {
+    pub static UNSUPPORTED_BASE = {
         summary: "detects class bases that are unsupported as ty could not feasibly calculate the class's MRO",
         status: LintStatus::stable("0.0.1-alpha.7"),
         default_level: Level::Warn,
@@ -1109,7 +1109,7 @@ declare_lint! {
     ///
     /// [method resolution order]: https://docs.python.org/3/glossary.html#term-method-resolution-order
     /// [`unsupported-base`]: https://docs.astral.sh/ty/rules/unsupported-base
-    pub(crate) static UNSUPPORTED_DYNAMIC_BASE = {
+    pub static UNSUPPORTED_DYNAMIC_BASE = {
         summary: "detects dynamic class bases that are unsupported as ty could not feasibly calculate the class's MRO",
         status: LintStatus::stable("0.0.12"),
         default_level: Level::Ignore,
@@ -1130,7 +1130,7 @@ declare_lint! {
     /// with 1:
     ///     print(2)
     /// ```
-    pub(crate) static INVALID_CONTEXT_MANAGER = {
+    pub static INVALID_CONTEXT_MANAGER = {
         summary: "detects expressions used in with statements that don't implement the context manager protocol",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1153,7 +1153,7 @@ declare_lint! {
     /// ```
     ///
     /// [assignable to]: https://typing.python.org/en/latest/spec/glossary.html#term-assignable
-    pub(crate) static INVALID_DECLARATION = {
+    pub static INVALID_DECLARATION = {
         summary: "detects invalid declarations",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1189,7 +1189,7 @@ declare_lint! {
     ///
     /// ## Ruff rule
     ///  This rule corresponds to Ruff's [`except-with-non-exception-classes` (`B030`)](https://docs.astral.sh/ruff/rules/except-with-non-exception-classes)
-    pub(crate) static INVALID_EXCEPTION_CAUGHT = {
+    pub static INVALID_EXCEPTION_CAUGHT = {
         summary: "detects exception handlers that catch classes that do not inherit from `BaseException`",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1231,7 +1231,7 @@ declare_lint! {
     /// - [Typing spec: Enum members](https://typing.python.org/en/latest/spec/enums.html#enum-members)
     ///
     /// [typing spec]: https://typing.python.org/en/latest/spec/enums.html#enum-members
-    pub(crate) static INVALID_ENUM_MEMBER_ANNOTATION = {
+    pub static INVALID_ENUM_MEMBER_ANNOTATION = {
         summary: "detects type annotations on enum members",
         status: LintStatus::stable("0.0.20"),
         default_level: Level::Warn,
@@ -1273,7 +1273,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Python documentation: Enum](https://docs.python.org/3/library/enum.html)
-    pub(crate) static INVALID_GENERIC_ENUM = {
+    pub static INVALID_GENERIC_ENUM = {
         summary: "detects generic enum classes",
         status: LintStatus::stable("0.0.12"),
         default_level: Level::Error,
@@ -1304,7 +1304,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Typing spec: Generics](https://typing.python.org/en/latest/spec/generics.html#introduction)
-    pub(crate) static INVALID_GENERIC_CLASS = {
+    pub static INVALID_GENERIC_CLASS = {
         summary: "detects invalid generic classes",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1332,7 +1332,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Typing spec: Generics](https://typing.python.org/en/latest/spec/generics.html#introduction)
-    pub(crate) static INVALID_LEGACY_TYPE_VARIABLE = {
+    pub static INVALID_LEGACY_TYPE_VARIABLE = {
         summary: "detects invalid legacy type variables",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1356,7 +1356,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Typing spec: ParamSpec](https://typing.python.org/en/latest/spec/generics.html#paramspec)
-    pub(crate) static INVALID_PARAMSPEC = {
+    pub static INVALID_PARAMSPEC = {
         summary: "detects invalid ParamSpec usage",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1377,7 +1377,7 @@ declare_lint! {
     /// IntOrStr = TypeAliasType("IntOrStr", int | str)  # okay
     /// NewAlias = TypeAliasType(get_name(), int)        # error: TypeAliasType name must be a string literal
     /// ```
-    pub(crate) static INVALID_TYPE_ALIAS_TYPE = {
+    pub static INVALID_TYPE_ALIAS_TYPE = {
         summary: "detects invalid TypeAliasType definitions",
         status: LintStatus::stable("0.0.1-alpha.6"),
         default_level: Level::Error,
@@ -1401,7 +1401,7 @@ declare_lint! {
     /// Bar = NewType(get_name(), int)   # error: The first argument to `NewType` must be a string literal
     /// Baz = NewType("Baz", int | str)  # error: invalid base for `typing.NewType`
     /// ```
-    pub(crate) static INVALID_NEWTYPE = {
+    pub static INVALID_NEWTYPE = {
         summary: "detects invalid NewType definitions",
         status: LintStatus::stable("0.0.1-alpha.27"),
         default_level: Level::Error,
@@ -1428,7 +1428,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Python documentation: Metaclasses](https://docs.python.org/3/reference/datamodel.html#metaclasses)
-    pub(crate) static INVALID_METACLASS = {
+    pub static INVALID_METACLASS = {
         summary: "detects invalid `metaclass=` arguments",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1471,7 +1471,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Python documentation: `@overload`](https://docs.python.org/3/library/typing.html#typing.overload)
-    pub(crate) static INVALID_OVERLOAD = {
+    pub static INVALID_OVERLOAD = {
         summary: "detects invalid `@overload` usages",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1527,7 +1527,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Python documentation: `@overload`](https://docs.python.org/3/library/typing.html#typing.overload)
-    pub(crate) static USELESS_OVERLOAD_BODY = {
+    pub static USELESS_OVERLOAD_BODY = {
         summary: "detects `@overload`-decorated functions with non-stub bodies",
         status: LintStatus::stable("0.0.1-alpha.22"),
         default_level: Level::Warn,
@@ -1547,7 +1547,7 @@ declare_lint! {
     /// ```python
     /// def f(a: int = ''): ...
     /// ```
-    pub(crate) static INVALID_PARAMETER_DEFAULT = {
+    pub static INVALID_PARAMETER_DEFAULT = {
         summary: "detects default values that can't be assigned to the parameter's annotated type",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1590,7 +1590,7 @@ declare_lint! {
     /// ## References
     /// - [Python documentation: The `raise` statement](https://docs.python.org/3/reference/simple_stmts.html#raise)
     /// - [Python documentation: Built-in Exceptions](https://docs.python.org/3/library/exceptions.html#built-in-exceptions)
-    pub(crate) static INVALID_RAISE = {
+    pub static INVALID_RAISE = {
         summary: "detects `raise` statements that raise invalid exceptions or use invalid causes",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1629,7 +1629,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Python documentation: super()](https://docs.python.org/3/library/functions.html#super)
-    pub(crate) static INVALID_SUPER_ARGUMENT = {
+    pub static INVALID_SUPER_ARGUMENT = {
         summary: "detects invalid arguments for `super()`",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1653,7 +1653,7 @@ declare_lint! {
     /// TYPE_CHECKING: str
     /// TYPE_CHECKING = ''
     /// ```
-    pub(crate) static INVALID_TYPE_CHECKING_CONSTANT = {
+    pub static INVALID_TYPE_CHECKING_CONSTANT = {
         summary: "detects invalid `TYPE_CHECKING` constant assignments",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1677,7 +1677,7 @@ declare_lint! {
     /// b: Annotated[int]  # `Annotated` expects at least two arguments
     /// ```
     /// [type expressions]: https://typing.python.org/en/latest/spec/annotations.html#type-and-annotation-expressions
-    pub(crate) static INVALID_TYPE_FORM = {
+    pub static INVALID_TYPE_FORM = {
         summary: "detects invalid type forms",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1699,7 +1699,7 @@ declare_lint! {
     ///     case NotAClass():    # TypeError at runtime: must be a class
     ///         ...
     /// ```
-    pub(crate) static INVALID_MATCH_PATTERN = {
+    pub static INVALID_MATCH_PATTERN = {
         summary: "detect invalid match patterns",
         status: LintStatus::stable("0.0.18"),
         default_level: Level::Error,
@@ -1727,7 +1727,7 @@ declare_lint! {
     /// class C:
     ///     def f(self) -> TypeIs[int]: ...  # Error, only positional argument expected is `self`
     /// ```
-    pub(crate) static INVALID_TYPE_GUARD_DEFINITION = {
+    pub static INVALID_TYPE_GUARD_DEFINITION = {
         summary: "detects malformed type guard functions",
         status: LintStatus::stable("0.0.1-alpha.11"),
         default_level: Level::Error,
@@ -1755,7 +1755,7 @@ declare_lint! {
     /// f(*a)  # Error
     /// f(10)  # Error
     /// ```
-    pub(crate) static INVALID_TYPE_GUARD_CALL = {
+    pub static INVALID_TYPE_GUARD_CALL = {
         summary: "detects type guard function calls that has no narrowing effect",
         status: LintStatus::stable("0.0.1-alpha.11"),
         default_level: Level::Error,
@@ -1796,7 +1796,7 @@ declare_lint! {
     /// ```
     ///
     /// [type variables]: https://docs.python.org/3/library/typing.html#typing.TypeVar
-    pub(crate) static INVALID_TYPE_VARIABLE_CONSTRAINTS = {
+    pub static INVALID_TYPE_VARIABLE_CONSTRAINTS = {
         summary: "detects invalid type variable constraints",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1821,7 +1821,7 @@ declare_lint! {
     /// ```
     ///
     /// [type variable]: https://docs.python.org/3/library/typing.html#typing.TypeVar
-    pub(crate) static INVALID_TYPE_VARIABLE_BOUND = {
+    pub static INVALID_TYPE_VARIABLE_BOUND = {
         summary: "detects invalid type variable bounds",
         status: LintStatus::stable("0.0.15"),
         default_level: Level::Error,
@@ -1847,7 +1847,7 @@ declare_lint! {
     /// [type variables]: https://docs.python.org/3/library/typing.html#typing.TypeVar
     /// [bound rules]: https://typing.python.org/en/latest/spec/generics.html#bound-rules
     /// [constraint rules]: https://typing.python.org/en/latest/spec/generics.html#constraint-rules
-    pub(crate) static INVALID_TYPE_VARIABLE_DEFAULT = {
+    pub static INVALID_TYPE_VARIABLE_DEFAULT = {
         summary: "detects invalid type variable defaults",
         status: LintStatus::stable("0.0.16"),
         default_level: Level::Error,
@@ -1877,7 +1877,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Typing spec: Scoping rules for type variables](https://typing.python.org/en/latest/spec/generics.html#scoping-rules-for-type-variables)
-    pub(crate) static UNBOUND_TYPE_VARIABLE = {
+    pub static UNBOUND_TYPE_VARIABLE = {
         summary: "detects type variables used outside of their bound scope",
         status: LintStatus::stable("0.0.20"),
         default_level: Level::Error,
@@ -1896,7 +1896,7 @@ declare_lint! {
     /// def func(x: int): ...
     /// func()  # TypeError: func() missing 1 required positional argument: 'x'
     /// ```
-    pub(crate) static MISSING_ARGUMENT = {
+    pub static MISSING_ARGUMENT = {
         summary: "detects missing required arguments in a call",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1919,7 +1919,7 @@ declare_lint! {
     /// def func(x: bool): ...
     /// func("string")  # error: [no-matching-overload]
     /// ```
-    pub(crate) static NO_MATCHING_OVERLOAD = {
+    pub static NO_MATCHING_OVERLOAD = {
         summary: "detects calls that do not match any overload",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1937,7 +1937,7 @@ declare_lint! {
     /// ```python
     /// 4[1]  # TypeError: 'int' object is not subscriptable
     /// ```
-    pub(crate) static NOT_SUBSCRIPTABLE = {
+    pub static NOT_SUBSCRIPTABLE = {
         summary: "detects subscripting objects that do not support subscripting",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1978,7 +1978,7 @@ declare_lint! {
     /// Foo[int, str]  # error: too many arguments
     /// Bar[int]  # error: too few arguments
     /// ```
-    pub(crate) static INVALID_TYPE_ARGUMENTS = {
+    pub static INVALID_TYPE_ARGUMENTS = {
         summary: "detects invalid type arguments in generic specialization",
         status: LintStatus::stable("0.0.1-alpha.29"),
         default_level: Level::Error,
@@ -1998,7 +1998,7 @@ declare_lint! {
     /// for i in 34:  # TypeError: 'int' object is not iterable
     ///     pass
     /// ```
-    pub(crate) static NOT_ITERABLE = {
+    pub static NOT_ITERABLE = {
         summary: "detects iteration over an object that is not iterable",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2029,7 +2029,7 @@ declare_lint! {
     /// not b1  # exception raised here
     /// b1 < b2 < b1  # exception raised here
     /// ```
-    pub(crate) static UNSUPPORTED_BOOL_CONVERSION = {
+    pub static UNSUPPORTED_BOOL_CONVERSION = {
         summary: "detects boolean conversion where the object incorrectly implements `__bool__`",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2050,7 +2050,7 @@ declare_lint! {
     ///
     /// f(1, x=2)  # Error raised here
     /// ```
-    pub(crate) static PARAMETER_ALREADY_ASSIGNED = {
+    pub static PARAMETER_ALREADY_ASSIGNED = {
         summary: "detects multiple arguments for the same parameter",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2072,7 +2072,7 @@ declare_lint! {
     ///
     /// A.c  # AttributeError: type object 'A' has no attribute 'c'
     /// ```
-    pub(crate) static POSSIBLY_MISSING_ATTRIBUTE = {
+    pub static POSSIBLY_MISSING_ATTRIBUTE = {
         summary: "detects references to possibly missing attributes",
         status: LintStatus::stable("0.0.1-alpha.22"),
         default_level: Level::Warn,
@@ -2102,7 +2102,7 @@ declare_lint! {
     /// # main.py
     /// from module import a  # ImportError: cannot import name 'a' from 'module'
     /// ```
-    pub(crate) static POSSIBLY_MISSING_IMPORT = {
+    pub static POSSIBLY_MISSING_IMPORT = {
         summary: "detects possibly missing imports",
         status: LintStatus::stable("0.0.1-alpha.22"),
         default_level: Level::Ignore,
@@ -2128,7 +2128,7 @@ declare_lint! {
     ///
     /// print(x)  # NameError: name 'x' is not defined
     /// ```
-    pub(crate) static POSSIBLY_UNRESOLVED_REFERENCE = {
+    pub static POSSIBLY_UNRESOLVED_REFERENCE = {
         summary: "detects references to possibly undefined names",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Ignore,
@@ -2151,7 +2151,7 @@ declare_lint! {
     /// class A: ...
     /// class B(A): ...  # Error raised here
     /// ```
-    pub(crate) static SUBCLASS_OF_FINAL_CLASS = {
+    pub static SUBCLASS_OF_FINAL_CLASS = {
         summary: "detects subclasses of final classes",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2178,7 +2178,7 @@ declare_lint! {
     /// class B(A):
     ///     def foo(self): ...  # Error raised here
     /// ```
-    pub(crate) static OVERRIDE_OF_FINAL_METHOD = {
+    pub static OVERRIDE_OF_FINAL_METHOD = {
         summary: "detects overrides of final methods",
         status: LintStatus::stable("0.0.1-alpha.29"),
         default_level: Level::Error,
@@ -2205,7 +2205,7 @@ declare_lint! {
     /// class B(A):
     ///     X = 2  # Error raised here
     /// ```
-    pub(crate) static OVERRIDE_OF_FINAL_VARIABLE = {
+    pub static OVERRIDE_OF_FINAL_VARIABLE = {
         summary: "detects overrides of Final class variables",
         status: LintStatus::stable("0.0.16"),
         default_level: Level::Error,
@@ -2233,7 +2233,7 @@ declare_lint! {
     /// @final
     /// class MyClass: ...
     /// ```
-    pub(crate) static INEFFECTIVE_FINAL = {
+    pub static INEFFECTIVE_FINAL = {
         summary: "detects calls to `final()` that type checkers cannot interpret",
         status: LintStatus::stable("0.0.1-alpha.33"),
         default_level: Level::Warn,
@@ -2259,7 +2259,7 @@ declare_lint! {
     /// def my_function() -> int:
     ///     return 0
     /// ```
-    pub(crate) static FINAL_ON_NON_METHOD = {
+    pub static FINAL_ON_NON_METHOD = {
         summary: "detects `@final` applied to non-method functions",
         status: LintStatus::stable("0.0.20"),
         default_level: Level::Error,
@@ -2286,7 +2286,7 @@ declare_lint! {
     /// # OK: `Final` symbol with a value
     /// MY_CONSTANT: Final[int] = 1
     /// ```
-    pub(crate) static FINAL_WITHOUT_VALUE = {
+    pub static FINAL_WITHOUT_VALUE = {
         summary: "detects `Final` declarations without a value",
         status: LintStatus::stable("0.0.15"),
         default_level: Level::Error,
@@ -2321,7 +2321,7 @@ declare_lint! {
     /// class Derived(Base):  # Error: `Derived` does not implement `method`
     ///     pass
     /// ```
-    pub(crate) static ABSTRACT_METHOD_IN_FINAL_CLASS = {
+    pub static ABSTRACT_METHOD_IN_FINAL_CLASS = {
         summary: "detects `@final` classes with unimplemented abstract methods",
         status: LintStatus::stable("0.0.13"),
         default_level: Level::Error,
@@ -2364,7 +2364,7 @@ declare_lint! {
     ///
     /// Foo.method()  # Error: cannot call abstract classmethod
     /// ```
-    pub(crate) static CALL_ABSTRACT_METHOD = {
+    pub static CALL_ABSTRACT_METHOD = {
         summary: "detects calls to abstract methods with trivial bodies on class objects",
         status: LintStatus::preview("0.0.16"),
         default_level: Level::Error,
@@ -2400,7 +2400,7 @@ declare_lint! {
     ///     @override
     ///     def foo(self): ...  # fine: overrides `A.foo`
     /// ```
-    pub(crate) static INVALID_EXPLICIT_OVERRIDE = {
+    pub static INVALID_EXPLICIT_OVERRIDE = {
         summary: "detects methods that are decorated with `@override` but do not override any method in a superclass",
         status: LintStatus::stable("0.0.1-alpha.28"),
         default_level: Level::Error,
@@ -2422,7 +2422,7 @@ declare_lint! {
     ///     assert_type(x, int)  # fine
     ///     assert_type(x, str)  # error: Actual type does not match asserted type
     /// ```
-    pub(crate) static TYPE_ASSERTION_FAILURE = {
+    pub static TYPE_ASSERTION_FAILURE = {
         summary: "detects failed type assertions",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2452,7 +2452,7 @@ declare_lint! {
     ///                              # the actual type is `int & ~AlwaysFalsy`,
     ///                              # which excludes types like `Literal[0]`
     /// ```
-    pub(crate) static ASSERT_TYPE_UNSPELLABLE_SUBTYPE = {
+    pub static ASSERT_TYPE_UNSPELLABLE_SUBTYPE = {
         summary: "detects failed type assertions",
         status: LintStatus::stable("0.0.14"),
         default_level: Level::Error,
@@ -2473,7 +2473,7 @@ declare_lint! {
     ///
     /// f("foo")  # Error raised here
     /// ```
-    pub(crate) static TOO_MANY_POSITIONAL_ARGUMENTS = {
+    pub static TOO_MANY_POSITIONAL_ARGUMENTS = {
         summary: "detects calls passing too many positional arguments",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2512,7 +2512,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Python documentation: super()](https://docs.python.org/3/library/functions.html#super)
-    pub(crate) static UNAVAILABLE_IMPLICIT_SUPER_ARGUMENTS = {
+    pub static UNAVAILABLE_IMPLICIT_SUPER_ARGUMENTS = {
         summary: "detects invalid `super()` calls where implicit arguments are unavailable.",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2539,7 +2539,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Python documentation: super()](https://docs.python.org/3/library/functions.html#super)
-    pub(crate) static SUPER_CALL_IN_NAMED_TUPLE_METHOD = {
+    pub static SUPER_CALL_IN_NAMED_TUPLE_METHOD = {
         summary: "detects `super()` calls in methods of `NamedTuple` classes",
         status: LintStatus::stable("0.0.1-alpha.30"),
         default_level: Level::Error,
@@ -2578,7 +2578,7 @@ declare_lint! {
     ///
     /// f(x=1, y=2)  # Error raised here
     /// ```
-    pub(crate) static UNKNOWN_ARGUMENT = {
+    pub static UNKNOWN_ARGUMENT = {
         summary: "detects unknown keyword arguments in calls",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2599,7 +2599,7 @@ declare_lint! {
     ///
     /// f(x=1)  # Error raised here
     /// ```
-    pub(crate) static POSITIONAL_ONLY_PARAMETER_AS_KWARG = {
+    pub static POSITIONAL_ONLY_PARAMETER_AS_KWARG = {
         summary: "detects positional-only parameters passed as keyword arguments",
         status: LintStatus::stable("0.0.1-alpha.22"),
         default_level: Level::Error,
@@ -2621,7 +2621,7 @@ declare_lint! {
     ///
     /// A().foo  # AttributeError: 'A' object has no attribute 'foo'
     /// ```
-    pub(crate) static UNRESOLVED_ATTRIBUTE = {
+    pub static UNRESOLVED_ATTRIBUTE = {
         summary: "detects references to unresolved attributes",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2640,7 +2640,7 @@ declare_lint! {
     /// ```python
     /// import foo  # ModuleNotFoundError: No module named 'foo'
     /// ```
-    pub(crate) static UNRESOLVED_IMPORT = {
+    pub static UNRESOLVED_IMPORT = {
         summary: "detects unresolved imports",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2681,7 +2681,7 @@ declare_lint! {
     ///
     /// A() + A()  # TypeError: unsupported operand type(s) for +: 'A' and 'A'
     /// ```
-    pub(crate) static UNSUPPORTED_OPERATOR = {
+    pub static UNSUPPORTED_OPERATOR = {
         summary: "detects binary, unary, or comparison expressions where the operands don't support the operator",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2708,7 +2708,7 @@ declare_lint! {
     ///     fetch_data()  # Warning: coroutine is not awaited
     ///     await fetch_data()  # OK
     /// ```
-    pub(crate) static UNUSED_AWAITABLE = {
+    pub static UNUSED_AWAITABLE = {
         summary: "detects awaitable objects that are used as expression statements without being awaited",
         status: LintStatus::preview("0.0.21"),
         default_level: Level::Warn,
@@ -2727,7 +2727,7 @@ declare_lint! {
     /// l = list(range(10))
     /// l[1:10:0]  # ValueError: slice step cannot be zero
     /// ```
-    pub(crate) static ZERO_STEPSIZE_IN_SLICE = {
+    pub static ZERO_STEPSIZE_IN_SLICE = {
         summary: "detects a slice step size of zero",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2751,7 +2751,7 @@ declare_lint! {
     ///
     /// static_assert(int(2.0 * 3.0) == 6)  # error: does not have a statically known truthiness
     /// ```
-    pub(crate) static STATIC_ASSERT_ERROR = {
+    pub static STATIC_ASSERT_ERROR = {
         summary: "Failed static assertion",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2779,7 +2779,7 @@ declare_lint! {
     /// C().instance_var = 3  # okay
     /// C.instance_var = 3  # error: Cannot assign to instance variable
     /// ```
-    pub(crate) static INVALID_ATTRIBUTE_ACCESS = {
+    pub static INVALID_ATTRIBUTE_ACCESS = {
         summary: "Invalid attribute access",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -2800,7 +2800,7 @@ declare_lint! {
     ///
     /// cast(int, f())  # Redundant
     /// ```
-    pub(crate) static REDUNDANT_CAST = {
+    pub static REDUNDANT_CAST = {
         summary: "detects redundant `cast` calls",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Warn,
@@ -2826,7 +2826,7 @@ declare_lint! {
     ///     x: ClassVar[Final[int]] = 1  # redundant
     ///     y: Final[ClassVar[int]] = 1  # redundant
     /// ```
-    pub(crate) static REDUNDANT_FINAL_CLASSVAR = {
+    pub static REDUNDANT_FINAL_CLASSVAR = {
         summary: "detects redundant combinations of `ClassVar` and `Final`",
         status: LintStatus::stable("0.0.18"),
         default_level: Level::Warn,
@@ -2853,7 +2853,7 @@ declare_lint! {
     ///
     /// ## References
     /// - [Typing spec: Generics](https://typing.python.org/en/latest/spec/generics.html#introduction)
-    pub(crate) static SHADOWED_TYPE_VARIABLE = {
+    pub static SHADOWED_TYPE_VARIABLE = {
         summary: "detects type variables that shadow type variables from outer scopes",
         status: LintStatus::stable("0.0.20"),
         default_level: Level::Error,
@@ -2905,7 +2905,7 @@ declare_lint! {
     /// def g():
     ///     print(x)
     /// ```
-    pub(crate) static UNRESOLVED_GLOBAL = {
+    pub static UNRESOLVED_GLOBAL = {
         summary: "detects `global` statements with no definition in the global scope",
         status: LintStatus::stable("0.0.1-alpha.15"),
         default_level: Level::Warn,
@@ -2932,7 +2932,7 @@ declare_lint! {
     ///
     /// alice["age"]  # KeyError
     /// ```
-    pub(crate) static MISSING_TYPED_DICT_KEY = {
+    pub static MISSING_TYPED_DICT_KEY = {
         summary: "detects missing required keys in `TypedDict` constructors",
         status: LintStatus::stable("0.0.1-alpha.20"),
         default_level: Level::Error,
@@ -2957,7 +2957,7 @@ declare_lint! {
     ///     def bar(self):  # error: [invalid-typed-dict-statement]
     ///         pass
     /// ```
-    pub(crate) static INVALID_TYPED_DICT_STATEMENT = {
+    pub static INVALID_TYPED_DICT_STATEMENT = {
         summary: "detects invalid statements in `TypedDict` class bodies",
         status: LintStatus::stable("0.0.9"),
         default_level: Level::Error,
@@ -2986,7 +2986,7 @@ declare_lint! {
     ///     class Bar(TypedDict, **x):  # error: [invalid-typed-dict-header]
     ///         ...
     /// ```
-    pub(crate) static INVALID_TYPED_DICT_HEADER = {
+    pub static INVALID_TYPED_DICT_HEADER = {
         summary: "detects invalid statements in `TypedDict` class headers",
         status: LintStatus::stable("0.0.14"),
         default_level: Level::Error,
@@ -3084,7 +3084,7 @@ declare_lint! {
     ///
     /// [Liskov Substitution Principle]: https://en.wikipedia.org/wiki/Liskov_substitution_principle
     /// [override]: https://docs.python.org/3/library/typing.html#typing.override
-    pub(crate) static INVALID_METHOD_OVERRIDE = {
+    pub static INVALID_METHOD_OVERRIDE = {
         summary: "detects method definitions that violate the Liskov Substitution Principle",
         status: LintStatus::stable("0.0.1-alpha.20"),
         default_level: Level::Error,
@@ -3122,7 +3122,7 @@ declare_lint! {
     /// class NonFrozenChild(FrozenBase):  # Error raised here
     ///     y: int
     /// ```
-    pub(crate) static INVALID_FROZEN_DATACLASS_SUBCLASS = {
+    pub static INVALID_FROZEN_DATACLASS_SUBCLASS = {
         summary: "detects dataclasses with invalid frozen/non-frozen subclassing",
         status: LintStatus::stable("0.0.1-alpha.35"),
         default_level: Level::Error,
@@ -3162,7 +3162,7 @@ declare_lint! {
     ///     def __lt__(self, other: "MyClass") -> bool:
     ///         return True
     /// ```
-    pub(crate) static INVALID_TOTAL_ORDERING = {
+    pub static INVALID_TOTAL_ORDERING = {
         summary: "detects `@total_ordering` classes without an ordering method",
         status: LintStatus::stable("0.0.10"),
         default_level: Level::Error,
@@ -3216,7 +3216,7 @@ declare_lint! {
     ///
     /// [PEP 484]: https://peps.python.org/pep-0484/#positional-only-arguments
     /// [PEP 570]: https://peps.python.org/pep-0570/
-    pub(crate) static INVALID_LEGACY_POSITIONAL_PARAMETER = {
+    pub static INVALID_LEGACY_POSITIONAL_PARAMETER = {
         summary: "detects incorrect usage of the legacy convention for specifying positional-only parameters",
         status: LintStatus::stable("0.0.15"),
         default_level: Level::Warn,
@@ -3231,41 +3231,41 @@ pub struct TypeCheckDiagnostics {
 }
 
 impl TypeCheckDiagnostics {
-    pub(crate) fn push(&mut self, diagnostic: Diagnostic) {
+    pub fn push(&mut self, diagnostic: Diagnostic) {
         self.diagnostics.push(diagnostic);
     }
 
-    pub(super) fn extend(&mut self, other: &TypeCheckDiagnostics) {
+    pub fn extend(&mut self, other: &TypeCheckDiagnostics) {
         self.diagnostics.extend_from_slice(&other.diagnostics);
         self.used_suppressions.extend(&other.used_suppressions);
     }
 
-    pub(super) fn extend_diagnostics(&mut self, diagnostics: impl IntoIterator<Item = Diagnostic>) {
+    pub fn extend_diagnostics(&mut self, diagnostics: impl IntoIterator<Item = Diagnostic>) {
         self.diagnostics.extend(diagnostics);
     }
 
-    pub(crate) fn mark_used(&mut self, suppression_id: FileSuppressionId) {
+    pub fn mark_used(&mut self, suppression_id: FileSuppressionId) {
         self.used_suppressions.insert(suppression_id);
     }
 
-    pub(crate) fn is_used(&self, suppression_id: FileSuppressionId) -> bool {
+    pub fn is_used(&self, suppression_id: FileSuppressionId) -> bool {
         self.used_suppressions.contains(&suppression_id)
     }
 
-    pub(crate) fn used_len(&self) -> usize {
+    pub fn used_len(&self) -> usize {
         self.used_suppressions.len()
     }
 
-    pub(crate) fn shrink_to_fit(&mut self) {
+    pub fn shrink_to_fit(&mut self) {
         self.used_suppressions.shrink_to_fit();
         self.diagnostics.shrink_to_fit();
     }
 
-    pub(crate) fn into_diagnostics(self) -> Vec<Diagnostic> {
+    pub fn into_diagnostics(self) -> Vec<Diagnostic> {
         self.diagnostics
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.diagnostics.is_empty() && self.used_suppressions.is_empty()
     }
 
@@ -3304,7 +3304,7 @@ impl<'a> IntoIterator for &'a TypeCheckDiagnostics {
 }
 
 /// Emit a diagnostic declaring that an index is out of bounds for a tuple.
-pub(super) fn report_index_out_of_bounds(
+pub fn report_index_out_of_bounds(
     context: &InferContext,
     kind: &'static str,
     node: AnyNodeRef,
@@ -3322,7 +3322,7 @@ pub(super) fn report_index_out_of_bounds(
 }
 
 /// Emit a diagnostic declaring that a type does not support subscripting.
-pub(super) fn report_not_subscriptable(
+pub fn report_not_subscriptable(
     context: &InferContext,
     node: &ast::ExprSubscript,
     not_subscriptable_ty: Type,
@@ -3344,7 +3344,7 @@ pub(super) fn report_not_subscriptable(
     }
 }
 
-pub(super) fn report_slice_step_size_zero(context: &InferContext, node: AnyNodeRef) {
+pub fn report_slice_step_size_zero(context: &InferContext, node: AnyNodeRef) {
     let Some(builder) = context.report_lint(&ZERO_STEPSIZE_IN_SLICE, node) else {
         return;
     };
@@ -3353,11 +3353,7 @@ pub(super) fn report_slice_step_size_zero(context: &InferContext, node: AnyNodeR
 
 // We avoid emitting invalid assignment diagnostic for literal assignments to a `TypedDict`, as
 // they can only occur if we already failed to validate the dict (and emitted some diagnostic).
-pub(crate) fn is_invalid_typed_dict_literal(
-    db: &dyn Db,
-    target_ty: Type,
-    source: AnyNodeRef<'_>,
-) -> bool {
+pub fn is_invalid_typed_dict_literal(db: &dyn Db, target_ty: Type, source: AnyNodeRef<'_>) -> bool {
     target_ty
         .filter_union(db, Type::is_typed_dict)
         .as_typed_dict()
@@ -3393,7 +3389,7 @@ fn report_invalid_assignment_with_message<'db, 'ctx: 'db, T: Ranged>(
     Some(diag)
 }
 
-pub(super) fn note_numbers_module_not_supported<'db>(
+pub fn note_numbers_module_not_supported<'db>(
     db: &'db dyn Db,
     diag: &mut Diagnostic,
     target_ty: Type<'db>,
@@ -3422,7 +3418,7 @@ pub(super) fn note_numbers_module_not_supported<'db>(
     }
 }
 
-pub(super) fn report_invalid_assignment<'db>(
+pub fn report_invalid_assignment<'db>(
     context: &InferContext<'db, '_>,
     target_node: AnyNodeRef,
     definition: Definition<'db>,
@@ -3508,7 +3504,7 @@ pub(super) fn report_invalid_assignment<'db>(
     note_numbers_module_not_supported(context.db(), &mut diag, target_ty, value_ty);
 }
 
-pub(super) fn report_invalid_attribute_assignment(
+pub fn report_invalid_attribute_assignment(
     context: &InferContext,
     node: AnyNodeRef,
     target_ty: Type,
@@ -3532,7 +3528,7 @@ pub(super) fn report_invalid_attribute_assignment(
     );
 }
 
-pub(super) fn report_bad_dunder_set_call<'db>(
+pub fn report_bad_dunder_set_call<'db>(
     context: &InferContext<'db, '_>,
     dunder_set_failure: &CallError<'db>,
     attribute: &str,
@@ -3571,7 +3567,7 @@ pub(super) fn report_bad_dunder_set_call<'db>(
     }
 }
 
-pub(super) fn report_invalid_return_type(
+pub fn report_invalid_return_type(
     context: &InferContext,
     object_range: impl Ranged,
     return_type_range: impl Ranged,
@@ -3600,7 +3596,7 @@ pub(super) fn report_invalid_return_type(
     );
 }
 
-pub(super) fn report_invalid_generator_function_return_type(
+pub fn report_invalid_generator_function_return_type(
     context: &InferContext,
     return_type_range: TextRange,
     inferred_return: KnownClass,
@@ -3635,7 +3631,7 @@ pub(super) fn report_invalid_generator_function_return_type(
     diag.info(format_args!("See {link} for more details"));
 }
 
-pub(super) fn report_implicit_return_type(
+pub fn report_implicit_return_type(
     context: &InferContext,
     range: impl Ranged,
     expected_ty: Type,
@@ -3706,7 +3702,7 @@ pub(super) fn report_implicit_return_type(
     }
 }
 
-pub(super) fn report_invalid_type_checking_constant(context: &InferContext, node: AnyNodeRef) {
+pub fn report_invalid_type_checking_constant(context: &InferContext, node: AnyNodeRef) {
     let Some(builder) = context.report_lint(&INVALID_TYPE_CHECKING_CONSTANT, node) else {
         return;
     };
@@ -3715,7 +3711,7 @@ pub(super) fn report_invalid_type_checking_constant(context: &InferContext, node
     );
 }
 
-pub(super) fn report_possibly_unresolved_reference(
+pub fn report_possibly_unresolved_reference(
     context: &InferContext,
     expr_name_node: &ast::ExprName,
 ) {
@@ -3727,7 +3723,7 @@ pub(super) fn report_possibly_unresolved_reference(
     builder.into_diagnostic(format_args!("Name `{id}` used when possibly not defined"));
 }
 
-pub(super) fn report_possibly_missing_attribute(
+pub fn report_possibly_missing_attribute(
     context: &InferContext,
     target: &ast::ExprAttribute,
     attribute: &str,
@@ -3757,7 +3753,7 @@ pub(super) fn report_possibly_missing_attribute(
     };
 }
 
-pub(super) fn report_invalid_exception_tuple_caught<'db, 'ast>(
+pub fn report_invalid_exception_tuple_caught<'db, 'ast>(
     context: &InferContext<'db, 'ast>,
     node: &'ast ast::ExprTuple,
     node_type: Type<'db>,
@@ -3791,7 +3787,7 @@ pub(super) fn report_invalid_exception_tuple_caught<'db, 'ast>(
     );
 }
 
-pub(super) fn report_invalid_exception_caught(context: &InferContext, node: &ast::Expr, ty: Type) {
+pub fn report_invalid_exception_caught(context: &InferContext, node: &ast::Expr, ty: Type) {
     let Some(builder) = context.report_lint(&INVALID_EXCEPTION_CAUGHT, node) else {
         return;
     };
@@ -3822,7 +3818,7 @@ pub(super) fn report_invalid_exception_caught(context: &InferContext, node: &ast
     );
 }
 
-pub(crate) fn report_invalid_exception_raised(
+pub fn report_invalid_exception_raised(
     context: &InferContext,
     raised_node: &ast::Expr,
     raise_type: Type,
@@ -3844,7 +3840,7 @@ pub(crate) fn report_invalid_exception_raised(
     }
 }
 
-pub(crate) fn report_invalid_exception_cause(context: &InferContext, node: &ast::Expr, ty: Type) {
+pub fn report_invalid_exception_cause(context: &InferContext, node: &ast::Expr, ty: Type) {
     let Some(builder) = context.report_lint(&INVALID_RAISE, node) else {
         return;
     };
@@ -3866,7 +3862,7 @@ pub(crate) fn report_invalid_exception_cause(context: &InferContext, node: &ast:
     );
 }
 
-pub(crate) fn report_instance_layout_conflict(
+pub fn report_instance_layout_conflict(
     context: &InferContext,
     header_range: TextRange,
     base_nodes: Option<&[ast::Expr]>,
@@ -3960,7 +3956,7 @@ pub(crate) fn report_instance_layout_conflict(
 
 /// Emit a diagnostic for a metaclass conflict where both conflicting metaclasses
 /// are inherited from base classes.
-pub(super) fn report_conflicting_metaclass_from_bases(
+pub fn report_conflicting_metaclass_from_bases(
     context: &InferContext,
     node: AnyNodeRef,
     class_name: &str,
@@ -3992,15 +3988,10 @@ pub(super) fn report_conflicting_metaclass_from_bases(
 /// The inner data is an `IndexMap` to ensure that diagnostics regarding conflicting disjoint bases
 /// are reported in a stable order.
 #[derive(Debug, Default)]
-pub(super) struct IncompatibleBases<'db>(FxIndexMap<DisjointBase<'db>, IncompatibleBaseInfo<'db>>);
+pub struct IncompatibleBases<'db>(FxIndexMap<DisjointBase<'db>, IncompatibleBaseInfo<'db>>);
 
 impl<'db> IncompatibleBases<'db> {
-    pub(super) fn insert(
-        &mut self,
-        base: DisjointBase<'db>,
-        node_index: usize,
-        class: ClassLiteral<'db>,
-    ) {
+    pub fn insert(&mut self, base: DisjointBase<'db>, node_index: usize, class: ClassLiteral<'db>) {
         let info = IncompatibleBaseInfo {
             node_index,
             originating_base: class,
@@ -4015,14 +4006,14 @@ impl<'db> IncompatibleBases<'db> {
         format_enumeration(bad_base_names)
     }
 
-    pub(super) fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.0.len()
     }
 
     /// Two disjoint bases are allowed to coexist in an MRO if one is a subclass of the other.
     /// This method therefore removes any entry in `self` that is a subclass of one or more
     /// other entries also contained in `self`.
-    pub(super) fn remove_redundant_entries(&mut self, db: &'db dyn Db) {
+    pub fn remove_redundant_entries(&mut self, db: &'db dyn Db) {
         self.0 = self
             .0
             .iter()
@@ -4053,7 +4044,7 @@ impl<'a, 'db> IntoIterator for &'a IncompatibleBases<'db> {
 
 /// Information about which class base the "disjoint base" stems from
 #[derive(Debug, Copy, Clone)]
-pub(super) struct IncompatibleBaseInfo<'db> {
+pub struct IncompatibleBaseInfo<'db> {
     /// The index of the problematic base in the [`ast::StmtClassDef`]'s bases list.
     node_index: usize,
 
@@ -4066,7 +4057,7 @@ pub(super) struct IncompatibleBaseInfo<'db> {
     originating_base: ClassLiteral<'db>,
 }
 
-pub(crate) fn report_invalid_arguments_to_annotated(
+pub fn report_invalid_arguments_to_annotated(
     context: &InferContext,
     subscript: &ast::ExprSubscript,
 ) {
@@ -4079,7 +4070,7 @@ pub(crate) fn report_invalid_arguments_to_annotated(
     );
 }
 
-pub(crate) fn report_invalid_argument_number_to_special_form(
+pub fn report_invalid_argument_number_to_special_form(
     context: &InferContext,
     subscript: &ast::ExprSubscript,
     special_form: impl Into<SpecialFormType>,
@@ -4100,7 +4091,7 @@ pub(crate) fn report_invalid_argument_number_to_special_form(
     }
 }
 
-pub(crate) fn report_bad_argument_to_get_protocol_members(
+pub fn report_bad_argument_to_get_protocol_members(
     context: &InferContext,
     call: &ast::ExprCall,
     class: ClassLiteral,
@@ -4135,7 +4126,7 @@ pub(crate) fn report_bad_argument_to_get_protocol_members(
     diagnostic.info("See https://typing.python.org/en/latest/spec/protocol.html#");
 }
 
-pub(crate) fn report_bad_argument_to_protocol_interface(
+pub fn report_bad_argument_to_protocol_interface(
     context: &InferContext,
     call: &ast::ExprCall,
     param_type: Type,
@@ -4170,7 +4161,7 @@ pub(crate) fn report_bad_argument_to_protocol_interface(
     diagnostic.info("See https://typing.python.org/en/latest/spec/protocol.html");
 }
 
-pub(crate) fn report_invalid_arguments_to_callable(
+pub fn report_invalid_arguments_to_callable(
     context: &InferContext,
     subscript: &ast::ExprSubscript,
 ) {
@@ -4182,7 +4173,7 @@ pub(crate) fn report_invalid_arguments_to_callable(
     ));
 }
 
-pub(crate) fn report_invalid_class_match_pattern<T: Ranged>(
+pub fn report_invalid_class_match_pattern<T: Ranged>(
     context: &InferContext,
     pattern_cls: T,
     cls_ty: Type,
@@ -4198,7 +4189,7 @@ pub(crate) fn report_invalid_class_match_pattern<T: Ranged>(
     diagnostic.set_primary_message("This will raise `TypeError` at runtime");
 }
 
-pub(crate) fn add_type_expression_reference_link<'db, 'ctx>(
+pub fn add_type_expression_reference_link<'db, 'ctx>(
     mut diag: LintDiagnosticGuard<'db, 'ctx>,
 ) -> LintDiagnosticGuard<'db, 'ctx> {
     diag.info("See the following page for a reference on valid type expressions:");
@@ -4208,7 +4199,7 @@ pub(crate) fn add_type_expression_reference_link<'db, 'ctx>(
     diag
 }
 
-pub(crate) fn report_runtime_check_against_non_runtime_checkable_protocol(
+pub fn report_runtime_check_against_non_runtime_checkable_protocol(
     context: &InferContext,
     call: &ast::ExprCall,
     protocol: ProtocolClass,
@@ -4232,7 +4223,7 @@ pub(crate) fn report_runtime_check_against_non_runtime_checkable_protocol(
     diagnostic.info(format_args!("See {RUNTIME_CHECKABLE_DOCS_URL}"));
 }
 
-pub(crate) fn report_issubclass_check_against_protocol_with_non_method_members<'db>(
+pub fn report_issubclass_check_against_protocol_with_non_method_members<'db>(
     context: &'db InferContext<'db, '_>,
     call: &ast::ExprCall,
     protocol: ProtocolClass<'db>,
@@ -4295,7 +4286,7 @@ pub(crate) fn report_issubclass_check_against_protocol_with_non_method_members<'
     }
 }
 
-pub(crate) fn report_runtime_check_against_typed_dict(
+pub fn report_runtime_check_against_typed_dict(
     context: &InferContext,
     call: &ast::ExprCall,
     class: ClassLiteral,
@@ -4312,7 +4303,7 @@ pub(crate) fn report_runtime_check_against_typed_dict(
     diagnostic.set_primary_message("This call will raise `TypeError` at runtime");
 }
 
-pub(crate) fn report_match_pattern_against_non_runtime_checkable_protocol<T: Ranged>(
+pub fn report_match_pattern_against_non_runtime_checkable_protocol<T: Ranged>(
     context: &InferContext,
     pattern_cls: T,
     protocol: ProtocolClass,
@@ -4334,7 +4325,7 @@ pub(crate) fn report_match_pattern_against_non_runtime_checkable_protocol<T: Ran
     diagnostic.info(format_args!("See {RUNTIME_CHECKABLE_DOCS_URL}"));
 }
 
-pub(crate) fn report_match_pattern_against_typed_dict<T: Ranged>(
+pub fn report_match_pattern_against_typed_dict<T: Ranged>(
     context: &InferContext,
     pattern_cls: T,
     class: ClassLiteral,
@@ -4370,7 +4361,7 @@ fn add_non_runtime_checkable_protocol_context<'db>(
     diagnostic.sub(class_def_diagnostic);
 }
 
-pub(crate) fn report_attempted_protocol_instantiation(
+pub fn report_attempted_protocol_instantiation(
     context: &InferContext,
     call: &ast::ExprCall,
     protocol: ProtocolClass,
@@ -4395,7 +4386,7 @@ pub(crate) fn report_attempted_protocol_instantiation(
     diagnostic.sub(class_def_diagnostic);
 }
 
-pub(crate) fn report_call_to_abstract_method(
+pub fn report_call_to_abstract_method(
     context: &InferContext,
     call: &ast::ExprCall,
     function: FunctionType,
@@ -4419,7 +4410,7 @@ pub(crate) fn report_call_to_abstract_method(
     diag.sub(sub);
 }
 
-pub(crate) fn report_undeclared_protocol_member(
+pub fn report_undeclared_protocol_member(
     context: &InferContext,
     definition: Definition,
     protocol_class: ProtocolClass,
@@ -4512,7 +4503,7 @@ pub(crate) fn report_undeclared_protocol_member(
     ));
 }
 
-pub(crate) fn report_duplicate_bases(
+pub fn report_duplicate_bases(
     context: &InferContext,
     class: StaticClassLiteral,
     duplicate_base_error: &DuplicateBaseError,
@@ -4557,7 +4548,7 @@ pub(crate) fn report_duplicate_bases(
     diagnostic.sub(sub_diagnostic);
 }
 
-pub(crate) fn report_invalid_or_unsupported_base(
+pub fn report_invalid_or_unsupported_base(
     context: &InferContext,
     base_node: &ast::Expr,
     base_type: Type,
@@ -4667,7 +4658,7 @@ pub(crate) fn report_invalid_or_unsupported_base(
     }
 }
 
-pub(crate) fn report_unsupported_base(
+pub fn report_unsupported_base(
     context: &InferContext,
     base_node: &ast::Expr,
     base_type: Type,
@@ -4708,7 +4699,7 @@ fn report_invalid_base<'ctx, 'db>(
     Some(diagnostic)
 }
 
-pub(crate) fn report_invalid_key_on_typed_dict<'db>(
+pub fn report_invalid_key_on_typed_dict<'db>(
     context: &InferContext<'db, '_>,
     typed_dict_node: AnyNodeRef,
     key_node: AnyNodeRef,
@@ -4788,7 +4779,7 @@ pub(crate) fn report_invalid_key_on_typed_dict<'db>(
     }
 }
 
-pub(super) fn report_namedtuple_field_without_default_after_field_with_default<'db>(
+pub fn report_namedtuple_field_without_default_after_field_with_default<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     (field, field_def): (&str, Option<Definition<'db>>),
@@ -4837,7 +4828,7 @@ pub(super) fn report_namedtuple_field_without_default_after_field_with_default<'
     }
 }
 
-pub(super) fn report_named_tuple_field_with_leading_underscore<'db>(
+pub fn report_named_tuple_field_with_leading_underscore<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     field_name: &str,
@@ -4871,7 +4862,7 @@ pub(super) fn report_named_tuple_field_with_leading_underscore<'db>(
     ));
 }
 
-pub(crate) fn report_missing_typed_dict_key<'db>(
+pub fn report_missing_typed_dict_key<'db>(
     context: &InferContext<'db, '_>,
     constructor_node: AnyNodeRef,
     typed_dict_ty: Type<'db>,
@@ -4886,7 +4877,7 @@ pub(crate) fn report_missing_typed_dict_key<'db>(
     }
 }
 
-pub(crate) fn report_cannot_pop_required_field_on_typed_dict<'db>(
+pub fn report_cannot_pop_required_field_on_typed_dict<'db>(
     context: &InferContext<'db, '_>,
     key_node: AnyNodeRef,
     typed_dict_ty: Type<'db>,
@@ -4903,14 +4894,14 @@ pub(crate) fn report_cannot_pop_required_field_on_typed_dict<'db>(
 
 /// Enum representing the reason why a key cannot be deleted from a `TypedDict`.
 #[derive(Copy, Clone)]
-pub(crate) enum TypedDictDeleteErrorKind {
+pub enum TypedDictDeleteErrorKind {
     /// The key exists but is required (not `NotRequired`)
     RequiredKey,
     /// The key does not exist in the `TypedDict`
     UnknownKey,
 }
 
-pub(crate) fn report_cannot_delete_typed_dict_key<'db>(
+pub fn report_cannot_delete_typed_dict_key<'db>(
     context: &InferContext<'db, '_>,
     key_node: AnyNodeRef,
     typed_dict_ty: Type<'db>,
@@ -4961,7 +4952,7 @@ pub(crate) fn report_cannot_delete_typed_dict_key<'db>(
     }
 }
 
-pub(crate) fn report_invalid_type_param_order<'db>(
+pub fn report_invalid_type_param_order<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     node: &ast::StmtClassDef,
@@ -5045,7 +5036,7 @@ pub(crate) fn report_invalid_type_param_order<'db>(
     }
 }
 
-pub(crate) fn report_invalid_typevar_default_reference<'db>(
+pub fn report_invalid_typevar_default_reference<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     typevar_with_bad_default: TypeVarInstance<'db>,
@@ -5092,7 +5083,7 @@ pub(crate) fn report_invalid_typevar_default_reference<'db>(
     }
 }
 
-pub(crate) fn report_shadowed_type_variable<'db>(
+pub fn report_shadowed_type_variable<'db>(
     context: &InferContext<'db, '_>,
     typevar_name: &ast::name::Name,
     kind: &str,
@@ -5129,7 +5120,7 @@ pub(crate) fn report_shadowed_type_variable<'db>(
 // I tried refactoring this function to placate Clippy,
 // but it did not improve readability! -- AW.
 #[expect(clippy::too_many_arguments)]
-pub(super) fn report_invalid_method_override<'db>(
+pub fn report_invalid_method_override<'db>(
     context: &InferContext<'db, '_>,
     member: &str,
     subclass: ClassType<'db>,
@@ -5314,7 +5305,7 @@ pub(super) fn report_invalid_method_override<'db>(
     }
 }
 
-pub(super) fn report_overridden_final_method<'db>(
+pub fn report_overridden_final_method<'db>(
     context: &InferContext<'db, '_>,
     member: &str,
     subclass_definition: Definition<'db>,
@@ -5491,7 +5482,7 @@ pub(super) fn report_overridden_final_method<'db>(
     }
 }
 
-pub(super) fn report_overridden_final_variable<'db>(
+pub fn report_overridden_final_variable<'db>(
     context: &InferContext<'db, '_>,
     member: &str,
     subclass_definition: Definition<'db>,
@@ -5545,7 +5536,7 @@ pub(super) fn report_overridden_final_variable<'db>(
     }
 }
 
-pub(super) fn report_unsupported_comparison<'db>(
+pub fn report_unsupported_comparison<'db>(
     context: &InferContext<'db, '_>,
     error: &UnsupportedComparisonError<'db>,
     range: TextRange,
@@ -5652,7 +5643,7 @@ pub(super) fn report_unsupported_comparison<'db>(
     }
 }
 
-pub(super) fn report_unsupported_augmented_assignment<'db>(
+pub fn report_unsupported_augmented_assignment<'db>(
     context: &InferContext<'db, '_>,
     stmt: &ast::StmtAugAssign,
     left_ty: Type<'db>,
@@ -5672,7 +5663,7 @@ pub(super) fn report_unsupported_augmented_assignment<'db>(
     );
 }
 
-pub(super) fn report_unsupported_binary_operation<'db>(
+pub fn report_unsupported_binary_operation<'db>(
     context: &InferContext<'db, '_>,
     binary_expression: &ast::ExprBinOp,
     left_ty: Type<'db>,
@@ -5766,7 +5757,7 @@ fn report_unsupported_binary_operation_impl<'a>(
     Some(diagnostic)
 }
 
-pub(super) fn report_bad_frozen_dataclass_inheritance<'db>(
+pub fn report_bad_frozen_dataclass_inheritance<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     class_node: &ast::StmtClassDef,
@@ -5854,7 +5845,7 @@ pub(super) fn report_bad_frozen_dataclass_inheritance<'db>(
     }
 }
 
-pub(super) fn report_invalid_total_ordering(
+pub fn report_invalid_total_ordering(
     context: &InferContext<'_, '_>,
     class: ClassLiteral<'_>,
     decorator: &ast::Decorator,
@@ -5877,7 +5868,7 @@ pub(super) fn report_invalid_total_ordering(
 
 /// Reports an invalid `total_ordering(cls)` function call where the class
 /// does not define any ordering method.
-pub(super) fn report_invalid_total_ordering_call(
+pub fn report_invalid_total_ordering_call(
     context: &InferContext<'_, '_>,
     class: ClassLiteral<'_>,
     call_expression: &ast::ExprCall,
@@ -5908,7 +5899,7 @@ pub(super) fn report_invalid_total_ordering_call(
 /// misconfigured their Python version.
 ///
 /// The function returns `true` if a hint was added, `false` otherwise.
-pub(super) fn hint_if_stdlib_submodule_exists_on_other_versions(
+pub fn hint_if_stdlib_submodule_exists_on_other_versions(
     db: &dyn Db,
     diagnostic: &mut Diagnostic,
     full_submodule_name: &ModuleName,
@@ -5958,7 +5949,7 @@ pub(super) fn hint_if_stdlib_submodule_exists_on_other_versions(
 /// standard library and `foo.bar` *does* exist as an attribute on *other*
 /// Python versions, we add a hint to the diagnostic that the user may have
 /// misconfigured their Python version.
-pub(super) fn hint_if_stdlib_attribute_exists_on_other_versions(
+pub fn hint_if_stdlib_attribute_exists_on_other_versions(
     db: &dyn Db,
     mut diagnostic: LintDiagnosticGuard,
     value_type: Type,

@@ -139,11 +139,11 @@ pub enum KnownClass {
 }
 
 impl KnownClass {
-    pub(crate) const fn is_bool(self) -> bool {
+    pub const fn is_bool(self) -> bool {
         matches!(self, Self::Bool)
     }
 
-    pub(crate) const fn is_special_form(self) -> bool {
+    pub const fn is_special_form(self) -> bool {
         matches!(self, Self::SpecialForm)
     }
 
@@ -152,7 +152,7 @@ impl KnownClass {
     ///
     /// Returns `None` for `KnownClass::Tuple`, since the truthiness of a tuple
     /// depends on its spec.
-    pub(crate) const fn bool(self) -> Option<Truthiness> {
+    pub const fn bool(self) -> Option<Truthiness> {
         match self {
             // N.B. It's only generally safe to infer `Truthiness::AlwaysTrue` for a `KnownClass`
             // variant if the class's `__bool__` method always returns the same thing *and* the
@@ -254,7 +254,7 @@ impl KnownClass {
 
     /// Return `true` if this class is a subclass of `enum.Enum` *and* has enum members, i.e.
     /// if it is an "actual" enum, not `enum.Enum` itself or a similar custom enum class.
-    pub(crate) const fn is_enum_subclass_with_members(self) -> bool {
+    pub const fn is_enum_subclass_with_members(self) -> bool {
         match self {
             KnownClass::Bool
             | KnownClass::Object
@@ -343,7 +343,7 @@ impl KnownClass {
     }
 
     /// Return `true` if this class is a (true) subclass of `typing.TypedDict`.
-    pub(crate) const fn is_typed_dict_subclass(self) -> bool {
+    pub const fn is_typed_dict_subclass(self) -> bool {
         match self {
             KnownClass::Bool
             | KnownClass::Object
@@ -431,7 +431,7 @@ impl KnownClass {
         }
     }
 
-    pub(crate) const fn is_tuple_subclass(self) -> bool {
+    pub const fn is_tuple_subclass(self) -> bool {
         match self {
             KnownClass::Tuple | KnownClass::VersionInfo => true,
 
@@ -531,7 +531,7 @@ impl KnownClass {
     ///    on, but it causes problems if we attempt to infer the types of their bases
     ///    too soon.
     /// 2. It's probably more performant.
-    pub(crate) const fn is_protocol(self) -> bool {
+    pub const fn is_protocol(self) -> bool {
         match self {
             Self::SupportsIndex
             | Self::Iterable
@@ -625,7 +625,7 @@ impl KnownClass {
     /// classes need special treatment in some places. For example, implicit usages of `Self` should not
     /// be eagerly replaced with the fallback class itself. Instead, `Self` should eventually be treated
     /// as referring to the destination type (e.g. the actual `NamedTuple`).
-    pub(crate) const fn is_fallback_class(self) -> bool {
+    pub const fn is_fallback_class(self) -> bool {
         match self {
             KnownClass::Bool
             | KnownClass::Object
@@ -712,7 +712,7 @@ impl KnownClass {
         }
     }
 
-    pub(crate) fn name(self, db: &dyn Db) -> &'static str {
+    pub fn name(self, db: &dyn Db) -> &'static str {
         match self {
             Self::Bool => "bool",
             Self::Object => "object",
@@ -828,7 +828,7 @@ impl KnownClass {
         }
     }
 
-    pub(crate) fn display(self, db: &dyn Db) -> impl std::fmt::Display + '_ {
+    pub fn display(self, db: &dyn Db) -> impl std::fmt::Display + '_ {
         struct KnownClassDisplay<'db> {
             db: &'db dyn Db,
             class: KnownClass,
@@ -872,7 +872,7 @@ impl KnownClass {
     /// Similar to [`KnownClass::to_instance`], but returns the Unknown-specialization where each type
     /// parameter is specialized to `Unknown`.
     #[track_caller]
-    pub(crate) fn to_instance_unknown(self, db: &dyn Db) -> Type<'_> {
+    pub fn to_instance_unknown(self, db: &dyn Db) -> Type<'_> {
         debug_assert_ne!(
             self,
             KnownClass::Tuple,
@@ -888,7 +888,7 @@ impl KnownClass {
     ///
     /// If the class cannot be found in typeshed, or if you provide a specialization with the wrong
     /// number of types, a debug-level log message will be emitted stating this.
-    pub(crate) fn to_specialized_class_type<'t, 'db, T>(
+    pub fn to_specialized_class_type<'t, 'db, T>(
         self,
         db: &'db dyn Db,
         specialization: T,
@@ -942,7 +942,7 @@ impl KnownClass {
     /// If the class cannot be found in typeshed, or if you provide a specialization with the wrong
     /// number of types, a debug-level log message will be emitted stating this.
     #[track_caller]
-    pub(crate) fn to_specialized_instance<'t, 'db, T>(
+    pub fn to_specialized_instance<'t, 'db, T>(
         self,
         db: &'db dyn Db,
         specialization: T,
@@ -991,7 +991,7 @@ impl KnownClass {
     /// Lookup a [`KnownClass`] in typeshed and return a [`Type`] representing that class-literal.
     ///
     /// If the class cannot be found in typeshed, a debug-level log message will be emitted stating this.
-    pub(crate) fn try_to_class_literal(self, db: &dyn Db) -> Option<StaticClassLiteral<'_>> {
+    pub fn try_to_class_literal(self, db: &dyn Db) -> Option<StaticClassLiteral<'_>> {
         #[salsa::interned(heap_size=ruff_memory_usage::heap_size)]
         struct KnownClassArgument {
             class: KnownClass,
@@ -1043,7 +1043,7 @@ impl KnownClass {
     /// Lookup a [`KnownClass`] in typeshed and return a [`Type`] representing that class-literal.
     ///
     /// If the class cannot be found in typeshed, a debug-level log message will be emitted stating this.
-    pub(crate) fn to_class_literal(self, db: &dyn Db) -> Type<'_> {
+    pub fn to_class_literal(self, db: &dyn Db) -> Type<'_> {
         self.try_to_class_literal(db)
             .map(|class| Type::ClassLiteral(ClassLiteral::Static(class)))
             .unwrap_or_else(Type::unknown)
@@ -1062,12 +1062,12 @@ impl KnownClass {
 
     /// Return `true` if this symbol can be resolved to a class definition `class` in typeshed,
     /// *and* `class` is a subclass of `other`.
-    pub(crate) fn is_subclass_of<'db>(self, db: &'db dyn Db, other: ClassType<'db>) -> bool {
+    pub fn is_subclass_of<'db>(self, db: &'db dyn Db, other: ClassType<'db>) -> bool {
         self.try_to_class_literal_without_logging(db)
             .is_ok_and(|class| class.is_subclass_of(db, None, other))
     }
 
-    pub(crate) fn when_subclass_of<'db, 'c>(
+    pub fn when_subclass_of<'db, 'c>(
         self,
         db: &'db dyn Db,
         other: ClassType<'db>,
@@ -1077,7 +1077,7 @@ impl KnownClass {
     }
 
     /// Return the module in which we should look up the definition for this class
-    pub(super) fn canonical_module(self, db: &dyn Db) -> KnownModule {
+    pub fn canonical_module(self, db: &dyn Db) -> KnownModule {
         match self {
             Self::Bool
             | Self::Object
@@ -1198,7 +1198,7 @@ impl KnownClass {
     /// Returns `Some(true)` if all instances of this `KnownClass` compare equal.
     /// Returns `None` for `KnownClass::Tuple`, since whether or not a tuple type
     /// is single-valued depends on the tuple spec.
-    pub(crate) const fn is_single_valued(self) -> Option<bool> {
+    pub const fn is_single_valued(self) -> Option<bool> {
         match self {
             Self::NoneType
             | Self::NoDefaultType
@@ -1291,7 +1291,7 @@ impl KnownClass {
     /// Is this class a singleton class?
     ///
     /// A singleton class is a class where it is known that only one instance can ever exist at runtime.
-    pub(crate) const fn is_singleton(self) -> bool {
+    pub const fn is_singleton(self) -> bool {
         match self {
             Self::NoneType
             | Self::EllipsisType
@@ -1380,11 +1380,7 @@ impl KnownClass {
         }
     }
 
-    pub(crate) fn try_from_file_and_name(
-        db: &dyn Db,
-        file: File,
-        class_name: &str,
-    ) -> Option<Self> {
+    pub fn try_from_file_and_name(db: &dyn Db, file: File, class_name: &str) -> Option<Self> {
         // We assert that this match is exhaustive over the right-hand side in the unit test
         // `known_class_roundtrip_from_str()`
         let candidates: &[Self] = match class_name {
@@ -1586,7 +1582,7 @@ impl KnownClass {
 
     /// Evaluate a call to this known class, emit any diagnostics that are necessary
     /// as a result of the call, and return the type that results from the call.
-    pub(crate) fn check_call<'db>(
+    pub fn check_call<'db>(
         self,
         context: &InferContext<'db, '_>,
         index: &SemanticIndex<'db>,
@@ -1731,7 +1727,7 @@ impl KnownClass {
 
 /// Enumeration of ways in which looking up a [`KnownClass`] in typeshed could fail.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum KnownClassLookupError<'db> {
+pub enum KnownClassLookupError<'db> {
     /// There is no symbol by that name in the expected typeshed module.
     ClassNotFound,
     /// There is a symbol by that name in the expected typeshed module,

@@ -10,7 +10,7 @@ use crate::semantic_index::symbol::Symbol;
 /// pre-walk so that we can synthesize "loop header definitions" that are visible to the loop body
 /// (and condition). See `LoopHeader`.
 /// TODO: Handle `nonlocal` bindings from nested scopes somehow.
-pub(crate) fn collect_while_loop_bindings(while_stmt: &ast::StmtWhile) -> Vec<PlaceExpr> {
+pub fn collect_while_loop_bindings(while_stmt: &ast::StmtWhile) -> Vec<PlaceExpr> {
     let mut collector = LoopBindingsVisitor::default();
     collector.visit_expr(&while_stmt.test);
     collector.visit_body(&while_stmt.body);
@@ -18,7 +18,7 @@ pub(crate) fn collect_while_loop_bindings(while_stmt: &ast::StmtWhile) -> Vec<Pl
 }
 
 /// Like `collect_while_loop_bindings` above, but for `for` loops.
-pub(crate) fn collect_for_loop_bindings(for_stmt: &ast::StmtFor) -> Vec<PlaceExpr> {
+pub fn collect_for_loop_bindings(for_stmt: &ast::StmtFor) -> Vec<PlaceExpr> {
     let mut collector = LoopBindingsVisitor::default();
     collector.add_place_from_target(&for_stmt.target);
     collector.visit_body(&for_stmt.body);
@@ -29,12 +29,12 @@ pub(crate) fn collect_for_loop_bindings(for_stmt: &ast::StmtFor) -> Vec<PlaceExp
 ///
 /// This visitor doesn't walk nested function/class definitions since those are different scopes.
 #[derive(Debug, Default)]
-pub(crate) struct LoopBindingsVisitor {
+pub struct LoopBindingsVisitor {
     bound_places: Vec<PlaceExpr>,
 }
 
 impl LoopBindingsVisitor {
-    pub(crate) fn add_place_from_target(&mut self, target: &ast::Expr) {
+    pub fn add_place_from_target(&mut self, target: &ast::Expr) {
         match target {
             ast::Expr::Name(name) => {
                 self.bound_places.push(PlaceExpr::from_expr_name(name));

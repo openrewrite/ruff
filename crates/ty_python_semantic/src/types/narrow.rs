@@ -37,7 +37,7 @@ use std::collections::hash_map::Entry;
 /// This is a conservative upper bound - all places that actually get narrowed
 /// will be in this set, but there may be additional places that end up not
 /// being narrowed after full analysis.
-pub(crate) type PossiblyNarrowedPlaces = FxHashSet<ScopedPlaceId>;
+pub type PossiblyNarrowedPlaces = FxHashSet<ScopedPlaceId>;
 
 /// Return the type constraint that `test` (if true) would place on `symbol`, if any.
 ///
@@ -55,7 +55,7 @@ pub(crate) type PossiblyNarrowedPlaces = FxHashSet<ScopedPlaceId>;
 ///
 /// But if we called this with the same `test` expression, but the `symbol` of `y`, no
 /// constraint is applied to that symbol, so we'd just return `None`.
-pub(crate) fn infer_narrowing_constraint<'db>(
+pub fn infer_narrowing_constraint<'db>(
     db: &'db dyn Db,
     predicate: Predicate<'db>,
     place: ScopedPlaceId,
@@ -360,7 +360,7 @@ impl<'db> Conjunctions<'db> {
 ///   => `NarrowingConstraint { intersection_disjuncts: [A], replacement_disjuncts: [B] }`
 ///   => evaluates to `(P & A) | B`, where `P` is our previously-known type
 #[derive(Hash, PartialEq, Debug, Eq, Clone, salsa::Update, get_size2::GetSize)]
-pub(crate) struct NarrowingConstraint<'db> {
+pub struct NarrowingConstraint<'db> {
     /// Intersection constraint (from `isinstance()` narrowing comparisons, `TypeIs`, and
     /// similar). We keep these as a disjunction of conjunctions to avoid constructing
     /// union/intersection types while merging constraints.
@@ -377,7 +377,7 @@ pub(crate) struct NarrowingConstraint<'db> {
 impl<'db> NarrowingConstraint<'db> {
     /// Create an "intersection" constraint: the previous type will be
     /// intersected with this constraint
-    pub(crate) fn intersection(constraint: Type<'db>) -> Self {
+    pub fn intersection(constraint: Type<'db>) -> Self {
         Self {
             intersection_disjuncts: smallvec_inline![Conjunctions::singleton(constraint)],
             replacement_disjuncts: smallvec![],
@@ -395,7 +395,7 @@ impl<'db> NarrowingConstraint<'db> {
 
     /// Merge two constraints, taking their intersection but respecting "replacement" semantics (with
     /// `other` winning)
-    pub(crate) fn merge_constraint_and(&self, other: Self) -> Self {
+    pub fn merge_constraint_and(&self, other: Self) -> Self {
         // Distribute AND over OR: (A1 | A2 | ...) AND (B1 | B2 | ...)
         // becomes (A1 & B1) | (A1 & B2) | ... | (A2 & B1) | ...
         //
@@ -449,7 +449,7 @@ impl<'db> NarrowingConstraint<'db> {
     /// Evaluate the type this effectively constrains to
     ///
     /// Forgets whether each constraint originated from a `replacement` disjunct or not
-    pub(crate) fn evaluate_constraint_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn evaluate_constraint_type(self, db: &'db dyn Db) -> Type<'db> {
         let mut union = UnionBuilder::new(db);
         for conjunctions in self
             .replacement_disjuncts
@@ -2212,23 +2212,23 @@ fn all_matching_tuple_elements_have_literal_types<'db>(
 ///
 /// This mirrors the structure of `NarrowingConstraintsBuilder` but only computes which places
 /// *could* be narrowed, without performing type inference to determine the actual constraints.
-pub(crate) struct PossiblyNarrowedPlacesBuilder<'db, 'a> {
+pub struct PossiblyNarrowedPlacesBuilder<'db, 'a> {
     db: &'db dyn Db,
     places: &'a PlaceTableBuilder,
 }
 
 impl<'db, 'a> PossiblyNarrowedPlacesBuilder<'db, 'a> {
-    pub(crate) fn new(db: &'db dyn Db, places: &'a PlaceTableBuilder) -> Self {
+    pub fn new(db: &'db dyn Db, places: &'a PlaceTableBuilder) -> Self {
         Self { db, places }
     }
 
     /// Compute possibly narrowed places for an expression predicate.
-    pub(crate) fn expression(self, expr: &ast::Expr) -> PossiblyNarrowedPlaces {
+    pub fn expression(self, expr: &ast::Expr) -> PossiblyNarrowedPlaces {
         self.expression_node(expr)
     }
 
     /// Compute possibly narrowed places for a pattern predicate.
-    pub(crate) fn pattern(
+    pub fn pattern(
         self,
         pattern: PatternPredicate<'db>,
         module: &ParsedModuleRef,

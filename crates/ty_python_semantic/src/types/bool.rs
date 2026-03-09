@@ -18,7 +18,7 @@ impl<'db> Type<'db> {
     /// This method should only be used outside type checking or when evaluating if a type
     /// is truthy or falsy in a context where Python doesn't make an implicit `bool` call.
     /// Use [`try_bool`](Self::try_bool) for type checking or implicit `bool` calls.
-    pub(crate) fn bool(&self, db: &'db dyn Db) -> Truthiness {
+    pub fn bool(&self, db: &'db dyn Db) -> Truthiness {
         self.try_bool_impl(db, true, &TryBoolVisitor::new(Ok(Truthiness::Ambiguous)))
             .unwrap_or_else(|err| err.fallback_truthiness())
     }
@@ -29,7 +29,7 @@ impl<'db> Type<'db> {
     /// when `bool(x)` is called on an object `x`.
     ///
     /// Returns an error if the type doesn't implement `__bool__` correctly.
-    pub(crate) fn try_bool(&self, db: &'db dyn Db) -> Result<Truthiness, BoolError<'db>> {
+    pub fn try_bool(&self, db: &'db dyn Db) -> Result<Truthiness, BoolError<'db>> {
         self.try_bool_impl(db, false, &TryBoolVisitor::new(Ok(Truthiness::Ambiguous)))
     }
 
@@ -319,12 +319,12 @@ impl<'db> Type<'db> {
 }
 
 /// A [`CycleDetector`] that is used in `try_bool` methods.
-pub(crate) type TryBoolVisitor<'db> =
+pub type TryBoolVisitor<'db> =
     CycleDetector<TryBool, Type<'db>, Result<Truthiness, BoolError<'db>>>;
-pub(crate) struct TryBool;
+pub struct TryBool;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum BoolError<'db> {
+pub enum BoolError<'db> {
     /// The type has a `__bool__` attribute but it can't be called.
     NotCallable { not_boolable_type: Type<'db> },
 
@@ -355,7 +355,7 @@ pub(crate) enum BoolError<'db> {
 }
 
 impl<'db> BoolError<'db> {
-    pub(super) fn fallback_truthiness(&self) -> Truthiness {
+    pub fn fallback_truthiness(&self) -> Truthiness {
         match self {
             BoolError::NotCallable { .. }
             | BoolError::IncorrectReturnType { .. }
@@ -381,7 +381,7 @@ impl<'db> BoolError<'db> {
         }
     }
 
-    pub(super) fn report_diagnostic(&self, context: &InferContext, condition: impl Ranged) {
+    pub fn report_diagnostic(&self, context: &InferContext, condition: impl Ranged) {
         self.report_diagnostic_impl(context, condition.range());
     }
 

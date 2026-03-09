@@ -9,7 +9,7 @@ use ruff_text_size::Ranged;
 /// - `P.args` and `P.kwargs` must always be used together
 /// - When `*args: P.args` is present, `**kwargs: P.kwargs` must also be present (same P)
 /// - No keyword-only parameters are allowed between `*args: P.args` and `**kwargs: P.kwargs`
-pub(super) fn validate_paramspec_components<'db>(
+pub fn validate_paramspec_components<'db>(
     context: &'db InferContext<'db, '_>,
     parameters: &ast::Parameters,
     infer_type: impl Fn(&ast::Expr) -> Type<'db>,

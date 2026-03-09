@@ -118,7 +118,7 @@ pub enum SpecialFormType {
 
 impl SpecialFormType {
     /// Return the [`KnownClass`] which this symbol is an instance of
-    pub(crate) const fn class(self) -> KnownClass {
+    pub const fn class(self) -> KnownClass {
         match self {
             Self::Annotated
             | Self::Literal
@@ -166,20 +166,16 @@ impl SpecialFormType {
     /// For example, the symbol `typing.Literal` is an instance of `typing._SpecialForm`,
     /// so `SpecialFormType::Literal.instance_fallback(db)`
     /// returns `Type::NominalInstance(NominalInstanceType { class: <typing._SpecialForm> })`.
-    pub(super) fn instance_fallback(self, db: &dyn Db) -> Type<'_> {
+    pub fn instance_fallback(self, db: &dyn Db) -> Type<'_> {
         self.class().to_instance(db)
     }
 
     /// Return `true` if this symbol is an instance of `class`.
-    pub(super) fn is_instance_of(self, db: &dyn Db, class: ClassType) -> bool {
+    pub fn is_instance_of(self, db: &dyn Db, class: ClassType) -> bool {
         self.class().is_subclass_of(db, class)
     }
 
-    pub(super) fn try_from_file_and_name(
-        db: &dyn Db,
-        file: File,
-        symbol_name: &str,
-    ) -> Option<Self> {
+    pub fn try_from_file_and_name(db: &dyn Db, file: File, symbol_name: &str) -> Option<Self> {
         let candidate = Self::from_name(symbol_name)?;
         candidate
             .check_module(file_to_module(db, file)?.known(db)?)
@@ -366,7 +362,7 @@ impl SpecialFormType {
     ///
     /// Most variants can only exist in one module, which is the same as `self.class().canonical_module(db)`.
     /// Some variants could validly be defined in either `typing` or `typing_extensions`, however.
-    pub(super) fn check_module(self, module: KnownModule) -> bool {
+    pub fn check_module(self, module: KnownModule) -> bool {
         match self {
             Self::TypeQualifier(TypeQualifier::ClassVar)
             | Self::LegacyStdlibAlias(_)
@@ -413,14 +409,14 @@ impl SpecialFormType {
         }
     }
 
-    pub(super) fn to_meta_type(self, db: &dyn Db) -> Type<'_> {
+    pub fn to_meta_type(self, db: &dyn Db) -> Type<'_> {
         self.class().to_class_literal(db)
     }
 
     /// Return true if this special form is callable at runtime.
     /// Most special forms are not callable (they are type constructors that are subscripted),
     /// but some like `TypedDict` and collection constructors can be called.
-    pub(super) const fn is_callable(self) -> bool {
+    pub const fn is_callable(self) -> bool {
         match self {
             // TypedDict can be called as a constructor to create TypedDict types
             Self::TypedDict
@@ -480,7 +476,7 @@ impl SpecialFormType {
 
     /// Return `true` if this special form is valid as the second argument
     /// to `issubclass()` and `isinstance()` calls.
-    pub(super) const fn is_valid_isinstance_target(self) -> bool {
+    pub const fn is_valid_isinstance_target(self) -> bool {
         match self {
             Self::Callable
             | Self::LegacyStdlibAlias(_)
@@ -519,7 +515,7 @@ impl SpecialFormType {
     }
 
     /// Return the name of the symbol at runtime
-    pub(super) const fn name(self) -> &'static str {
+    pub const fn name(self) -> &'static str {
         match self {
             SpecialFormType::Any => "Any",
             SpecialFormType::Annotated => "Annotated",
@@ -609,7 +605,7 @@ impl SpecialFormType {
         }
     }
 
-    pub(super) fn definition(self, db: &dyn Db) -> Option<TypeDefinition<'_>> {
+    pub fn definition(self, db: &dyn Db) -> Option<TypeDefinition<'_>> {
         self.definition_modules()
             .iter()
             .find_map(|module| {
@@ -630,7 +626,7 @@ impl SpecialFormType {
     ///
     /// This is called for the "misc" special forms that are not aliases, type qualifiers,
     /// `Tuple`, `Type`, or `Callable` (those are handled by their respective call sites).
-    pub(super) fn in_type_expression<'db>(
+    pub fn in_type_expression<'db>(
         self,
         db: &'db dyn Db,
         scope_id: ScopeId<'db>,
@@ -773,7 +769,7 @@ pub enum LegacyStdlibAlias {
 }
 
 impl LegacyStdlibAlias {
-    pub(super) const fn alias_spec(self) -> AliasSpec {
+    pub const fn alias_spec(self) -> AliasSpec {
         let (class, expected_argument_number) = match self {
             LegacyStdlibAlias::List => (KnownClass::List, 1),
             LegacyStdlibAlias::Dict => (KnownClass::Dict, 2),
@@ -792,7 +788,7 @@ impl LegacyStdlibAlias {
         }
     }
 
-    pub(super) const fn aliased_class(self) -> KnownClass {
+    pub const fn aliased_class(self) -> KnownClass {
         self.alias_spec().class
     }
 }
@@ -844,7 +840,7 @@ impl std::fmt::Display for TypeQualifier {
 
 /// Information regarding the [`KnownClass`] a [`LegacyStdlibAlias`] refers to.
 #[derive(Debug)]
-pub(super) struct AliasSpec {
-    pub(super) class: KnownClass,
-    pub(super) expected_argument_number: usize,
+pub struct AliasSpec {
+    pub class: KnownClass,
+    pub expected_argument_number: usize,
 }

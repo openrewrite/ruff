@@ -205,7 +205,7 @@ const NUM_FIELD_SPECIFIERS_INLINE: usize = 1;
 /// Similarly, when we encounter a standalone-inferable expression (right-hand side of an
 /// assignment, type narrowing guard), we use the [`infer_expression_types()`] query to ensure we
 /// don't infer its types more than once.
-pub(super) struct TypeInferenceBuilder<'db, 'ast> {
+pub struct TypeInferenceBuilder<'db, 'ast> {
     context: InferContext<'db, 'ast>,
 
     index: &'db SemanticIndex<'db>,
@@ -310,10 +310,10 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     ///
     /// This is a fairly arbitrary number. It should be *far* more than enough
     /// for most use cases, but we can reevaluate it later if useful.
-    pub(super) const MAX_STRING_LITERAL_SIZE: usize = 4096;
+    pub const MAX_STRING_LITERAL_SIZE: usize = 4096;
 
     /// Creates a new builder for inferring types in a region.
-    pub(super) fn new(
+    pub fn new(
         db: &'db dyn Db,
         region: InferenceRegion<'db>,
         index: &'db SemanticIndex<'db>,
@@ -7776,7 +7776,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         (place, constraint_keys)
     }
 
-    pub(super) fn report_unresolved_reference(&self, expr_name_node: &ast::ExprName) {
+    pub fn report_unresolved_reference(&self, expr_name_node: &ast::ExprName) {
         if !self.is_reachable(expr_name_node) {
             return;
         }
@@ -8605,7 +8605,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn finish_expression(mut self) -> ExpressionInference<'db> {
+    pub fn finish_expression(mut self) -> ExpressionInference<'db> {
         self.infer_region();
 
         let Self {
@@ -8677,7 +8677,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn finish_definition(mut self) -> DefinitionInference<'db> {
+    pub fn finish_definition(mut self) -> DefinitionInference<'db> {
         self.infer_region();
 
         let Self {
@@ -8756,7 +8756,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn finish_scope(mut self) -> ScopeInference<'db> {
+    pub fn finish_scope(mut self) -> ScopeInference<'db> {
         self.infer_region();
 
         let Self {
@@ -9338,7 +9338,7 @@ enum BoundOrConstraintsNodes<'ast> {
 /// Report MRO errors for a dynamic class.
 ///
 /// Returns `true` if the MRO is valid, `false` if there were errors.
-pub(super) fn report_dynamic_mro_errors<'db>(
+pub fn report_dynamic_mro_errors<'db>(
     context: &InferContext<'db, '_>,
     dynamic_class: DynamicClassLiteral<'db>,
     call_expr: &ast::ExprCall,

@@ -6,9 +6,9 @@ use crate::types::visitor;
 use crate::types::{Type, TypeQualifiers};
 use crate::{Db, FxOrderSet};
 
-pub(crate) mod builder;
+pub mod builder;
 
-pub(crate) use builder::{IntersectionBuilder, UnionBuilder};
+pub use builder::{IntersectionBuilder, UnionBuilder};
 
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct UnionType<'db> {
@@ -17,10 +17,10 @@ pub struct UnionType<'db> {
     pub elements: Box<[Type<'db>]>,
     /// Whether the value pointed to by this type is recursively defined.
     /// If `Yes`, union literal widening is performed early.
-    pub(crate) recursively_defined: RecursivelyDefined,
+    pub recursively_defined: RecursivelyDefined,
 }
 
-pub(crate) fn walk_union<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_union<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     union: UnionType<'db>,
     visitor: &V,
@@ -66,7 +66,7 @@ impl<'db> UnionType<'db> {
     }
 
     /// Create a union from a list of elements without unpacking type aliases.
-    pub(crate) fn from_elements_leave_aliases<I, T>(db: &'db dyn Db, elements: I) -> Type<'db>
+    pub fn from_elements_leave_aliases<I, T>(db: &'db dyn Db, elements: I) -> Type<'db>
     where
         I: IntoIterator<Item = T>,
         T: Into<Type<'db>>,
@@ -80,7 +80,7 @@ impl<'db> UnionType<'db> {
             .build()
     }
 
-    pub(crate) fn from_elements_cycle_recovery<I, T>(db: &'db dyn Db, elements: I) -> Type<'db>
+    pub fn from_elements_cycle_recovery<I, T>(db: &'db dyn Db, elements: I) -> Type<'db>
     where
         I: IntoIterator<Item = T>,
         T: Into<Type<'db>>,
@@ -99,7 +99,7 @@ impl<'db> UnionType<'db> {
     /// If all items in `elements` are `Some()`, the result of unioning all elements is returned.
     /// As soon as a `None` element in the iterable is encountered,
     /// the function short-circuits and returns `None`.
-    pub(crate) fn try_from_elements<I, T>(db: &'db dyn Db, elements: I) -> Option<Type<'db>>
+    pub fn try_from_elements<I, T>(db: &'db dyn Db, elements: I) -> Option<Type<'db>>
     where
         I: IntoIterator<Item = Option<T>>,
         T: Into<Type<'db>>,
@@ -113,7 +113,7 @@ impl<'db> UnionType<'db> {
 
     /// Apply a transformation function to all elements of the union,
     /// and create a new union from the resulting set of types.
-    pub(crate) fn map(
+    pub fn map(
         self,
         db: &'db dyn Db,
         transform_fn: impl FnMut(&Type<'db>) -> Type<'db>,
@@ -129,7 +129,7 @@ impl<'db> UnionType<'db> {
     }
 
     /// A version of [`UnionType::map`] that does not unpack type aliases.
-    pub(crate) fn map_leave_aliases(
+    pub fn map_leave_aliases(
         self,
         db: &'db dyn Db,
         transform_fn: impl FnMut(&Type<'db>) -> Type<'db>,
@@ -152,7 +152,7 @@ impl<'db> UnionType<'db> {
     /// the result of unioning all transformed elements is returned.
     /// As soon as `transform_fn` returns `None` for an element, however,
     /// the function short-circuits and returns `None`.
-    pub(crate) fn try_map(
+    pub fn try_map(
         self,
         db: &'db dyn Db,
         transform_fn: impl FnMut(&Type<'db>) -> Option<Type<'db>>,
@@ -165,11 +165,11 @@ impl<'db> UnionType<'db> {
         Some(builder.build())
     }
 
-    pub(crate) fn to_instance(self, db: &'db dyn Db) -> Option<Type<'db>> {
+    pub fn to_instance(self, db: &'db dyn Db) -> Option<Type<'db>> {
         self.try_map(db, |element| element.to_instance(db))
     }
 
-    pub(crate) fn filter(self, db: &'db dyn Db, f: impl FnMut(&Type<'db>) -> bool) -> Type<'db> {
+    pub fn filter(self, db: &'db dyn Db, f: impl FnMut(&Type<'db>) -> bool) -> Type<'db> {
         let current = self.elements(db);
         let new: Box<[Type<'db>]> = current.iter().copied().filter(f).collect();
         match &*new {
@@ -180,7 +180,7 @@ impl<'db> UnionType<'db> {
         }
     }
 
-    pub(crate) fn map_with_boundness(
+    pub fn map_with_boundness(
         self,
         db: &'db dyn Db,
         mut transform_fn: impl FnMut(&Type<'db>) -> Place<'db>,
@@ -231,7 +231,7 @@ impl<'db> UnionType<'db> {
         }
     }
 
-    pub(crate) fn map_with_boundness_and_qualifiers(
+    pub fn map_with_boundness_and_qualifiers(
         self,
         db: &'db dyn Db,
         mut transform_fn: impl FnMut(&Type<'db>) -> PlaceAndQualifiers<'db>,
@@ -289,7 +289,7 @@ impl<'db> UnionType<'db> {
         }
     }
 
-    pub(crate) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -331,7 +331,7 @@ impl<'db> UnionType<'db> {
 
     /// Identify some specific unions of known classes, currently the ones that `float` and
     /// `complex` expand into in type position.
-    pub(crate) fn known(self, db: &'db dyn Db) -> Option<KnownUnion> {
+    pub fn known(self, db: &'db dyn Db) -> Option<KnownUnion> {
         let mut has_int = false;
         let mut has_float = false;
         let mut has_complex = false;
@@ -352,13 +352,13 @@ impl<'db> UnionType<'db> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum KnownUnion {
+pub enum KnownUnion {
     Float,   // `int | float`
     Complex, // `int | float | complex`
 }
 
 impl KnownUnion {
-    pub(crate) fn to_type(self, db: &dyn Db) -> Type<'_> {
+    pub fn to_type(self, db: &dyn Db) -> Type<'_> {
         match self {
             KnownUnion::Float => UnionType::from_two_elements(
                 db,
@@ -381,7 +381,7 @@ impl KnownUnion {
 pub struct IntersectionType<'db> {
     /// The intersection type includes only values in all of these types.
     #[returns(ref)]
-    pub(crate) positive: FxOrderSet<Type<'db>>,
+    pub positive: FxOrderSet<Type<'db>>,
 
     /// The intersection type does not include any value in any of these types.
     ///
@@ -389,7 +389,7 @@ pub struct IntersectionType<'db> {
     /// narrowing along with intersections (e.g. `if not isinstance(...)`), so we represent them
     /// directly in intersections rather than as a separate type.
     #[returns(ref)]
-    pub(crate) negative: NegativeIntersectionElements<'db>,
+    pub negative: NegativeIntersectionElements<'db>,
 }
 
 /// To avoid unnecessary allocations for the common case of 1 negative elements,
@@ -416,7 +416,7 @@ pub enum NegativeIntersectionElements<'db> {
 }
 
 impl<'db> NegativeIntersectionElements<'db> {
-    pub(crate) fn iter(&self) -> NegativeIntersectionElementsIterator<'_, 'db> {
+    pub fn iter(&self) -> NegativeIntersectionElementsIterator<'_, 'db> {
         match self {
             Self::Empty => NegativeIntersectionElementsIterator::EmptyOrOne(None),
             Self::Single(ty) => NegativeIntersectionElementsIterator::EmptyOrOne(Some(ty)),
@@ -424,7 +424,7 @@ impl<'db> NegativeIntersectionElements<'db> {
         }
     }
 
-    pub(crate) fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         match self {
             Self::Empty => 0,
             Self::Single(_) => 1,
@@ -432,7 +432,7 @@ impl<'db> NegativeIntersectionElements<'db> {
         }
     }
 
-    pub(crate) fn contains(&self, ty: &Type<'db>) -> bool {
+    pub fn contains(&self, ty: &Type<'db>) -> bool {
         match self {
             Self::Empty => false,
             Self::Single(existing) => existing == ty,
@@ -440,7 +440,7 @@ impl<'db> NegativeIntersectionElements<'db> {
         }
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         // See struct-level comment: we don't try to maintain the invariant that empty
         // collections are representend as `Self::Empty`
         self.len() == 0
@@ -450,7 +450,7 @@ impl<'db> NegativeIntersectionElements<'db> {
     ///
     /// Returns `true` if the elements was newly added.
     /// Returns `false` if the element was already present in the collection.
-    pub(crate) fn insert(&mut self, ty: Type<'db>) -> bool {
+    pub fn insert(&mut self, ty: Type<'db>) -> bool {
         match self {
             Self::Empty => {
                 *self = Self::Single(ty);
@@ -469,7 +469,7 @@ impl<'db> NegativeIntersectionElements<'db> {
     }
 
     /// Shrink the capacity of the collection as much as possible.
-    pub(crate) fn shrink_to_fit(&mut self) {
+    pub fn shrink_to_fit(&mut self) {
         match self {
             Self::Empty | Self::Single(_) => {}
             Self::Multiple(set) => set.shrink_to_fit(),
@@ -485,7 +485,7 @@ impl<'db> NegativeIntersectionElements<'db> {
     /// the last element in the collection is popped off the end of the collection
     /// and placed at the index where `ty` was previously, allowing this method to complete
     /// in O(1) time (average).
-    pub(crate) fn swap_remove(&mut self, ty: &Type<'db>) -> bool {
+    pub fn swap_remove(&mut self, ty: &Type<'db>) -> bool {
         match self {
             Self::Empty => false,
             Self::Single(existing) => {
@@ -507,7 +507,7 @@ impl<'db> NegativeIntersectionElements<'db> {
     /// The element is removed by swapping it with the last element
     /// of the collection and popping it off, allowing this method to complete
     /// in O(1) time (average).
-    pub(crate) fn swap_remove_index(&mut self, index: usize) -> Option<Type<'db>> {
+    pub fn swap_remove_index(&mut self, index: usize) -> Option<Type<'db>> {
         match self {
             Self::Empty => None,
             Self::Single(existing) => {
@@ -608,7 +608,7 @@ impl std::iter::FusedIterator for NegativeIntersectionElementsIterator<'_, '_> {
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for IntersectionType<'_> {}
 
-pub(crate) fn walk_intersection_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_intersection_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     intersection: IntersectionType<'db>,
     visitor: &V,
@@ -627,7 +627,7 @@ impl<'db> IntersectionType<'db> {
     ///
     /// For performance reasons, consider using [`IntersectionType::from_two_elements`] if
     /// the intersection is constructed from exactly two elements.
-    pub(crate) fn from_elements<I, T>(db: &'db dyn Db, elements: I) -> Type<'db>
+    pub fn from_elements<I, T>(db: &'db dyn Db, elements: I) -> Type<'db>
     where
         I: IntoIterator<Item = T>,
         T: Into<Type<'db>>,
@@ -645,13 +645,13 @@ impl<'db> IntersectionType<'db> {
         },
         heap_size=ruff_memory_usage::heap_size
     )]
-    pub(crate) fn from_two_elements(db: &'db dyn Db, a: Type<'db>, b: Type<'db>) -> Type<'db> {
+    pub fn from_two_elements(db: &'db dyn Db, a: Type<'db>, b: Type<'db>) -> Type<'db> {
         IntersectionBuilder::new(db)
             .positive_elements([a, b])
             .build()
     }
 
-    pub(crate) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         div: Type<'db>,
@@ -687,10 +687,7 @@ impl<'db> IntersectionType<'db> {
 
     /// Returns an iterator over the positive elements of the intersection. If
     /// there are no positive elements, returns a single `object` type.
-    pub(crate) fn positive_elements_or_object(
-        self,
-        db: &'db dyn Db,
-    ) -> impl Iterator<Item = Type<'db>> {
+    pub fn positive_elements_or_object(self, db: &'db dyn Db) -> impl Iterator<Item = Type<'db>> {
         if self.positive(db).is_empty() {
             Either::Left(std::iter::once(Type::object()))
         } else {
@@ -700,7 +697,7 @@ impl<'db> IntersectionType<'db> {
 
     /// Map a type transformation over all positive elements of the intersection. Leave the
     /// negative elements unchanged.
-    pub(crate) fn map_positive(
+    pub fn map_positive(
         self,
         db: &'db dyn Db,
         mut transform_fn: impl FnMut(&Type<'db>) -> Type<'db>,
@@ -715,7 +712,7 @@ impl<'db> IntersectionType<'db> {
         builder.build()
     }
 
-    pub(crate) fn map_with_boundness(
+    pub fn map_with_boundness(
         self,
         db: &'db dyn Db,
         mut transform_fn: impl FnMut(&Type<'db>) -> Place<'db>,
@@ -762,7 +759,7 @@ impl<'db> IntersectionType<'db> {
         }
     }
 
-    pub(crate) fn map_with_boundness_and_qualifiers(
+    pub fn map_with_boundness_and_qualifiers(
         self,
         db: &'db dyn Db,
         mut transform_fn: impl FnMut(&Type<'db>) -> PlaceAndQualifiers<'db>,
@@ -825,11 +822,11 @@ impl<'db> IntersectionType<'db> {
         self.negative(db).iter().copied()
     }
 
-    pub(crate) fn has_one_element(self, db: &'db dyn Db) -> bool {
+    pub fn has_one_element(self, db: &'db dyn Db) -> bool {
         (self.positive(db).len() + self.negative(db).len()) == 1
     }
 
-    pub(crate) fn is_simple_negation(self, db: &'db dyn Db) -> bool {
+    pub fn is_simple_negation(self, db: &'db dyn Db) -> bool {
         self.positive(db).is_empty() && self.negative(db).len() == 1
     }
 }
