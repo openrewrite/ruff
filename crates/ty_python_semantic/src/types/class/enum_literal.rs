@@ -21,9 +21,9 @@ use ty_python_core::scope::ScopeId;
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct EnumSpec<'db> {
     #[returns(deref)]
-    pub(crate) members: Box<[(Name, Type<'db>)]>,
+    pub members: Box<[(Name, Type<'db>)]>,
     #[returns(copy)]
-    pub(crate) has_known_members: bool,
+    pub has_known_members: bool,
 }
 
 impl<'db> EnumSpec<'db> {
@@ -110,7 +110,7 @@ pub struct DynamicEnumLiteral<'db> {
 impl get_size2::GetSize for DynamicEnumLiteral<'_> {}
 
 impl<'db> DynamicEnumLiteral<'db> {
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -138,28 +138,28 @@ impl<'db> DynamicEnumLiteral<'db> {
 
 #[salsa::tracked]
 impl<'db> DynamicEnumLiteral<'db> {
-    pub(crate) fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
+    pub fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
         match self.anchor(db) {
             DynamicEnumAnchor::Definition { definition, .. } => Some(*definition),
             DynamicEnumAnchor::ScopeOffset { .. } => None,
         }
     }
 
-    pub(crate) fn scope(self, db: &'db dyn Db) -> ScopeId<'db> {
+    pub fn scope(self, db: &'db dyn Db) -> ScopeId<'db> {
         match self.anchor(db) {
             DynamicEnumAnchor::Definition { definition, .. } => definition.scope(db),
             DynamicEnumAnchor::ScopeOffset { scope, .. } => *scope,
         }
     }
 
-    pub(crate) fn spec(self, db: &'db dyn Db) -> EnumSpec<'db> {
+    pub fn spec(self, db: &'db dyn Db) -> EnumSpec<'db> {
         match self.anchor(db) {
             DynamicEnumAnchor::Definition { spec, .. }
             | DynamicEnumAnchor::ScopeOffset { spec, .. } => *spec,
         }
     }
 
-    pub(crate) fn explicit_bases(self, db: &'db dyn Db) -> Box<[Type<'db>]> {
+    pub fn explicit_bases(self, db: &'db dyn Db) -> Box<[Type<'db>]> {
         let mut bases = Vec::with_capacity(2);
         if let Some(mixin) = self.mixin_type(db) {
             bases.push(mixin);
@@ -169,7 +169,7 @@ impl<'db> DynamicEnumLiteral<'db> {
         bases.into_boxed_slice()
     }
 
-    pub(crate) fn header_range(self, db: &'db dyn Db) -> TextRange {
+    pub fn header_range(self, db: &'db dyn Db) -> TextRange {
         let anchor = match self.anchor(db) {
             DynamicEnumAnchor::Definition { definition, .. } => {
                 DynamicClassHeaderAnchor::Definition(*definition)
@@ -181,11 +181,11 @@ impl<'db> DynamicEnumLiteral<'db> {
         dynamic_class_header_range(db, self.scope(db), anchor)
     }
 
-    pub(super) fn header_span(self, db: &'db dyn Db) -> Span {
+    pub fn header_span(self, db: &'db dyn Db) -> Span {
         Span::from(self.scope(db).file(db)).with_range(self.header_range(db))
     }
 
-    pub(crate) fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
         let env = ProgramEnvironment::from_scope(self.scope(db));
         KnownClass::EnumType.to_class_literal(db, &env)
     }
@@ -200,7 +200,7 @@ impl<'db> DynamicEnumLiteral<'db> {
             ]))
         }
     )]
-    pub(crate) fn try_mro(self, db: &'db dyn Db) -> Result<Mro<'db>, DynamicMroError<'db>> {
+    pub fn try_mro(self, db: &'db dyn Db) -> Result<Mro<'db>, DynamicMroError<'db>> {
         Mro::of_dynamic_enum(db, self)
     }
 
@@ -234,7 +234,7 @@ impl<'db> DynamicEnumLiteral<'db> {
     /// For unknown members, returns `Member::unbound()` — the unknown-member
     /// fallback is handled in `class_member` as a last resort after checking
     /// the full MRO (matching the `NamedTuple` pattern).
-    pub(super) fn own_class_member(self, db: &'db dyn Db, name: &str) -> Member<'db> {
+    pub fn own_class_member(self, db: &'db dyn Db, name: &str) -> Member<'db> {
         let spec = self.spec(db);
         if spec.has_known_members(db)
             && let Some(enum_class) = ClassLiteral::DynamicEnum(self).into_enum_class(db)
@@ -260,7 +260,7 @@ impl<'db> DynamicEnumLiteral<'db> {
     /// The unknown-member fallback at the end does not consult `policy`. It exists to avoid false
     /// `unresolved-attribute` errors when the member names are not statically known, which is a
     /// property of the enum rather than of the lookup being performed.
-    pub(crate) fn class_member(
+    pub fn class_member(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -295,7 +295,7 @@ impl<'db> DynamicEnumLiteral<'db> {
     ///
     /// If members are unknown and nothing was found, returns `Unknown`
     /// as a last resort.
-    pub(crate) fn instance_member(
+    pub fn instance_member(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -318,7 +318,7 @@ impl<'db> DynamicEnumLiteral<'db> {
     /// Functional enums don't define own instance attributes — `.name`, `.value`
     /// etc. come from the `Enum` base class, not from the dynamic enum itself.
     #[expect(clippy::unused_self)]
-    pub(super) fn own_instance_member(self, _db: &'db dyn Db, _name: &str) -> Member<'db> {
+    pub fn own_instance_member(self, _db: &'db dyn Db, _name: &str) -> Member<'db> {
         Member::unbound()
     }
 }

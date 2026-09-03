@@ -12,7 +12,7 @@ use super::context::InferContext;
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/raw-string-type-annotation.md")]
-    pub(crate) static RAW_STRING_TYPE_ANNOTATION = {
+    pub static RAW_STRING_TYPE_ANNOTATION = {
         summary: "detects raw strings in type annotation positions",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -21,7 +21,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/implicit-concatenated-string-type-annotation.md")]
-    pub(crate) static IMPLICIT_CONCATENATED_STRING_TYPE_ANNOTATION = {
+    pub static IMPLICIT_CONCATENATED_STRING_TYPE_ANNOTATION = {
         summary: "detects implicit concatenated strings in type annotations",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -30,7 +30,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-syntax-in-forward-annotation.md")]
-    pub(crate) static INVALID_SYNTAX_IN_FORWARD_ANNOTATION = {
+    pub static INVALID_SYNTAX_IN_FORWARD_ANNOTATION = {
         summary: "detects invalid syntax in forward annotations",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -39,7 +39,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/escape-character-in-forward-annotation.md")]
-    pub(crate) static ESCAPE_CHARACTER_IN_FORWARD_ANNOTATION = {
+    pub static ESCAPE_CHARACTER_IN_FORWARD_ANNOTATION = {
         summary: "detects forward type annotations with escape characters",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -47,7 +47,7 @@ declare_lint! {
 }
 
 /// Parses the given expression as a string annotation.
-pub(crate) fn parse_string_annotation(
+pub fn parse_string_annotation(
     context: &InferContext,
     inference_flags: InferenceFlags,
     string_expr: &ast::ExprStringLiteral,

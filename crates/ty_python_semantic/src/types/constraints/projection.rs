@@ -9,13 +9,13 @@ use crate::{Db, ProgramEnvironment};
 
 /// Limits for one projection, including preprocessing, path collection, and its result.
 #[derive(Clone, Copy, Debug)]
-pub(crate) struct SolutionBudget {
+pub struct SolutionBudget {
     /// Satisfied paths collected before per-variable solution selection can reject them.
-    pub(crate) paths: usize,
+    pub paths: usize,
     /// Interior and terminal visits, shared by preprocessing and path collection.
-    pub(crate) visits: usize,
+    pub visits: usize,
     /// Set-theoretic terms contributed to the result, including terms exposed by aliases.
-    pub(crate) type_terms: usize,
+    pub type_terms: usize,
 }
 
 impl Default for SolutionBudget {
@@ -35,7 +35,7 @@ impl Default for SolutionBudget {
 /// None of these outcomes proves that the constraint set is unsatisfiable. In particular, a
 /// caller must not use the prefix visited before a limit was reached as the complete answer.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum ProjectionError {
+pub enum ProjectionError {
     PathBudgetExceeded,
     TraversalBudgetExceeded,
     TypeBudgetExceeded,
@@ -44,7 +44,7 @@ pub(crate) enum ProjectionError {
 
 /// An exact projection of all retained solution paths.
 #[derive(Debug, Eq, PartialEq)]
-pub(crate) enum SolutionProjection<T> {
+pub enum SolutionProjection<T> {
     Unsatisfiable,
     Unconstrained,
     Constrained(T),
@@ -55,7 +55,7 @@ pub(crate) enum SolutionProjection<T> {
 /// Union projections charge each contribution before adding it. An intersection projection must
 /// additionally use `IntersectionType::bounded_from_elements`, since distributing intersections
 /// over unions can multiply, rather than add, the number of terms.
-pub(crate) struct ProjectionTypeBudget {
+pub struct ProjectionTypeBudget {
     remaining: usize,
 }
 
@@ -66,7 +66,7 @@ impl ProjectionTypeBudget {
 
     /// Charges the set-theoretic terms that a type constructor may flatten or inspect. Aliases
     /// are included so a large union cannot evade the limit by being hidden behind a name.
-    pub(crate) fn charge_type<'db>(
+    pub fn charge_type<'db>(
         &mut self,
         db: &'db dyn Db,
         ty: Type<'db>,
@@ -109,7 +109,7 @@ impl ProjectionTypeBudget {
 
 impl<'db> ConstraintSet<'db, '_> {
     /// Computes default solutions for each BDD path within the default projection budget.
-    pub(crate) fn solutions(
+    pub fn solutions(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -153,7 +153,7 @@ impl<'db> ConstraintSet<'db, '_> {
     /// family as [`SolutionPaths::BudgetExceeded`](super::SolutionPaths::BudgetExceeded).
     /// Exhausting a limit in the supplied [`SolutionBudget`] instead returns an error without a
     /// partial path family.
-    pub(crate) fn solutions_with(
+    pub fn solutions_with(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -185,7 +185,7 @@ impl<'db> ConstraintSet<'db, '_> {
     /// meaningful to its consumer. Existing limitations in solution extraction still apply; this
     /// API does not make an order-sensitive selector or fold order-independent.
     #[expect(clippy::too_many_arguments)]
-    pub(crate) fn try_fold_solutions<T>(
+    pub fn try_fold_solutions<T>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

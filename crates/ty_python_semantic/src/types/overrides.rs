@@ -68,7 +68,7 @@ const PROHIBITED_NAMEDTUPLE_ATTRS: &[&str] = &[
 // TODO: Support dynamic class literals. If we allow dynamic classes to define attributes in their
 // namespace dictionary, we should also check whether those attributes are valid overrides of
 // attributes in their superclasses.
-pub(super) fn check_class<'db>(
+pub fn check_class<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     inconsistent_generic_bases: bool,
@@ -1063,7 +1063,7 @@ fn method_override_types<'db>(
 
 /// Whether an attribute declaration is a class variable or an instance variable.
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, get_size2::GetSize)]
-pub(super) enum VariableKind {
+pub enum VariableKind {
     /// A variable annotated with `ClassVar`.
     Class,
     /// An instance variable, including an unannotated class-body assignment.
@@ -1128,7 +1128,7 @@ fn superclass_variable_kind<'db>(
 /// ```
 #[allow(clippy::needless_pass_by_value)]
 #[salsa::tracked(returns(copy), heap_size=ruff_memory_usage::heap_size)]
-pub(super) fn effective_superclass_variable_kind<'db>(
+pub fn effective_superclass_variable_kind<'db>(
     db: &'db dyn Db,
     superclass: ClassType<'db>,
     name: Name,
@@ -1347,7 +1347,7 @@ fn report_invalid_attribute_override<'db>(
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub(super) enum MethodKind<'db> {
+pub enum MethodKind<'db> {
     Synthesized(CodeGeneratorKind<'db>),
     #[default]
     NotSynthesized,

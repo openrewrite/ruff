@@ -24,22 +24,19 @@ use crate::types::{
 /// constructor may itself have a downstream constructor, in the case where metaclass `__call__`,
 /// `__new__`, and `__init__` are all present.)
 #[derive(Debug, Clone)]
-pub(super) struct ConstructorBinding<'db> {
+pub struct ConstructorBinding<'db> {
     /// The `CallableBinding` for this individual constructor method.
-    pub(super) entry: CallableBinding<'db>,
+    pub entry: CallableBinding<'db>,
     /// Context for the constructor callable: the instance type being constructed and the kind of
     /// constructor method.
-    pub(super) constructor_context: ConstructorContext<'db>,
+    pub constructor_context: ConstructorContext<'db>,
     /// The next downstream constructor method, if any, to be (conditionally) checked after this
     /// one.
-    pub(super) downstream_constructor: Option<Box<Bindings<'db>>>,
+    pub downstream_constructor: Option<Box<Bindings<'db>>>,
 }
 
 impl<'db> ConstructorBinding<'db> {
-    pub(super) fn new(
-        entry: CallableBinding<'db>,
-        constructor_context: ConstructorContext<'db>,
-    ) -> Self {
+    pub fn new(entry: CallableBinding<'db>, constructor_context: ConstructorContext<'db>) -> Self {
         Self {
             entry,
             constructor_context,
@@ -47,31 +44,31 @@ impl<'db> ConstructorBinding<'db> {
         }
     }
 
-    pub(super) fn context(&self) -> ConstructorContext<'db> {
+    pub fn context(&self) -> ConstructorContext<'db> {
         self.constructor_context
     }
 
-    pub(super) fn constructed_instance_type(&self) -> Type<'db> {
+    pub fn constructed_instance_type(&self) -> Type<'db> {
         self.constructor_context.instance_type()
     }
 
-    pub(super) fn callable(&self) -> &CallableBinding<'db> {
+    pub fn callable(&self) -> &CallableBinding<'db> {
         &self.entry
     }
 
-    pub(super) fn callable_mut(&mut self) -> &mut CallableBinding<'db> {
+    pub fn callable_mut(&mut self) -> &mut CallableBinding<'db> {
         &mut self.entry
     }
 
-    pub(super) fn set_constructed_instance_type(&mut self, instance_type: Type<'db>) {
+    pub fn set_constructed_instance_type(&mut self, instance_type: Type<'db>) {
         self.constructor_context = self.constructor_context.with_instance_type(instance_type);
     }
 
-    pub(super) fn set_downstream_constructor(&mut self, bindings: Bindings<'db>) {
+    pub fn set_downstream_constructor(&mut self, bindings: Bindings<'db>) {
         self.downstream_constructor = Some(Box::new(bindings));
     }
 
-    pub(super) fn freshen_generic_contexts_in_place(
+    pub fn freshen_generic_contexts_in_place(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -153,7 +150,7 @@ impl<'db> ConstructorBinding<'db> {
     }
 
     /// Match parameters for this constructor method and downstream constructors.
-    pub(super) fn match_parameters(
+    pub fn match_parameters(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -173,7 +170,7 @@ impl<'db> ConstructorBinding<'db> {
     ///
     /// If `CheckTypesMode::Finalize` is provided, inactive downstream constructors will be
     /// discarded. Otherwise, all constructor bindings are preserved after the check.
-    pub(super) fn check_types(
+    pub fn check_types(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -237,7 +234,7 @@ impl<'db> ConstructorBinding<'db> {
     }
 
     /// Discards an inactive downstream constructor.
-    pub(super) fn discard_downstream_constructor(
+    pub fn discard_downstream_constructor(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -251,7 +248,7 @@ impl<'db> ConstructorBinding<'db> {
     }
 
     /// Check types for downstream constructors, if any.
-    pub(super) fn check_downstream_constructor(
+    pub fn check_downstream_constructor(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -275,15 +272,15 @@ impl<'db> ConstructorBinding<'db> {
         }
     }
 
-    pub(super) fn downstream_constructor(&self) -> Option<&Bindings<'db>> {
+    pub fn downstream_constructor(&self) -> Option<&Bindings<'db>> {
         self.downstream_constructor.as_deref()
     }
 
-    pub(super) fn downstream_constructor_mut(&mut self) -> Option<&mut Bindings<'db>> {
+    pub fn downstream_constructor_mut(&mut self) -> Option<&mut Bindings<'db>> {
         self.downstream_constructor.as_deref_mut()
     }
 
-    pub(super) fn init_argument_matches_keyword_variadic(&self, argument_index: usize) -> bool {
+    pub fn init_argument_matches_keyword_variadic(&self, argument_index: usize) -> bool {
         if self.constructor_kind().is_init() {
             self.entry.argument_matches_keyword_variadic(argument_index)
         } else {
@@ -293,7 +290,7 @@ impl<'db> ConstructorBinding<'db> {
         }
     }
 
-    pub(super) fn map<F>(self, f: &F) -> ConstructorBinding<'db>
+    pub fn map<F>(self, f: &F) -> ConstructorBinding<'db>
     where
         F: Fn(CallableBinding<'db>) -> CallableBinding<'db>,
     {
@@ -308,7 +305,7 @@ impl<'db> ConstructorBinding<'db> {
     }
 
     /// Compute the overall effective return type of this `ConstructorBinding`.
-    pub(super) fn return_type(&self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn return_type(&self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         let constructed_instance_type = self.constructed_instance_type();
 
         // If we are checking downstream constructors, and the downstream constructor resolves to a
@@ -662,13 +659,13 @@ impl<'db> ConstructorBinding<'db> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(super) struct ConstructorContext<'db> {
+pub struct ConstructorContext<'db> {
     instance_type: Type<'db>,
     kind: ConstructorCallableKind,
 }
 
 impl<'db> ConstructorContext<'db> {
-    pub(super) fn new(instance_type: Type<'db>, kind: ConstructorCallableKind) -> Self {
+    pub fn new(instance_type: Type<'db>, kind: ConstructorCallableKind) -> Self {
         Self {
             instance_type,
             kind,
@@ -686,13 +683,13 @@ impl<'db> ConstructorContext<'db> {
         self.instance_type
     }
 
-    pub(super) fn kind(self) -> ConstructorCallableKind {
+    pub fn kind(self) -> ConstructorCallableKind {
         self.kind
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum ConstructorCallableKind {
+pub enum ConstructorCallableKind {
     /// A metaclass `__call__` method.
     MetaclassCall,
     /// A `__new__` constructor.
@@ -779,7 +776,7 @@ impl<'db> Binding<'db> {
         cls_typevar.typevar(db).identity(db) == return_typevar.typevar(db).identity(db)
     }
 
-    pub(super) fn set_constructor_context(
+    pub fn set_constructor_context(
         &mut self,
         db: &'db dyn Db,
         constructor_context: ConstructorContext<'db>,
@@ -788,13 +785,13 @@ impl<'db> Binding<'db> {
         self.return_ty = self.initial_return_type(db);
     }
 
-    pub(super) fn initial_return_type(&self, db: &'db dyn Db) -> Type<'db> {
+    pub fn initial_return_type(&self, db: &'db dyn Db) -> Type<'db> {
         self.unspecialized_return_type(db)
     }
 
     /// Return the declared return type after constructor normalization, but before applying any
     /// specialization inferred for this overload.
-    pub(super) fn unspecialized_return_type(&self, db: &'db dyn Db) -> Type<'db> {
+    pub fn unspecialized_return_type(&self, db: &'db dyn Db) -> Type<'db> {
         self.normalized_constructor_return(db)
             .unwrap_or(self.signature.return_ty)
     }
@@ -818,7 +815,7 @@ impl<'db> Binding<'db> {
     /// instance type.
     ///
     /// Return `None` if this is not a constructor call.
-    pub(crate) fn normalized_constructor_return(&self, db: &'db dyn Db) -> Option<Type<'db>> {
+    pub fn normalized_constructor_return(&self, db: &'db dyn Db) -> Option<Type<'db>> {
         let constructor_context = self.constructor_context?;
         let instance_type = constructor_context.instance_type();
 

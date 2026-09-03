@@ -126,7 +126,7 @@ impl<'db> ComparisonResult<'db> {
 ///
 /// Returns `None` when the comparison behavior of either operand is not precise enough to safely
 /// constrain `left`.
-pub(super) fn evaluate_type_equality<'db>(
+pub fn evaluate_type_equality<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     left: Type<'db>,
@@ -146,7 +146,7 @@ pub(super) fn evaluate_type_equality<'db>(
 }
 
 /// Return a constraint excluding every value known to compare equal to `ty`.
-pub(super) fn equality_exclusion_constraint<'db>(
+pub fn equality_exclusion_constraint<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     ty: Type<'db>,
@@ -180,7 +180,7 @@ pub(super) fn equality_exclusion_constraint<'db>(
 ///     if x != 1:
 ///         reveal_type(x)  # Never
 /// ```
-pub(super) fn evaluate_type_inequality<'db>(
+pub fn evaluate_type_inequality<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     left: Type<'db>,
@@ -252,7 +252,7 @@ fn evaluate_type_comparison<'db>(
 /// Return the truthiness of `left == right` when it is known for every represented runtime value.
 ///
 /// A result that only permits narrowing remains ambiguous because it can still evaluate either way.
-pub(crate) fn equality_truthiness<'db>(
+pub fn equality_truthiness<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     left: Type<'db>,
@@ -272,7 +272,7 @@ pub(crate) fn equality_truthiness<'db>(
 /// Return the truthiness of `left != right` when it is known for every represented runtime value.
 ///
 /// A result that only permits narrowing remains ambiguous because it can still evaluate either way.
-pub(super) fn inequality_truthiness<'db>(
+pub fn inequality_truthiness<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     left: Type<'db>,
@@ -292,12 +292,12 @@ pub(super) fn inequality_truthiness<'db>(
 /// Evaluates tuple-element equality while reusing the active-comparison-set allocation across a
 /// tuple walk. The set only detects recursive comparisons; results are not cached between
 /// elements.
-pub(super) struct TupleEqualityEvaluator<'db> {
+pub struct TupleEqualityEvaluator<'db> {
     evaluator: ComparisonEvaluator<'db>,
 }
 
 impl<'db> TupleEqualityEvaluator<'db> {
-    pub(super) fn new(
+    pub fn new(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         soundness_policy: ComparisonSoundnessPolicy,
@@ -307,7 +307,7 @@ impl<'db> TupleEqualityEvaluator<'db> {
         }
     }
 
-    pub(super) fn element_truthiness(
+    pub fn element_truthiness(
         &mut self,
         left: Type<'db>,
         right: Type<'db>,
@@ -389,7 +389,7 @@ enum ComparisonGoal {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub(crate) struct ComparisonSoundnessPolicy {
+pub struct ComparisonSoundnessPolicy {
     allow_unsafe_equality: bool,
 }
 
@@ -398,7 +398,7 @@ impl ComparisonSoundnessPolicy {
         allow_unsafe_equality: false,
     };
 
-    pub(crate) fn from_analysis_settings(settings: &AnalysisSettings) -> Self {
+    pub fn from_analysis_settings(settings: &AnalysisSettings) -> Self {
         Self {
             allow_unsafe_equality: !settings.strict_equality_semantics,
         }
@@ -1012,7 +1012,7 @@ fn enum_literal_constraint<'db>(
 }
 
 /// Return whether every possible value of `ty` belongs to the same enum as `right`.
-pub(super) fn is_same_enum_domain<'db>(
+pub fn is_same_enum_domain<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     ty: Type<'db>,

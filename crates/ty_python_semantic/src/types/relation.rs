@@ -33,7 +33,7 @@ use crate::{
 
 /// A non-exhaustive enumeration of relations that can exist between types.
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub(crate) enum TypeRelation {
+pub enum TypeRelation {
     /// The "subtyping" relation.
     ///
     /// A [fully static] type `B` is a subtype of a fully static type `A` if and only if
@@ -208,11 +208,11 @@ pub(crate) enum TypeRelation {
 }
 
 impl TypeRelation {
-    pub(crate) const fn is_assignability(self) -> bool {
+    pub const fn is_assignability(self) -> bool {
         matches!(self, TypeRelation::Assignability)
     }
 
-    pub(crate) const fn is_subtyping(self) -> bool {
+    pub const fn is_subtyping(self) -> bool {
         matches!(self, TypeRelation::Subtyping)
     }
 
@@ -225,7 +225,7 @@ impl TypeRelation {
         }
     }
 
-    pub(super) const fn description(self) -> &'static str {
+    pub const fn description(self) -> &'static str {
         match self {
             TypeRelation::Assignability => "assignable to",
             _ => "a subtype of",
@@ -235,7 +235,7 @@ impl TypeRelation {
 
 /// Determines when comparisons involving type variables are evaluated.
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub(crate) enum TypeVarEvaluation {
+pub enum TypeVarEvaluation {
     /// Check immediately whether the relation holds for all or any valid specializations,
     /// depending on whether the type variable is inferable.
     Eager,
@@ -326,7 +326,7 @@ impl<'db> Type<'db> {
     /// Return true if this type is a subtype of type `target`.
     ///
     /// See [`TypeRelation::Subtyping`] for more details.
-    pub(crate) fn is_subtype_of(
+    pub fn is_subtype_of(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -337,7 +337,7 @@ impl<'db> Type<'db> {
             .is_always_satisfied(db, env)
     }
 
-    pub(super) fn when_subtype_of<'c>(
+    pub fn when_subtype_of<'c>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -359,7 +359,7 @@ impl<'db> Type<'db> {
     /// all of the restrictions in `constraints` hold.
     ///
     /// See [`TypeRelation::SubtypingAssuming`] for more details.
-    pub(super) fn when_subtype_of_assuming<'c>(
+    pub fn when_subtype_of_assuming<'c>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -410,7 +410,7 @@ impl<'db> Type<'db> {
     ///
     /// This is a separate method so that we can skip this expensive check when diagnostics
     /// are suppressed.
-    pub(crate) fn assignability_error_context(
+    pub fn assignability_error_context(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -427,7 +427,7 @@ impl<'db> Type<'db> {
     ///
     /// This is a separate method so that we can skip this expensive check when diagnostics
     /// are suppressed.
-    pub(crate) fn pure_redundancy_error_context(
+    pub fn pure_redundancy_error_context(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -467,7 +467,7 @@ impl<'db> Type<'db> {
     }
 
     /// Return true if this type is assignable to type `target` using constraint-set typevar rules.
-    pub(crate) fn is_constraint_set_assignable_to(
+    pub fn is_constraint_set_assignable_to(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -479,7 +479,7 @@ impl<'db> Type<'db> {
     }
 
     /// Return true if this type is a subtype of `target` using constraint-set typevar rules.
-    pub(super) fn is_constraint_set_subtype_of(
+    pub fn is_constraint_set_subtype_of(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -490,7 +490,7 @@ impl<'db> Type<'db> {
             .is_always_satisfied(db, env)
     }
 
-    pub(super) fn when_assignable_to<'c>(
+    pub fn when_assignable_to<'c>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -541,7 +541,7 @@ impl<'db> Type<'db> {
     ///
     /// Recursive relations are evaluated coinductively: a cycle is provisionally satisfied until
     /// another part of the relation produces a contradiction.
-    pub(super) fn when_constraint_set_assignable_to_owned(
+    pub fn when_constraint_set_assignable_to_owned(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -586,7 +586,7 @@ impl<'db> Type<'db> {
         ))
     }
 
-    pub(super) fn when_constraint_set_assignable_to<'c>(
+    pub fn when_constraint_set_assignable_to<'c>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -625,7 +625,7 @@ impl<'db> Type<'db> {
     /// Return `true` if it would be redundant to add `self` to a union that already contains `other`.
     ///
     /// See [`TypeRelation::Redundancy`] for more details.
-    pub(super) fn is_redundant_with(
+    pub fn is_redundant_with(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -660,7 +660,7 @@ impl<'db> Type<'db> {
     ///
     /// Unlike [`Self::is_redundant_with`], this does not apply shortcuts intended for simplifying
     /// unions.
-    pub(super) fn is_pure_redundant_with(
+    pub fn is_pure_redundant_with(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -683,7 +683,7 @@ impl<'db> Type<'db> {
         .is_always_satisfied(db, &env)
     }
 
-    pub(super) fn has_relation_to<'c>(
+    pub fn has_relation_to<'c>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -747,7 +747,7 @@ impl<'db> Type<'db> {
     /// > &mdash; [Summary of type relations]
     ///
     /// [equivalent to]: https://typing.python.org/en/latest/spec/glossary.html#term-equivalent
-    pub(crate) fn is_equivalent_to(
+    pub fn is_equivalent_to(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -757,7 +757,7 @@ impl<'db> Type<'db> {
             .is_always_satisfied(db, env)
     }
 
-    pub(crate) fn is_equivalent_to_with_materialization_visitor(
+    pub fn is_equivalent_to_with_materialization_visitor(
         self,
         db: &'db dyn Db,
         other: Type<'db>,
@@ -773,7 +773,7 @@ impl<'db> Type<'db> {
         .is_always_satisfied(db, materialization_visitor.env)
     }
 
-    pub(crate) fn when_equivalent_to<'c>(
+    pub fn when_equivalent_to<'c>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -791,7 +791,7 @@ impl<'db> Type<'db> {
     }
 
     /// Returns whether `self` and `other` can be equivalent under some typevar specialization.
-    pub(super) fn can_be_constraint_set_equivalent_to(
+    pub fn can_be_constraint_set_equivalent_to(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -867,7 +867,7 @@ impl<'db> Type<'db> {
     ///
     /// This function aims to have no false positives, but might return wrong
     /// `false` answers in some cases.
-    pub(crate) fn is_disjoint_from(
+    pub fn is_disjoint_from(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -878,7 +878,7 @@ impl<'db> Type<'db> {
             .is_always_satisfied(db, env)
     }
 
-    pub(crate) fn when_disjoint_from<'c>(
+    pub fn when_disjoint_from<'c>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -906,7 +906,7 @@ impl<'db> Type<'db> {
     }
 
     /// Re-run a successful disjointness check with diagnostic context collection enabled.
-    pub(crate) fn disjointness_error_context(
+    pub fn disjointness_error_context(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -933,7 +933,7 @@ impl<'db> Type<'db> {
     /// Checks whether `self` is disjoint from `other`, while being more accepting of false
     /// negatives. Use this when you want to _quickly_ check whether two types are _definitely_
     /// disjoint, typically for engaging a fast path in some algorithm.
-    pub(crate) fn when_trivially_disjoint_from<'c>(
+    pub fn when_trivially_disjoint_from<'c>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -962,7 +962,7 @@ impl<'db> Type<'db> {
 }
 
 /// A [`CycleDetector`] that is used in `has_relation_to` methods.
-pub(crate) type HasRelationToVisitor<'db, 'c> = CycleDetector<
+pub type HasRelationToVisitor<'db, 'c> = CycleDetector<
     'db,
     TypeRelation,
     (Type<'db>, Type<'db>, TypeRelation, TypeVarEvaluation),
@@ -996,30 +996,30 @@ impl<'db> HasIdentity<'db> for (Type<'db>, Type<'db>, TypeRelation, TypeVarEvalu
 }
 
 impl<'db, 'c> HasRelationToVisitor<'db, 'c> {
-    pub(crate) fn default(constraints: &'c ConstraintSetBuilder<'db>) -> Self {
+    pub fn default(constraints: &'c ConstraintSetBuilder<'db>) -> Self {
         HasRelationToVisitor::new(ConstraintSet::from_bool(constraints, true))
     }
 }
 
 /// A [`PairVisitor`] that is used in `is_disjoint_from` methods.
-pub(crate) type IsDisjointVisitor<'db, 'c> = PairVisitor<'db, IsDisjoint, ConstraintSet<'db, 'c>>;
+pub type IsDisjointVisitor<'db, 'c> = PairVisitor<'db, IsDisjoint, ConstraintSet<'db, 'c>>;
 
 #[derive(Debug)]
-pub(crate) struct IsDisjoint;
+pub struct IsDisjoint;
 
 impl<'db, 'c> IsDisjointVisitor<'db, 'c> {
-    pub(crate) fn default(constraints: &'c ConstraintSetBuilder<'db>) -> Self {
+    pub fn default(constraints: &'c ConstraintSetBuilder<'db>) -> Self {
         IsDisjointVisitor::new(ConstraintSet::from_bool(constraints, false))
     }
 }
 
 #[derive(Clone)]
-pub(super) struct TypeRelationChecker<'a, 'c, 'db> {
-    pub(super) env: &'a ProgramEnvironment<'db>,
-    pub(super) constraints: &'c ConstraintSetBuilder<'db>,
-    pub(super) inferable: TypeVarSet<'db>,
-    pub(super) relation: TypeRelation,
-    pub(super) typevar_evaluation: TypeVarEvaluation,
+pub struct TypeRelationChecker<'a, 'c, 'db> {
+    pub env: &'a ProgramEnvironment<'db>,
+    pub constraints: &'c ConstraintSetBuilder<'db>,
+    pub inferable: TypeVarSet<'db>,
+    pub relation: TypeRelation,
+    pub typevar_evaluation: TypeVarEvaluation,
     context_tree: Option<ErrorContextTree<'db>>,
     given: ConstraintSet<'db, 'c>,
     perform_expensive_checks: bool,
@@ -1032,12 +1032,12 @@ pub(super) struct TypeRelationChecker<'a, 'c, 'db> {
     // any other more "low-level" method.
     relation_visitor: &'a HasRelationToVisitor<'db, 'c>,
     disjointness_visitor: &'a IsDisjointVisitor<'db, 'c>,
-    pub(super) signature_relation_visitor: &'a SignatureRelationVisitor<'db>,
-    pub(super) materialization_visitor: &'a ApplyTypeMappingVisitor<'a, 'db>,
+    pub signature_relation_visitor: &'a SignatureRelationVisitor<'db>,
+    pub materialization_visitor: &'a ApplyTypeMappingVisitor<'a, 'db>,
 }
 
 impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
-    pub(super) fn subtyping(
+    pub fn subtyping(
         env: &'a ProgramEnvironment<'db>,
         constraints: &'c ConstraintSetBuilder<'db>,
         inferable: TypeVarSet<'db>,
@@ -1062,7 +1062,7 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
         }
     }
 
-    pub(super) fn constraint_set_assignability(
+    pub fn constraint_set_assignability(
         env: &'a ProgramEnvironment<'db>,
         constraints: &'c ConstraintSetBuilder<'db>,
         relation_visitor: &'a HasRelationToVisitor<'db, 'c>,
@@ -1086,7 +1086,7 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
         }
     }
 
-    pub(super) fn constraint_set_assignability_with_context(
+    pub fn constraint_set_assignability_with_context(
         env: &'a ProgramEnvironment<'db>,
         constraints: &'c ConstraintSetBuilder<'db>,
         relation_visitor: &'a HasRelationToVisitor<'db, 'c>,
@@ -1110,7 +1110,7 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
         }
     }
 
-    pub(super) fn assignability_with_context(
+    pub fn assignability_with_context(
         env: &'a ProgramEnvironment<'db>,
         constraints: &'c ConstraintSetBuilder<'db>,
         relation_visitor: &'a HasRelationToVisitor<'db, 'c>,
@@ -1134,7 +1134,7 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
         }
     }
 
-    pub(super) fn with_inferable_typevars(&self, inferable: TypeVarSet<'db>) -> Self {
+    pub fn with_inferable_typevars(&self, inferable: TypeVarSet<'db>) -> Self {
         Self {
             inferable,
             ..self.clone()
@@ -1142,7 +1142,7 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
     }
 
     /// Checks class subtyping without discarding the active recursive relation state.
-    pub(super) fn is_class_subtype(
+    pub fn is_class_subtype(
         &self,
         db: &'db dyn Db,
         source: ClassType<'db>,
@@ -1162,22 +1162,22 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
         .is_always_satisfied(db, env)
     }
 
-    pub(super) const fn is_eager_assignability(&self) -> bool {
+    pub const fn is_eager_assignability(&self) -> bool {
         self.relation.is_assignability()
             && matches!(self.typevar_evaluation, TypeVarEvaluation::Eager)
     }
 
     /// Return the collected error context, or an empty tree if collection was disabled.
-    pub(super) fn into_error_context(self) -> ErrorContextTree<'db> {
+    pub fn into_error_context(self) -> ErrorContextTree<'db> {
         self.context_tree
             .unwrap_or_else(|| ErrorContextTree::new(self.relation))
     }
 
-    pub(super) fn always(&self) -> ConstraintSet<'db, 'c> {
+    pub fn always(&self) -> ConstraintSet<'db, 'c> {
         ConstraintSet::from_bool(self.constraints, true)
     }
 
-    pub(super) fn never(&self) -> ConstraintSet<'db, 'c> {
+    pub fn never(&self) -> ConstraintSet<'db, 'c> {
         ConstraintSet::from_bool(self.constraints, false)
     }
 
@@ -1193,7 +1193,7 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
     }
 
     /// Return true if error context collection is currently enabled.
-    pub(super) fn is_context_collection_enabled(&self) -> bool {
+    pub fn is_context_collection_enabled(&self) -> bool {
         self.report_context().is_some()
     }
 
@@ -1201,7 +1201,7 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
     /// typically use [`push`][ErrorContextTree::push] to add additional information to the error
     /// context. Returns `None` if error context collection is disabled, allowing you to skip
     /// expensive checks.
-    pub(super) fn report_context(&self) -> Option<&ErrorContextTree<'db>> {
+    pub fn report_context(&self) -> Option<&ErrorContextTree<'db>> {
         self.context_tree
             .as_ref()
             .filter(|context| context.is_enabled())
@@ -1211,7 +1211,7 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
     ///
     /// Note: we may eventually not need this method once we properly retain error
     /// context everywhere.
-    pub(super) fn without_context_collection<R>(&self, f: impl FnOnce() -> R) -> R {
+    pub fn without_context_collection<R>(&self, f: impl FnOnce() -> R) -> R {
         let Some(context_tree) = &self.context_tree else {
             return f();
         };
@@ -1375,7 +1375,7 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
     }
 
     /// Return a constraint set indicating the conditions under which `self.relation` holds between `source` and `target`.
-    pub(super) fn check_type_pair(
+    pub fn check_type_pair(
         &self,
         db: &'db dyn Db,
         source: Type<'db>,
@@ -2718,7 +2718,7 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
         }
     }
 
-    pub(super) fn check_property_instance_pair(
+    pub fn check_property_instance_pair(
         &self,
         db: &'db dyn Db,
         source: PropertyInstanceType<'db>,
@@ -2765,7 +2765,7 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
         }
     }
 
-    pub(super) fn as_disjointness_checker(&self) -> DisjointnessChecker<'_, 'c, 'db> {
+    pub fn as_disjointness_checker(&self) -> DisjointnessChecker<'_, 'c, 'db> {
         DisjointnessChecker {
             env: self.env,
             constraints: self.constraints,
@@ -2808,9 +2808,9 @@ impl<'a, 'c, 'db> TypeRelationChecker<'a, 'c, 'db> {
     }
 }
 
-pub(super) struct EquivalenceChecker<'a, 'c, 'db> {
+pub struct EquivalenceChecker<'a, 'c, 'db> {
     env: &'a ProgramEnvironment<'db>,
-    pub(super) constraints: &'c ConstraintSetBuilder<'db>,
+    pub constraints: &'c ConstraintSetBuilder<'db>,
     given: ConstraintSet<'db, 'c>,
     perform_expensive_checks: bool,
     typevar_evaluation: TypeVarEvaluation,
@@ -2848,15 +2848,15 @@ impl<'c, 'db> EquivalenceChecker<'_, 'c, 'db> {
         }
     }
 
-    pub(super) fn always(&self) -> ConstraintSet<'db, 'c> {
+    pub fn always(&self) -> ConstraintSet<'db, 'c> {
         ConstraintSet::from_bool(self.constraints, true)
     }
 
-    pub(super) fn never(&self) -> ConstraintSet<'db, 'c> {
+    pub fn never(&self) -> ConstraintSet<'db, 'c> {
         ConstraintSet::from_bool(self.constraints, false)
     }
 
-    pub(super) fn check_type_pair(
+    pub fn check_type_pair(
         &self,
         db: &'db dyn Db,
         left: Type<'db>,
@@ -2878,9 +2878,9 @@ impl<'c, 'db> EquivalenceChecker<'_, 'c, 'db> {
     }
 }
 
-pub(super) struct DisjointnessChecker<'a, 'c, 'db> {
-    pub(super) env: &'a ProgramEnvironment<'db>,
-    pub(super) constraints: &'c ConstraintSetBuilder<'db>,
+pub struct DisjointnessChecker<'a, 'c, 'db> {
+    pub env: &'a ProgramEnvironment<'db>,
+    pub constraints: &'c ConstraintSetBuilder<'db>,
     inferable: TypeVarSet<'db>,
     context_tree: Option<ErrorContextTree<'db>>,
     given: ConstraintSet<'db, 'c>,
@@ -2899,7 +2899,7 @@ pub(super) struct DisjointnessChecker<'a, 'c, 'db> {
 }
 
 impl<'a, 'c, 'db> DisjointnessChecker<'a, 'c, 'db> {
-    pub(super) fn new(
+    pub fn new(
         env: &'a ProgramEnvironment<'db>,
         constraints: &'c ConstraintSetBuilder<'db>,
         inferable: TypeVarSet<'db>,
@@ -2922,10 +2922,7 @@ impl<'a, 'c, 'db> DisjointnessChecker<'a, 'c, 'db> {
         }
     }
 
-    pub(super) fn as_relation_checker(
-        &self,
-        relation: TypeRelation,
-    ) -> TypeRelationChecker<'_, 'c, 'db> {
+    pub fn as_relation_checker(&self, relation: TypeRelation) -> TypeRelationChecker<'_, 'c, 'db> {
         TypeRelationChecker {
             env: self.env,
             relation,
@@ -2942,14 +2939,14 @@ impl<'a, 'c, 'db> DisjointnessChecker<'a, 'c, 'db> {
         }
     }
 
-    pub(super) fn report_context(&self) -> Option<&ErrorContextTree<'db>> {
+    pub fn report_context(&self) -> Option<&ErrorContextTree<'db>> {
         self.context_tree
             .as_ref()
             .filter(|context| context.is_enabled())
     }
 
     /// Retain a failed subtyping or assignability check that proves disjointness.
-    pub(super) fn check_relation_with_context(
+    pub fn check_relation_with_context(
         &self,
         db: &'db dyn Db,
         mut checker: TypeRelationChecker<'_, 'c, 'db>,
@@ -3054,11 +3051,11 @@ impl<'a, 'c, 'db> DisjointnessChecker<'a, 'c, 'db> {
             })
     }
 
-    pub(super) fn always(&self) -> ConstraintSet<'db, 'c> {
+    pub fn always(&self) -> ConstraintSet<'db, 'c> {
         ConstraintSet::from_bool(self.constraints, true)
     }
 
-    pub(super) fn never(&self) -> ConstraintSet<'db, 'c> {
+    pub fn never(&self) -> ConstraintSet<'db, 'c> {
         ConstraintSet::from_bool(self.constraints, false)
     }
 
@@ -3094,7 +3091,7 @@ impl<'a, 'c, 'db> DisjointnessChecker<'a, 'c, 'db> {
         })
     }
 
-    pub(super) fn check_type_pair(
+    pub fn check_type_pair(
         &self,
         db: &'db dyn Db,
         left: Type<'db>,

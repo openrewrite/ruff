@@ -13,7 +13,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// ordinary `int` arm. In those cases, use ordinary expression inference.
     /// Otherwise, reinterpret the expression as a type expression, as in
     /// `x: TypeForm[int | str] = int | str`, and wrap it in `TypeForm[...]`.
-    pub(super) fn infer_type_form_contextual_expression(
+    pub fn infer_type_form_contextual_expression(
         &mut self,
         expression: &ast::Expr,
         target: Type<'db>,
@@ -132,7 +132,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         )
     }
 
-    pub(super) fn infer_type_form_call_expression(
+    pub fn infer_type_form_call_expression(
         &mut self,
         call_expression: &ast::ExprCall,
     ) -> Type<'db> {

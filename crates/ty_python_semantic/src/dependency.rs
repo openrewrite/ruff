@@ -16,7 +16,7 @@ use crate::Db;
 /// Cache the diagnostic details so metadata changes do not invalidate import inference when
 /// the result for this importing file and module is unchanged.
 #[salsa::tracked(returns(as_ref), heap_size=ruff_memory_usage::heap_size)]
-pub(crate) fn missing_direct_dependency<'db>(
+pub fn missing_direct_dependency<'db>(
     db: &'db dyn Db,
     importing_file: ProgramFile<'db>,
     imported_module: Module<'db>,
@@ -223,8 +223,8 @@ pub struct DependencyDistribution {
 }
 
 #[derive(Debug, PartialEq, Eq, get_size2::GetSize)]
-pub(crate) struct MissingDependency {
-    pub(crate) distribution_name: CompactString,
-    pub(crate) group_dependency: bool,
-    pub(crate) project_kind: DependencyProjectKind,
+pub struct MissingDependency {
+    pub distribution_name: CompactString,
+    pub group_dependency: bool,
+    pub project_kind: DependencyProjectKind,
 }

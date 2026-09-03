@@ -24,45 +24,43 @@ use ty_module_resolver::{
     ImportingFile, KnownModule, Module, ModuleName, file_to_module, resolve_module,
 };
 
-pub(crate) use self::callable::UpcastPolicy;
+pub use self::callable::UpcastPolicy;
 use self::class::ClassInstanceFlags;
 pub use self::cyclic::CycleDetector;
-pub(crate) use self::cyclic::TypeTransformer;
+pub use self::cyclic::TypeTransformer;
 use self::cyclic::{ActiveRecursionDetector, TypeIdentity};
 pub use self::dedicated::pytest::{
     FixtureBinding, FixtureExposure, FixtureNameSource, fixture_bindings_for_parameter,
     fixture_exposures_for_definition, pytest_global_plugin_files,
 };
-pub(crate) use self::diagnostic::TypeCheckDiagnostics;
-pub(crate) use self::diagnostic::register_lints;
+pub use self::diagnostic::TypeCheckDiagnostics;
+pub use self::diagnostic::register_lints;
 pub use self::diagnostic::{UNDEFINED_REVEAL, UNRESOLVED_REFERENCE};
 use self::infer::infer_function_default_types;
-pub(crate) use self::infer::{
+pub use self::infer::{
     InferredDeclaration, TypeContext, infer_complete_scope_types, infer_deferred_types,
     infer_definition_types, infer_expression_type, infer_expression_types,
     infer_same_file_expression_type, infer_scope_types, is_discarded_dict_key_assignment,
 };
-pub(crate) use self::iteration::extract_fixed_length_iterable_element_types;
+pub use self::iteration::extract_fixed_length_iterable_element_types;
 pub use self::known_instance::KnownInstanceType;
-pub(crate) use self::match_pattern::{
+pub use self::match_pattern::{
     ClassPatternPositionalSource, callable_pattern_type, class_pattern_positional_sources,
     definite_match_pattern_type, definite_match_pattern_type_for_subject,
     exact_sequence_pattern_type, mapping_pattern_type, pattern_binding_fallthrough_type,
     sequence_pattern_type_builder, singleton_pattern_type, starred_sequence_pattern_type,
     typed_dict_matches_class_pattern,
 };
-pub(crate) use self::relation_error::{ErrorContext, ErrorContextTree, ParameterDescription};
+pub use self::relation_error::{ErrorContext, ErrorContextTree, ParameterDescription};
 use self::set_theoretic::NegativeIntersectionElements;
-pub(crate) use self::set_theoretic::builder::{
-    IntersectionBuilder, UnionAccumulator, UnionBuilder,
-};
+pub use self::set_theoretic::builder::{IntersectionBuilder, UnionAccumulator, UnionBuilder};
 pub use self::set_theoretic::{IntersectionType, UnionType};
 use self::set_theoretic::{KnownUnion, RecursivelyDefined};
-pub(crate) use self::signatures::Signature;
+pub use self::signatures::Signature;
 pub use self::signatures::{ParameterDefault, ParameterKind};
-pub(crate) use self::subclass_of::{SubclassOfInner, SubclassOfType};
-pub(crate) use self::type_expansion::expand_type;
-pub(crate) use crate::diagnostic::add_inferred_python_version_hint_to_diagnostic;
+pub use self::subclass_of::{SubclassOfInner, SubclassOfType};
+pub use self::type_expansion::expand_type;
+pub use crate::diagnostic::add_inferred_python_version_hint_to_diagnostic;
 use crate::place::{
     DefinedPlace, Definedness, Place, PlaceAndQualifiers, Provenance, TypeOrigin,
     builtins_module_scope, imported_symbol, known_module_symbol, place_from_bindings,
@@ -71,8 +69,8 @@ use crate::suppression::check_suppressions;
 use crate::types::bound_super::BoundSuperType;
 use crate::types::call::bind::ConstructorCallableKind;
 use crate::types::call::{Binding, Bindings, CallArguments, CallableBinding};
-pub(crate) use crate::types::callable::{CallableType, CallableTypes};
-pub(crate) use crate::types::class_base::ClassBase;
+pub use crate::types::callable::{CallableType, CallableTypes};
+pub use crate::types::class_base::ClassBase;
 use crate::types::constraints::ConstraintSetBuilder;
 use crate::types::context::{LintDiagnosticGuard, LintDiagnosticGuardBuilder};
 use crate::types::diagnostic::{
@@ -80,13 +78,13 @@ use crate::types::diagnostic::{
     report_bad_dunder_get_call, report_bad_import_call,
 };
 pub use crate::types::display::{DisplaySettings, TypeDetail, TypeDisplayDetails};
-pub(crate) use crate::types::enums::{EnumClassLiteral, EnumComplementType, enum_metadata};
-pub(crate) use crate::types::equality::{ComparisonSoundnessPolicy, equality_truthiness};
+pub use crate::types::enums::{EnumClassLiteral, EnumComplementType, enum_metadata};
+pub use crate::types::equality::{ComparisonSoundnessPolicy, equality_truthiness};
 use crate::types::function::{
     DataclassTransformerFlags, DataclassTransformerParams, FunctionDecorators, FunctionSpans,
     FunctionType, KnownFunction, OverloadLiteral,
 };
-pub(crate) use crate::types::generics::GenericContext;
+pub use crate::types::generics::GenericContext;
 use crate::types::generics::{ApplySpecialization, Specialization, bind_typevar};
 use crate::types::infer::InferenceFlags;
 use crate::types::known_instance::{
@@ -94,16 +92,16 @@ use crate::types::known_instance::{
 };
 pub use crate::types::method::{BoundMethodType, KnownBoundMethodType, WrapperDescriptorKind};
 use crate::types::mro::{MroIterator, StaticMroError};
-pub(crate) use crate::types::narrow::{NarrowingConstraint, infer_narrowing_constraints};
+pub use crate::types::narrow::{NarrowingConstraint, infer_narrowing_constraints};
 use crate::types::newtype::NewType;
 use crate::types::signatures::{ConcatenateTail, walk_signature};
-pub(crate) use crate::types::signatures::{Parameter, Parameters};
+pub use crate::types::signatures::{Parameter, Parameters};
 use crate::types::special_form::TypeQualifier;
 use crate::types::tuple::TupleSpec;
 pub use crate::types::type_alias::TypeAliasType;
 pub use crate::types::type_form::TypeFormType;
-pub(crate) use crate::types::typed_dict::TypedDictType;
-pub(crate) use crate::types::typevar::{
+pub use crate::types::typed_dict::TypedDictType;
+pub use crate::types::typevar::{
     BindingContext, BoundTypeVarIdentity, ParamSpecAttrKind, TypeVarBoundOrConstraints,
     TypeVarNonce,
 };
@@ -115,11 +113,11 @@ use crate::types::visitor::{
     any_over_type, any_over_type_including_alias_arguments, dynamic_content,
 };
 use crate::{Db, FxOrderSet, HasType, NameKind, Program, SemanticModel};
-pub(crate) use class::{ClassLiteral, ClassType, GenericAlias, StaticClassLiteral};
+pub use class::{ClassLiteral, ClassType, GenericAlias, StaticClassLiteral};
 pub use class::{KnownClass, MethodDecorator, SlotDescriptorType};
 use instance::Protocol;
 pub use instance::{NominalInstanceType, ProtocolInstanceType};
-pub(crate) use literal::{
+pub use literal::{
     BytesLiteralType, EnumLiteralType, LiteralValueType, LiteralValueTypeKind, StringLiteralType,
 };
 pub use special_form::SpecialFormType;
@@ -128,63 +126,63 @@ use ty_python_core::place::ScopedPlaceId;
 use ty_python_core::scope::ScopeId;
 use ty_python_core::{ProgramFile, Truthiness, place_table, semantic_index, use_def_map};
 
-mod attribute_write;
-mod bool;
-mod bound_super;
-mod call;
-mod callable;
-mod class;
-mod class_base;
-mod constraints;
-mod context;
-mod context_manager;
-mod cyclic;
-mod dedicated;
-mod diagnostic;
-mod display;
-mod enums;
-mod equality;
-mod function;
-mod generics;
+pub mod attribute_write;
+pub mod bool;
+pub mod bound_super;
+pub mod call;
+pub mod callable;
+pub mod class;
+pub mod class_base;
+pub mod constraints;
+pub mod context;
+pub mod context_manager;
+pub mod cyclic;
+pub mod dedicated;
+pub mod diagnostic;
+pub mod display;
+pub mod enums;
+pub mod equality;
+pub mod function;
+pub mod generics;
 pub mod ide_support;
-mod infer;
-mod instance;
-mod iteration;
-mod known_instance;
+pub mod infer;
+pub mod instance;
+pub mod iteration;
+pub mod known_instance;
 pub mod list_members;
-mod literal;
-mod match_pattern;
-mod member;
-mod method;
-mod mro;
-pub(crate) mod narrow;
-mod newtype;
-mod overrides;
-mod protocol_class;
-pub(crate) mod relation;
-mod relation_error;
-mod set_theoretic;
-mod signatures;
-mod special_form;
-mod string_annotation;
-mod subclass_of;
+pub mod literal;
+pub mod match_pattern;
+pub mod member;
+pub mod method;
+pub mod mro;
+pub mod narrow;
+pub mod newtype;
+pub mod overrides;
+pub mod protocol_class;
+pub mod relation;
+pub mod relation_error;
+pub mod set_theoretic;
+pub mod signatures;
+pub mod special_form;
+pub mod string_annotation;
+pub mod subclass_of;
 #[cfg(test)]
-pub(crate) mod tests;
-mod tuple;
-mod type_alias;
-mod type_expansion;
-mod type_form;
-mod typed_dict;
-mod typevar;
-mod unpacker;
-mod variance;
-mod visitor;
+pub mod tests;
+pub mod tuple;
+pub mod type_alias;
+pub mod type_expansion;
+pub mod type_form;
+pub mod typed_dict;
+pub mod typevar;
+pub mod unpacker;
+pub mod variance;
+pub mod visitor;
 
-mod definition;
-pub(crate) mod definition_resolution;
+pub mod definition;
+pub mod definition_resolution;
 #[cfg(test)]
-mod property_tests;
-mod subscript;
+pub mod property_tests;
+pub mod subscript;
 
 pub fn check_types(db: &dyn Db, file: ProgramFile<'_>) -> Vec<Diagnostic> {
     let source_file = file.file(db);
@@ -231,7 +229,7 @@ pub fn check_types(db: &dyn Db, file: ProgramFile<'_>) -> Vec<Diagnostic> {
 }
 
 /// Infer the type of a binding.
-pub(crate) fn binding_type<'db>(db: &'db dyn Db, definition: Definition<'db>) -> Type<'db> {
+pub fn binding_type<'db>(db: &'db dyn Db, definition: Definition<'db>) -> Type<'db> {
     let inference = infer_definition_types(db, definition);
     inference.binding_type(definition)
 }
@@ -249,7 +247,7 @@ pub(crate) fn binding_type<'db>(db: &'db dyn Db, definition: Definition<'db>) ->
 /// _runtime_callback = callbacks[0]  # Runtime value.
 /// ```
 #[salsa::tracked(returns(copy))]
-pub(crate) fn may_exist_at_runtime<'db>(db: &'db dyn Db, definition: Definition<'db>) -> bool {
+pub fn may_exist_at_runtime<'db>(db: &'db dyn Db, definition: Definition<'db>) -> bool {
     let file = definition.program_file(db);
     let parsed = parsed_module(db, file.python_file(db));
     let module = parsed.load(db);
@@ -339,7 +337,7 @@ pub(crate) fn may_exist_at_runtime<'db>(db: &'db dyn Db, definition: Definition<
 }
 
 /// Infer the type of a declaration, returning `Rejected` if it is not valid.
-pub(crate) fn inferred_declaration<'db>(
+pub fn inferred_declaration<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> InferredDeclaration<'db> {
@@ -451,7 +449,7 @@ type MaterializationEquivalenceVisitor<'db> =
 /// Some recursive transformations visit the same type under more than one mapping mode within a
 /// single call chain. Keep separate cycle caches for those modes so one transformation cannot
 /// reuse the result of another.
-pub(crate) struct ApplyTypeMappingVisitor<'env, 'db> {
+pub struct ApplyTypeMappingVisitor<'env, 'db> {
     env: &'env ProgramEnvironment<'db>,
     recursion_context: Option<&'env TypeRecursionContext<'db>>,
     /// Whether materialization also transforms type-variable bounds and defaults.
@@ -555,11 +553,10 @@ impl<'env, 'db> ApplyTypeMappingVisitor<'env, 'db> {
 }
 
 /// A [`CycleDetector`] that is used in `find_legacy_typevars` methods.
-pub(crate) type FindLegacyTypeVarsVisitor<'db> =
-    CycleDetector<'db, FindLegacyTypeVars, Type<'db>, (), 3>;
+pub type FindLegacyTypeVarsVisitor<'db> = CycleDetector<'db, FindLegacyTypeVars, Type<'db>, (), 3>;
 
 #[derive(Debug)]
-pub(crate) struct FindLegacyTypeVars;
+pub struct FindLegacyTypeVars;
 
 /// A [`CycleDetector`] that is used in `visit_specialization` methods.
 type SpecializationVisitor<'db> = CycleDetector<'db, VisitSpecialization, Type<'db>, (), 3>;
@@ -656,7 +653,7 @@ impl MaterializationKind {
 /// method or a `__delete__` method. This enum is used to categorize attributes into two
 /// groups: (1) data descriptors and (2) normal attributes or non-data descriptors.
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum AttributeKind {
+pub enum AttributeKind {
     DataDescriptor,
     NormalOrNonDataDescriptor,
 }
@@ -704,21 +701,21 @@ impl<'db> DescriptorGetCallContext<'db> {
 
 /// The type and descriptor kind produced by an implicit `__get__` call.
 #[derive(Clone, Debug, Copy, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct DescriptorGetResult<'db> {
-    pub(crate) return_type: Type<'db>,
+pub struct DescriptorGetResult<'db> {
+    pub return_type: Type<'db>,
     kind: AttributeKind,
 }
 
 /// A failed implicit descriptor call together with its recovery value.
 #[derive(Clone, Debug, Copy, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct DescriptorGetError<'db> {
+pub struct DescriptorGetError<'db> {
     fallback: DescriptorGetResult<'db>,
     context: DescriptorGetCallContext<'db>,
 }
 
 impl<'db> DescriptorGetError<'db> {
     /// Returns the descriptor's declared return type and kind despite the invalid call.
-    pub(crate) const fn fallback(self) -> DescriptorGetResult<'db> {
+    pub const fn fallback(self) -> DescriptorGetResult<'db> {
         self.fallback
     }
 }
@@ -1179,7 +1176,7 @@ enum InstanceFallbackShadowsNonDataDescriptor {
 
 bitflags! {
     #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash)]
-    pub(crate) struct MemberLookupPolicy: u8 {
+    pub struct MemberLookupPolicy: u8 {
         /// Dunder methods are looked up on the meta-type of a type without potentially falling
         /// back on attributes on the type itself. For example, when implicitly invoked on an
         /// instance, dunder methods are not looked up as instance attributes. And when invoked
@@ -1667,7 +1664,7 @@ bitflags! {
     }
 }
 
-pub(crate) const DATACLASS_FLAGS: &[(&str, DataclassFlags)] = &[
+pub const DATACLASS_FLAGS: &[(&str, DataclassFlags)] = &[
     ("init", DataclassFlags::INIT),
     ("repr", DataclassFlags::REPR),
     ("eq", DataclassFlags::EQ),
@@ -1926,7 +1923,7 @@ impl<'db> DiscardDisjointUnionElementsResult<'db> {
 /// also projects to `Base`, which admits `Child` instances. That projection is an
 /// over-approximation.
 #[derive(Copy, Clone, Debug)]
-pub(crate) enum InstanceProjection<T> {
+pub enum InstanceProjection<T> {
     Exact(T),
     OverApproximation(T),
 }
@@ -2053,7 +2050,7 @@ fn object_type_form(db: &dyn Db) -> Type<'_> {
 
 #[salsa::tracked]
 impl<'db> Type<'db> {
-    pub(crate) const fn any() -> Self {
+    pub const fn any() -> Self {
         Self::Dynamic(DynamicType::Any)
     }
 
@@ -2061,7 +2058,7 @@ impl<'db> Type<'db> {
         Self::Dynamic(DynamicType::Unknown)
     }
 
-    pub(crate) fn divergent(id: salsa::Id) -> Self {
+    pub fn divergent(id: salsa::Id) -> Self {
         Self::Divergent(DivergentType::new(id))
     }
 
@@ -2137,7 +2134,7 @@ impl<'db> Type<'db> {
         )
     }
 
-    pub(crate) const fn is_never(&self) -> bool {
+    pub const fn is_never(&self) -> bool {
         matches!(
             self,
             Type::Never
@@ -2210,7 +2207,7 @@ impl<'db> Type<'db> {
         matches!(self, Type::ProtocolInstance(..))
     }
 
-    pub(crate) fn cycle_normalized(
+    pub fn cycle_normalized(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -2727,7 +2724,7 @@ impl<'db> Type<'db> {
         matches!(self, Type::PropertyInstance(..))
     }
 
-    pub(crate) fn module_literal(
+    pub fn module_literal(
         db: &'db dyn Db,
         importing_file: ProgramFile<'db>,
         submodule: Module<'db>,
@@ -2784,7 +2781,7 @@ impl<'db> Type<'db> {
             .expect("Expected a Type::FunctionLiteral variant")
     }
 
-    pub(crate) const fn is_function_literal(&self) -> bool {
+    pub const fn is_function_literal(&self) -> bool {
         matches!(self, Type::FunctionLiteral(..))
     }
 
@@ -2810,7 +2807,7 @@ impl<'db> Type<'db> {
         }
     }
 
-    pub(crate) fn as_enum_literal(self) -> Option<EnumLiteralType<'db>> {
+    pub fn as_enum_literal(self) -> Option<EnumLiteralType<'db>> {
         match self {
             Type::LiteralValue(literal) => literal.as_enum(),
             _ => None,
@@ -2858,7 +2855,7 @@ impl<'db> Type<'db> {
     }
 
     /// Create a promotable string literal.
-    pub(crate) fn string_literal<T>(db: &'db dyn Db, string: T) -> Self
+    pub fn string_literal<T>(db: &'db dyn Db, string: T) -> Self
     where
         T: salsa::Lookup<CompactString> + std::hash::Hash,
         CompactString: salsa::HashEqLike<T>,
@@ -2874,7 +2871,7 @@ impl<'db> Type<'db> {
     }
 
     /// Create a promotable integer literal.
-    pub(crate) fn int_literal(int: i64) -> Self {
+    pub fn int_literal(int: i64) -> Self {
         Self::LiteralValue(LiteralValueType::promotable(int))
     }
 
@@ -3167,7 +3164,7 @@ impl<'db> Type<'db> {
     /// Note that this function tries to promote literals to a more user-friendly form than their
     /// fallback instance type. For example, `def _() -> int` is promoted to `Callable[[], int]`,
     /// as opposed to `FunctionType`.
-    pub(crate) fn promote(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn promote(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         self.apply_type_mapping(
             db,
             env,
@@ -3207,11 +3204,7 @@ impl<'db> Type<'db> {
     }
 
     /// Promote a top-level singleton type (like `None`, `EllipsisType`) to `T | Unknown`.
-    pub(crate) fn promote_singletons(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn promote_singletons(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         self.promote_singletons_impl(db, env)
     }
 
@@ -3282,7 +3275,7 @@ impl<'db> Type<'db> {
     /// If this continues, the query will not converge, so this method is called in the cycle recovery function.
     /// Then `tuple[tuple[Divergent, Literal[1]], Literal[1]]` is replaced with `tuple[Divergent, Literal[1]]` and the query converges.
     #[must_use]
-    pub(crate) fn recursive_type_normalized(
+    pub fn recursive_type_normalized(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -4468,7 +4461,7 @@ impl<'db> Type<'db> {
     ///
     /// C().value
     /// ```
-    pub(crate) fn try_call_dunder_get(
+    pub fn try_call_dunder_get(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -5279,7 +5272,7 @@ impl<'db> Type<'db> {
 
     /// Similar to [`Type::member`], but allows the caller to specify what policy should be used
     /// when looking up attributes. See [`MemberLookupPolicy`] for more information.
-    pub(crate) fn member_lookup_with_policy(
+    pub fn member_lookup_with_policy(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -6210,7 +6203,7 @@ impl<'db> Type<'db> {
     /// elements might be inconsistent, such that there's no argument list that's valid for all
     /// elements. It's usually best to only worry about "callability" relative to a particular
     /// argument list, via [`try_call`][Self::try_call] and [`CallErrorKind::NotCallable`].
-    fn bindings(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Bindings<'db> {
+    pub fn bindings(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Bindings<'db> {
         self.bindings_impl(db, env, &ActiveRecursionDetector::default())
     }
 
@@ -8546,7 +8539,7 @@ impl<'db> Type<'db> {
     /// Note that this does not specialize generic classes, functions, or type aliases! That is a
     /// different operation that is performed explicitly (via a subscript operation), or implicitly
     /// via a call to the generic object.
-    fn apply_specialization(
+    pub fn apply_specialization(
         self,
         db: &'db dyn Db,
         specialization: Specialization<'db>,
@@ -10623,7 +10616,7 @@ impl TypeQualifiers {
 /// Example: `Annotated[ClassVar[tuple[int]], "metadata"]` would have type `tuple[int]` and the
 /// qualifier `ClassVar`.
 #[derive(Clone, Debug, Copy, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct TypeAndQualifiers<'db> {
+pub struct TypeAndQualifiers<'db> {
     inner: Type<'db>,
     origin: TypeOrigin,
     qualifiers: TypeQualifiers,
@@ -10631,7 +10624,7 @@ pub(crate) struct TypeAndQualifiers<'db> {
 }
 
 impl<'db> TypeAndQualifiers<'db> {
-    pub(crate) fn new(inner: Type<'db>, origin: TypeOrigin, qualifiers: TypeQualifiers) -> Self {
+    pub fn new(inner: Type<'db>, origin: TypeOrigin, qualifiers: TypeQualifiers) -> Self {
         Self {
             inner,
             origin,
@@ -10649,21 +10642,21 @@ impl<'db> TypeAndQualifiers<'db> {
         }
     }
 
-    pub(crate) fn with_provenance(mut self, provenance: Provenance<'db>) -> Self {
+    pub fn with_provenance(mut self, provenance: Provenance<'db>) -> Self {
         self.provenance = provenance;
         self
     }
 
-    pub(crate) fn provenance(&self) -> Provenance<'db> {
+    pub fn provenance(&self) -> Provenance<'db> {
         self.provenance
     }
 
     /// Forget about type qualifiers and only return the inner type.
-    pub(crate) fn inner_type(&self) -> Type<'db> {
+    pub fn inner_type(&self) -> Type<'db> {
         self.inner
     }
 
-    pub(crate) fn origin(&self) -> TypeOrigin {
+    pub fn origin(&self) -> TypeOrigin {
         self.origin
     }
 
@@ -10674,7 +10667,7 @@ impl<'db> TypeAndQualifiers<'db> {
     }
 
     /// Return the set of type qualifiers.
-    pub(crate) fn qualifiers(&self) -> TypeQualifiers {
+    pub fn qualifiers(&self) -> TypeQualifiers {
         self.qualifiers
     }
 
@@ -11353,7 +11346,7 @@ impl<'db> ModuleLiteralType<'db> {
 
 /// Either the explicit `metaclass=` keyword of the class, or the inferred metaclass of one of its base classes.
 #[derive(Debug, Clone, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct MetaclassCandidate<'db> {
+pub struct MetaclassCandidate<'db> {
     metaclass: ClassType<'db>,
     /// The base that supplied this candidate, including the `Protocol` pseudo-base,
     /// or `None` for the class's own metaclass.
@@ -11362,7 +11355,7 @@ pub(super) struct MetaclassCandidate<'db> {
 
 /// Information about a `@dataclass_transform`-decorated metaclass.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct MetaclassTransformInfo<'db> {
+pub struct MetaclassTransformInfo<'db> {
     params: DataclassTransformerParams<'db>,
 
     /// Whether the metaclass providing these parameters was declared on the class itself
@@ -11411,7 +11404,7 @@ impl<'db> TypeIsType<'db> {
         Type::TypeIs(Self::new(db, ty, None))
     }
 
-    fn return_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn return_type(self, db: &'db dyn Db) -> Type<'db> {
         self.type_argument(db)
     }
 
@@ -11448,7 +11441,7 @@ impl<'db> VarianceInferable<'db> for TypeIsType<'db> {
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct TypeGuardType<'db> {
     #[returns(copy)]
-    return_type: Type<'db>,
+    pub return_type: Type<'db>,
     /// The ID of the scope to which the place belongs
     /// and the ID of the place itself within that scope.
     #[returns(copy)]
@@ -11517,7 +11510,7 @@ impl<'db> VarianceInferable<'db> for TypeGuardType<'db> {
 
 /// Common trait for `TypeIs` and `TypeGuard` types that share similar structure
 /// but have different semantic behaviors.
-pub(crate) trait TypeGuardLike<'db>: Copy {
+pub trait TypeGuardLike<'db>: Copy {
     /// The name of this type guard form (for error messages and display)
     const FORM_NAME: &'static str;
 
@@ -11580,7 +11573,7 @@ impl<'db> TypeGuardLike<'db> for TypeGuardType<'db> {
 ///
 /// Preserve the class's specialization so that a method on `Child[int]` has a bound such as
 /// `Base[int]`, rather than retaining the type variable in `Base[T@Child]`.
-pub(super) fn determine_upper_bound<'db>(
+pub fn determine_upper_bound<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     class: ClassType<'db>,

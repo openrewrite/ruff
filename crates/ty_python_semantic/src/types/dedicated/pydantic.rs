@@ -31,15 +31,15 @@ use crate::types::{
 };
 
 /// Pydantic treats underscore-prefixed annotations as private instance attributes.
-pub(in crate::types) fn is_private_attribute(name: &str) -> bool {
+pub fn is_private_attribute(name: &str) -> bool {
     name.starts_with('_')
 }
 
 /// Metadata that controls Pydantic-specific model synthesis.
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(crate) struct ModelMetadata<'db> {
+pub struct ModelMetadata<'db> {
     #[returns(deref)]
-    pub(in crate::types) field_specifiers: Box<[Type<'db>]>,
+    pub field_specifiers: Box<[Type<'db>]>,
     #[returns(copy)]
     config: ModelConfig,
 }
@@ -47,7 +47,7 @@ pub(crate) struct ModelMetadata<'db> {
 impl get_size2::GetSize for ModelMetadata<'_> {}
 
 impl<'db> ModelMetadata<'db> {
-    pub(in crate::types) fn from_class(
+    pub fn from_class(
         db: &'db dyn Db,
         class: StaticClassLiteral<'db>,
         transformer_params: DataclassTransformerParams<'db>,
@@ -67,17 +67,17 @@ impl<'db> ModelMetadata<'db> {
         matches!(self.config(db).extra, None | Some(ExtraBehavior::Ignore))
     }
 
-    pub(in crate::types) fn validates_by_alias(self, db: &'db dyn Db) -> bool {
+    pub fn validates_by_alias(self, db: &'db dyn Db) -> bool {
         let (validate_by_alias, _) = self.config(db).validation_config();
         validate_by_alias.enabled_or(true)
     }
 
-    pub(in crate::types) fn validates_by_name(self, db: &'db dyn Db) -> bool {
+    pub fn validates_by_name(self, db: &'db dyn Db) -> bool {
         let (_, validate_by_name) = self.config(db).validation_config();
         validate_by_name.enabled_or(false)
     }
 
-    pub(in crate::types) fn is_frozen(self, db: &'db dyn Db) -> bool {
+    pub fn is_frozen(self, db: &'db dyn Db) -> bool {
         self.config(db).frozen.is_enabled()
     }
 }
@@ -90,11 +90,11 @@ impl<'db> ModelMetadata<'db> {
 /// class Model(BaseModel):
 ///     value: Annotated[int, Strict()] = Field(default=0)
 /// ```
-pub(in crate::types) struct FieldMetadata<'db> {
-    pub(in crate::types) default_ty: Option<Type<'db>>,
-    pub(in crate::types) init: bool,
-    pub(in crate::types) alias: Option<Box<str>>,
-    pub(in crate::types) strict: ConfigBoolean,
+pub struct FieldMetadata<'db> {
+    pub default_ty: Option<Type<'db>>,
+    pub init: bool,
+    pub alias: Option<Box<str>>,
+    pub strict: ConfigBoolean,
 }
 
 impl Default for FieldMetadata<'_> {
@@ -329,7 +329,7 @@ impl<'db> FieldMetadata<'db> {
 }
 
 /// Resolve a Pydantic field's metadata from its annotation and right-hand side.
-pub(in crate::types) fn field_metadata<'db>(
+pub fn field_metadata<'db>(
     db: &'db dyn Db,
     definition: Option<Definition<'db>>,
     rhs_type: Option<Type<'db>>,
@@ -344,7 +344,7 @@ pub(in crate::types) fn field_metadata<'db>(
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, get_size2::GetSize)]
-pub(crate) struct ModelConfig {
+pub struct ModelConfig {
     /// The `extra` configuration controls whether the synthesized constructor accepts keyword
     /// arguments that do not correspond to declared model fields.
     extra: Option<ExtraBehavior>,
@@ -463,7 +463,7 @@ impl ConfigBoolean {
     }
 
     /// Resolve a boolean configuration value from its inferred type.
-    pub(in crate::types) fn from_type(value: Type<'_>) -> Self {
+    pub fn from_type(value: Type<'_>) -> Self {
         if value == Type::bool_literal(true) {
             Self::Enabled
         } else if value == Type::bool_literal(false) {
@@ -495,7 +495,7 @@ fn config_boolean(
     })
 }
 
-pub(in crate::types) fn is_model<'db>(db: &'db dyn Db, class: StaticClassLiteral<'db>) -> bool {
+pub fn is_model<'db>(db: &'db dyn Db, class: StaticClassLiteral<'db>) -> bool {
     class
         .iter_mro(db, None)
         .filter_map(ClassBase::into_class)
@@ -503,11 +503,7 @@ pub(in crate::types) fn is_model<'db>(db: &'db dyn Db, class: StaticClassLiteral
 }
 
 /// Return whether `ty` is an instance of a Pydantic model.
-pub(in crate::types) fn is_model_instance(
-    db: &dyn Db,
-    env: &ProgramEnvironment<'_>,
-    ty: Type<'_>,
-) -> bool {
+pub fn is_model_instance(db: &dyn Db, env: &ProgramEnvironment<'_>, ty: Type<'_>) -> bool {
     ty.nominal_class(db, env)
         .and_then(|class| class.static_class_literal(db))
         .is_some_and(|(class, _)| is_model(db, class))
@@ -517,11 +513,7 @@ pub(in crate::types) fn is_model_instance(
 ///
 /// Pydantic's `Field(...)` uses the ellipsis as a required-field sentinel, so it does not provide
 /// a default value.
-pub(in crate::types) fn field_provides_default(
-    db: &dyn Db,
-    function: FunctionType<'_>,
-    default: Type<'_>,
-) -> bool {
+pub fn field_provides_default(db: &dyn Db, function: FunctionType<'_>, default: Type<'_>) -> bool {
     !default.is_instance_of(db, KnownClass::EllipsisType)
         || !function.is_known(db, KnownFunction::PydanticField)
 }
@@ -530,10 +522,7 @@ pub(in crate::types) fn field_provides_default(
 ///
 /// Pydantic model fields are generally keyword-only, but a root model's `root` field can also be
 /// passed positionally.
-pub(in crate::types) fn constructor_fields_are_keyword_only(
-    db: &dyn Db,
-    class: StaticClassLiteral<'_>,
-) -> bool {
+pub fn constructor_fields_are_keyword_only(db: &dyn Db, class: StaticClassLiteral<'_>) -> bool {
     !is_root_model(db, class)
 }
 
@@ -549,10 +538,7 @@ fn is_root_model<'db>(db: &'db dyn Db, class: StaticClassLiteral<'db>) -> bool {
 ///
 /// A settings model can populate any field from environment variables or another configured
 /// settings source, so no field value is necessarily required at the call site.
-pub(in crate::types) fn constructor_fields_are_optional(
-    db: &dyn Db,
-    class: StaticClassLiteral<'_>,
-) -> bool {
+pub fn constructor_fields_are_optional(db: &dyn Db, class: StaticClassLiteral<'_>) -> bool {
     class
         .iter_mro(db, None)
         .filter_map(ClassBase::into_class)
@@ -564,7 +550,7 @@ pub(in crate::types) fn constructor_fields_are_optional(
 /// Pydantic settings models accept underscore-prefixed parameters that override values from
 /// `model_config` for a single instantiation. These parameters are defined on
 /// `BaseSettings.__init__`, so we reuse them instead of duplicating their names and types.
-pub(in crate::types) fn extend_settings_constructor_parameters<'db>(
+pub fn extend_settings_constructor_parameters<'db>(
     db: &'db dyn Db,
     class: StaticClassLiteral<'db>,
     parameters: &mut Vec<Parameter<'db>>,
@@ -830,7 +816,7 @@ fn class_keyword_config(db: &dyn Db, class: StaticClassLiteral<'_>) -> ModelConf
 }
 
 /// Return the input type accepted by a Pydantic field's synthesized constructor parameter.
-pub(in crate::types) fn constructor_parameter_type<'db>(
+pub fn constructor_parameter_type<'db>(
     db: &'db dyn Db,
     class: StaticClassLiteral<'db>,
     field_name: &Name,
@@ -856,7 +842,7 @@ pub(in crate::types) fn constructor_parameter_type<'db>(
 /// declared field type, while a plain validator bypasses that validation entirely. We therefore
 /// cannot derive a useful input type from the field annotation alone.
 #[salsa::tracked(returns(copy), heap_size=ruff_memory_usage::heap_size)]
-pub(in crate::types) fn has_before_or_plain_field_validator<'db>(
+pub fn has_before_or_plain_field_validator<'db>(
     db: &'db dyn Db,
     class: StaticClassLiteral<'db>,
     field_name: Name,
@@ -1267,7 +1253,7 @@ fn model_init_behavior(db: &dyn Db, class: StaticClassLiteral<'_>) -> ModelInitB
 /// A fixed custom initializer on an intermediate base class controls the constructor accepted by
 /// its subclasses. A variadic custom initializer still allows Pydantic to validate field values
 /// passed via keyword arguments.
-pub(in crate::types) fn synthesizes_constructor_signature_from_fields(
+pub fn synthesizes_constructor_signature_from_fields(
     db: &dyn Db,
     class: StaticClassLiteral<'_>,
 ) -> bool {
@@ -1275,7 +1261,7 @@ pub(in crate::types) fn synthesizes_constructor_signature_from_fields(
 }
 
 /// Return `true` if `class` should accept extra keywords in its synthesized constructor.
-pub(in crate::types) fn model_init_accepts_extra(
+pub fn model_init_accepts_extra(
     db: &dyn Db,
     class: StaticClassLiteral<'_>,
     metadata: ModelMetadata<'_>,
@@ -1297,7 +1283,7 @@ fn model_init_discards_extra(
 }
 
 /// Report keyword arguments that the Pydantic model constructor silently discards.
-pub(in crate::types) fn report_discarded_extra_arguments<'db>(
+pub fn report_discarded_extra_arguments<'db>(
     context: &InferContext<'db, '_>,
     class: ClassType<'db>,
     arguments: &Arguments,
@@ -1357,7 +1343,7 @@ pub(in crate::types) fn report_discarded_extra_arguments<'db>(
 /// Create the catch-all keyword parameter for a Pydantic model constructor.
 ///
 /// Start with `extra` and append underscores until the name does not collide with a model field.
-pub(in crate::types) fn extra_parameter<'db>(parameters: &[Parameter<'db>]) -> Parameter<'db> {
+pub fn extra_parameter<'db>(parameters: &[Parameter<'db>]) -> Parameter<'db> {
     let mut name = String::from("extra");
 
     while parameters

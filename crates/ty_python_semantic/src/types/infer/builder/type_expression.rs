@@ -41,7 +41,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Infer the type of a type expression.
-    pub(super) fn infer_type_expression(&mut self, expression: &ast::Expr) -> Type<'db> {
+    pub fn infer_type_expression(&mut self, expression: &ast::Expr) -> Type<'db> {
         let previous_deferred_state = self.deferred_state;
         let was_in_type_expression = self
             .inference_flags()
@@ -80,7 +80,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// Similar to [`infer_type_expression`], but accepts a [`DeferredExpressionState`].
     ///
     /// [`infer_type_expression`]: TypeInferenceBuilder::infer_type_expression
-    pub(super) fn infer_type_expression_with_state(
+    pub fn infer_type_expression_with_state(
         &mut self,
         expression: &ast::Expr,
         deferred_state: DeferredExpressionState,
@@ -103,7 +103,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
             })
     }
 
-    pub(super) fn infer_name_or_attribute_type_expression(
+    pub fn infer_name_or_attribute_type_expression(
         &mut self,
         ty: Type<'db>,
         annotation: &ast::Expr,
@@ -140,7 +140,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Infer the type of a type expression without storing the result.
-    pub(super) fn infer_type_expression_no_store(&mut self, expression: &ast::Expr) -> Type<'db> {
+    pub fn infer_type_expression_no_store(&mut self, expression: &ast::Expr) -> Type<'db> {
         let db = self.db();
         let env = self.program_environment();
         let ignore_runtime_errors = |builder: &Self| {
@@ -1129,7 +1129,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         }
     }
 
-    pub(super) fn infer_subscript_type_expression_no_store(
+    pub fn infer_subscript_type_expression_no_store(
         &mut self,
         subscript: &ast::ExprSubscript,
         slice: &ast::Expr,
@@ -1146,10 +1146,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Infer the type of a string type expression.
-    pub(super) fn infer_string_type_expression(
-        &mut self,
-        string: &ast::ExprStringLiteral,
-    ) -> Type<'db> {
+    pub fn infer_string_type_expression(&mut self, string: &ast::ExprStringLiteral) -> Type<'db> {
         match parse_string_annotation(&self.context, self.inference_flags(), string) {
             Some(parsed) => {
                 self.string_annotations
@@ -1201,10 +1198,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// Recovers a bare `TypeVarTuple` as `*tuple[Unknown, ...]`, preserving surrounding elements.
     /// An enclosing `tuple[tuple[Ts]]` still has exactly one element.
-    pub(super) fn infer_tuple_type_expression(
-        &mut self,
-        tuple: &ast::ExprSubscript,
-    ) -> TupleType<'db> {
+    pub fn infer_tuple_type_expression(&mut self, tuple: &ast::ExprSubscript) -> TupleType<'db> {
         let db = self.db();
         let env = self.program_environment();
         match &*tuple.slice {
@@ -1545,7 +1539,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Infer the type of an explicitly specialized generic type alias (implicit or PEP 613).
-    pub(crate) fn infer_explicit_type_alias_specialization(
+    pub fn infer_explicit_type_alias_specialization(
         &mut self,
         subscript: &ast::ExprSubscript,
         mut value_ty: Type<'db>,
@@ -2050,7 +2044,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Infer the type of a `Callable[...]` type expression.
-    pub(crate) fn infer_callable_type(&mut self, subscript: &ast::ExprSubscript) -> Type<'db> {
+    pub fn infer_callable_type(&mut self, subscript: &ast::ExprSubscript) -> Type<'db> {
         fn inner<'db>(
             builder: &mut TypeInferenceBuilder<'db, '_>,
             subscript: &ast::ExprSubscript,
@@ -2839,7 +2833,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         }
     }
 
-    pub(crate) fn infer_literal_parameter_type<'param>(
+    pub fn infer_literal_parameter_type<'param>(
         &mut self,
         parameters: &'param ast::Expr,
     ) -> Result<Type<'db>, Vec<&'param ast::Expr>> {
@@ -3105,7 +3099,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Infer the parameter types represented by a `typing.Concatenate` special form.
-    pub(super) fn infer_concatenate_special_form(
+    pub fn infer_concatenate_special_form(
         &mut self,
         subscript: &ast::ExprSubscript,
     ) -> Parameters<'db> {

@@ -5,7 +5,7 @@ use crate::types::call::{CallArguments, CallError};
 use crate::types::context::InferContext;
 use crate::types::infer::infer_definition_types;
 
-pub(crate) fn check_decorator_calls<'db>(
+pub fn check_decorator_calls<'db>(
     context: &InferContext<'db, '_>,
     definition: Definition<'db>,
     decorators: &[ast::Decorator],

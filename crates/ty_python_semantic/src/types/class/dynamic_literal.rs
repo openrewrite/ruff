@@ -153,7 +153,7 @@ impl get_size2::GetSize for DynamicClassLiteral<'_> {}
 ///
 /// Dynamic class constructors accept `bases` either as the second positional argument or as a
 /// `bases=` keyword argument.
-pub(crate) fn dynamic_class_bases_argument(arguments: &ast::Arguments) -> Option<&ast::Expr> {
+pub fn dynamic_class_bases_argument(arguments: &ast::Arguments) -> Option<&ast::Expr> {
     arguments.args.get(1).or_else(|| {
         arguments
             .keywords
@@ -166,7 +166,7 @@ pub(crate) fn dynamic_class_bases_argument(arguments: &ast::Arguments) -> Option
 #[salsa::tracked]
 impl<'db> DynamicClassLiteral<'db> {
     /// Returns the definition where this class is created, if it was assigned to a variable.
-    pub(crate) fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
+    pub fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
         match self.anchor(db) {
             DynamicClassAnchor::Definition(definition) => Some(*definition),
             DynamicClassAnchor::ScopeOffset { .. } => None,
@@ -174,7 +174,7 @@ impl<'db> DynamicClassLiteral<'db> {
     }
 
     /// Returns the scope in which this dynamic class was created.
-    pub(crate) fn scope(self, db: &'db dyn Db) -> ScopeId<'db> {
+    pub fn scope(self, db: &'db dyn Db) -> ScopeId<'db> {
         match self.anchor(db) {
             DynamicClassAnchor::Definition(definition) => definition.scope(db),
             DynamicClassAnchor::ScopeOffset { scope, .. } => *scope,
@@ -194,7 +194,7 @@ impl<'db> DynamicClassLiteral<'db> {
     /// or if the bases argument cannot be extracted precisely.
     ///
     /// Returns `[Unknown]` if the bases iterable is variable-length.
-    pub(crate) fn explicit_bases(self, db: &'db dyn Db) -> &'db [Type<'db>] {
+    pub fn explicit_bases(self, db: &'db dyn Db) -> &'db [Type<'db>] {
         /// Inner cached function for deferred inference of bases.
         /// Only called for assigned calls where inference was deferred.
         #[salsa::tracked(returns(deref), cycle_initial=|_, _, _| Box::default(), heap_size=ruff_memory_usage::heap_size)]
@@ -237,12 +237,12 @@ impl<'db> DynamicClassLiteral<'db> {
     /// Returns a [`Span`] with the range of the `type()` call expression.
     ///
     /// See [`Self::header_range`] for more details.
-    pub(super) fn header_span(self, db: &'db dyn Db) -> Span {
+    pub fn header_span(self, db: &'db dyn Db) -> Span {
         Span::from(self.scope(db).file(db)).with_range(self.header_range(db))
     }
 
     /// Returns the range of the `type()` call expression that created this class.
-    pub(crate) fn header_range(self, db: &'db dyn Db) -> TextRange {
+    pub fn header_range(self, db: &'db dyn Db) -> TextRange {
         let anchor = match self.anchor(db) {
             DynamicClassAnchor::Definition(definition) => {
                 DynamicClassHeaderAnchor::Definition(*definition)
@@ -260,12 +260,12 @@ impl<'db> DynamicClassLiteral<'db> {
     /// that is a subclass of all other base metaclasses.
     ///
     /// See <https://docs.python.org/3/reference/datamodel.html#determining-the-appropriate-metaclass>
-    pub(crate) fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
         let env = ProgramEnvironment::from_scope(self.scope(db));
         self.inferred_metaclass(db).to_type(db, &env)
     }
 
-    pub(super) fn inferred_metaclass(self, db: &'db dyn Db) -> ClassMetaclass<'db> {
+    pub fn inferred_metaclass(self, db: &'db dyn Db) -> ClassMetaclass<'db> {
         self.try_metaclass(db)
             .unwrap_or_else(|_| ClassMetaclass::Selected(SubclassOfType::subclass_of_unknown()))
     }
@@ -276,7 +276,7 @@ impl<'db> DynamicClassLiteral<'db> {
     /// (i.e., two base classes have metaclasses that are not in a subclass relationship).
     ///
     /// See <https://docs.python.org/3/reference/datamodel.html#determining-the-appropriate-metaclass>
-    pub(in crate::types) fn try_metaclass(
+    pub fn try_metaclass(
         self,
         db: &'db dyn Db,
     ) -> Result<ClassMetaclass<'db>, DynamicMetaclassConflict<'db>> {
@@ -372,12 +372,12 @@ impl<'db> DynamicClassLiteral<'db> {
     ///
     /// If the MRO cannot be computed (e.g., due to inconsistent ordering), falls back
     /// to iterating over base MROs sequentially with deduplication.
-    pub(crate) fn iter_mro(self, db: &'db dyn Db) -> MroIterator<'db> {
+    pub fn iter_mro(self, db: &'db dyn Db) -> MroIterator<'db> {
         MroIterator::new(db, ClassLiteral::Dynamic(self), None)
     }
 
     /// Look up an instance member by iterating through the MRO.
-    pub(crate) fn instance_member(
+    pub fn instance_member(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -399,7 +399,7 @@ impl<'db> DynamicClassLiteral<'db> {
     /// Uses `MroLookup` with:
     /// - No inherited generic context (dynamic classes aren't generic).
     /// - `is_self_object = false` (dynamic classes are never `object`).
-    pub(crate) fn class_member(
+    pub fn class_member(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -444,7 +444,7 @@ impl<'db> DynamicClassLiteral<'db> {
     ///
     /// Returns [`Member::unbound`] if the member is not found in the namespace dict,
     /// unless the namespace is dynamic, in which case returns `Unknown`.
-    pub(super) fn own_class_member(self, db: &'db dyn Db, name: &str) -> Member<'db> {
+    pub fn own_class_member(self, db: &'db dyn Db, name: &str) -> Member<'db> {
         // If the namespace is dynamic (not a literal dict) and the name isn't in `self.members`,
         // return Unknown since we can't know what attributes might be defined.
         self.members(db)
@@ -459,7 +459,7 @@ impl<'db> DynamicClassLiteral<'db> {
     ///
     /// Namespace entries are class attributes, not values stored directly on instances.
     #[expect(clippy::unused_self)]
-    pub(super) fn own_instance_member(self, _db: &'db dyn Db, _name: &str) -> Member<'db> {
+    pub fn own_instance_member(self, _db: &'db dyn Db, _name: &str) -> Member<'db> {
         Member::unbound()
     }
 
@@ -477,7 +477,7 @@ impl<'db> DynamicClassLiteral<'db> {
         },
         heap_size=ruff_memory_usage::heap_size
     )]
-    pub(crate) fn try_mro(self, db: &'db dyn Db) -> Result<Mro<'db>, DynamicMroError<'db>> {
+    pub fn try_mro(self, db: &'db dyn Db) -> Result<Mro<'db>, DynamicMroError<'db>> {
         Mro::of_dynamic_class(db, self)
     }
 
@@ -488,7 +488,7 @@ impl<'db> DynamicClassLiteral<'db> {
     /// ```python
     /// X = type("X", (), {"__slots__": ("a",)})
     /// ```
-    pub(super) fn as_disjoint_base(self, db: &'db dyn Db) -> Option<DisjointBase<'db>> {
+    pub fn as_disjoint_base(self, db: &'db dyn Db) -> Option<DisjointBase<'db>> {
         // Check if __slots__ is in the members
         for (name, ty) in self.members(db) {
             if name.as_str() == "__slots__" {
@@ -521,7 +521,7 @@ impl<'db> DynamicClassLiteral<'db> {
     /// if synthesis is valid.
     ///
     /// If the namespace is dynamic, returns `true` since we can't know if ordering methods exist.
-    pub(crate) fn has_own_ordering_method(self, db: &'db dyn Db) -> bool {
+    pub fn has_own_ordering_method(self, db: &'db dyn Db) -> bool {
         const ORDERING_METHODS: &[&str] = &["__lt__", "__le__", "__gt__", "__ge__"];
         ORDERING_METHODS
             .iter()
@@ -529,7 +529,7 @@ impl<'db> DynamicClassLiteral<'db> {
     }
 
     /// Returns a new [`DynamicClassLiteral`] with the given dataclass params, preserving all other fields.
-    pub(crate) fn with_dataclass_params(
+    pub fn with_dataclass_params(
         self,
         db: &'db dyn Db,
         dataclass_params: Option<DataclassParams<'db>>,
@@ -547,7 +547,7 @@ impl<'db> DynamicClassLiteral<'db> {
 
 impl<'db> DynamicClassLiteral<'db> {
     /// Normalize types that are part of this dynamic class's interned identity.
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -586,11 +586,11 @@ impl<'db> DynamicClassLiteral<'db> {
 ///
 /// This mirrors `MetaclassErrorKind::Conflict` for regular classes.
 #[derive(Debug, Clone)]
-pub(crate) struct DynamicMetaclassConflict<'db> {
+pub struct DynamicMetaclassConflict<'db> {
     /// The first conflicting metaclass and its originating base class.
-    pub(crate) metaclass1: ClassType<'db>,
-    pub(crate) base1: ClassBase<'db>,
+    pub metaclass1: ClassType<'db>,
+    pub base1: ClassBase<'db>,
     /// The second conflicting metaclass and its originating base class.
-    pub(crate) metaclass2: ClassType<'db>,
-    pub(crate) base2: ClassBase<'db>,
+    pub metaclass2: ClassType<'db>,
+    pub base2: ClassBase<'db>,
 }

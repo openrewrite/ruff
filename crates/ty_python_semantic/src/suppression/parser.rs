@@ -6,13 +6,13 @@ use ruff_text_size::{TextLen, TextRange, TextSize};
 use smallvec::{SmallVec, smallvec};
 use thiserror::Error;
 
-pub(super) struct SuppressionParser<'src> {
+pub struct SuppressionParser<'src> {
     cursor: Cursor<'src>,
     range: TextRange,
 }
 
 impl<'src> SuppressionParser<'src> {
-    pub(super) fn new(source: &'src str, range: TextRange) -> Self {
+    pub fn new(source: &'src str, range: TextRange) -> Self {
         let cursor = Cursor::new(&source[range]);
 
         Self { cursor, range }
@@ -180,7 +180,7 @@ impl Iterator for SuppressionParser<'_> {
 
 /// A single parsed suppression comment.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(super) struct SuppressionComment {
+pub struct SuppressionComment {
     /// The range of the suppression comment.
     ///
     /// This can be a sub-range of the comment token if the comment token contains multiple `#` tokens:
@@ -203,25 +203,25 @@ pub(super) struct SuppressionComment {
 }
 
 impl SuppressionComment {
-    pub(super) fn kind(&self) -> SuppressionKind {
+    pub fn kind(&self) -> SuppressionKind {
         self.kind
     }
 
-    pub(super) fn codes(&self) -> Option<&[TextRange]> {
+    pub fn codes(&self) -> Option<&[TextRange]> {
         self.codes.as_deref()
     }
 
-    pub(super) fn range(&self) -> TextRange {
+    pub fn range(&self) -> TextRange {
         self.range
     }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, get_size2::GetSize)]
-pub(super) struct ParseError {
-    pub(super) kind: ParseErrorKind,
+pub struct ParseError {
+    pub kind: ParseErrorKind,
 
     /// The position/range at which the parse error occurred.
-    pub(super) range: TextRange,
+    pub range: TextRange,
 }
 
 impl ParseError {
@@ -239,7 +239,7 @@ impl std::fmt::Display for ParseError {
 impl Error for ParseError {}
 
 #[derive(Debug, Eq, PartialEq, Clone, Error, get_size2::GetSize)]
-pub(super) enum ParseErrorKind {
+pub enum ParseErrorKind {
     /// The comment isn't a suppression comment.
     #[error("not a suppression comment")]
     NotASuppression,

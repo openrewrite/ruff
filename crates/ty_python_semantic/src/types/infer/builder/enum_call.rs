@@ -111,7 +111,7 @@ enum SequenceEnumMemberForm {
 }
 
 /// Find enum base class of the given type.
-pub(crate) fn enum_functional_call_base<'db>(db: &'db dyn Db, ty: Type<'db>) -> Option<KnownClass> {
+pub fn enum_functional_call_base<'db>(db: &'db dyn Db, ty: Type<'db>) -> Option<KnownClass> {
     let ClassLiteral::Static(cls) = ty.as_class_literal()? else {
         return None;
     };
@@ -292,7 +292,7 @@ fn apply_generated_type_mixin_member_values<'db>(
 }
 
 impl<'db> TypeInferenceBuilder<'db, '_> {
-    pub(crate) fn infer_enum_call_expression(
+    pub fn infer_enum_call_expression(
         &mut self,
         call_expr: &ast::ExprCall,
         definition: Option<Definition<'db>>,

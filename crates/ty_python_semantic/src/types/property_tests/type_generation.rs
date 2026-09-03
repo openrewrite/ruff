@@ -24,7 +24,7 @@ use ty_python_core::ProgramFile;
 ///
 /// TODO: We should add some variants that exercise generic classes and specializations thereof.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum Ty {
+pub enum Ty {
     Never,
     Unknown,
     Divergent,
@@ -88,7 +88,7 @@ pub(crate) enum Ty {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) enum CallableParams {
+pub enum CallableParams {
     GradualForm,
     List(Vec<Param>),
 }
@@ -158,7 +158,7 @@ impl CallableParams {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Param {
+pub struct Param {
     kind: ParamKind,
     name: Option<Name>,
     annotated_ty: Ty,
@@ -230,11 +230,7 @@ fn create_bound_method<'db>(
 }
 
 impl Ty {
-    pub(crate) fn into_type<'db>(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn into_type<'db>(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         match self {
             Ty::Never => Type::Never,
             Ty::Unknown => Type::unknown(),
@@ -413,14 +409,10 @@ fn newtype_instance<'db>(db: &'db dyn Db, env: &ProgramEnvironment<'db>, name: &
 ///
 /// See <https://github.com/astral-sh/ruff/pull/27693> for the discussion of this coverage problem.
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct FullyStaticTy(Ty);
+pub struct FullyStaticTy(Ty);
 
 impl FullyStaticTy {
-    pub(crate) fn into_type<'db>(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn into_type<'db>(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         let ty = self.0.into_type(db, env);
         assert!(
             ty.is_fully_static(db, env),
@@ -779,7 +771,7 @@ impl Arbitrary for FullyStaticTy {
     }
 }
 
-pub(crate) fn intersection<'db>(
+pub fn intersection<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     tys: impl IntoIterator<Item = Type<'db>>,
@@ -787,7 +779,7 @@ pub(crate) fn intersection<'db>(
     IntersectionType::from_elements(db, env, tys)
 }
 
-pub(crate) fn union<'db>(
+pub fn union<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     tys: impl IntoIterator<Item = Type<'db>>,

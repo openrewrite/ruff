@@ -37,20 +37,20 @@ use crate::{Db, FxOrderSet};
 use ty_python_core::Truthiness;
 use ty_python_core::definition::Definition;
 
-pub(crate) mod promotion;
+pub mod promotion;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum TupleLength {
+pub enum TupleLength {
     Fixed(usize),
     Variable(usize, usize),
 }
 
 impl TupleLength {
-    pub(crate) const fn unknown() -> TupleLength {
+    pub const fn unknown() -> TupleLength {
         TupleLength::Variable(0, 0)
     }
 
-    pub(crate) const fn is_variable(self) -> bool {
+    pub const fn is_variable(self) -> bool {
         matches!(self, TupleLength::Variable(_, _))
     }
 
@@ -61,7 +61,7 @@ impl TupleLength {
     }
 
     /// Returns the minimum length of this tuple.
-    pub(crate) fn minimum(self) -> usize {
+    pub fn minimum(self) -> usize {
         match self {
             TupleLength::Fixed(len) => len,
             TupleLength::Variable(prefix, suffix) => prefix + suffix,
@@ -69,7 +69,7 @@ impl TupleLength {
     }
 
     /// Returns the maximum length of this tuple, if any.
-    pub(crate) fn maximum(self) -> Option<usize> {
+    pub fn maximum(self) -> Option<usize> {
         match self {
             TupleLength::Fixed(len) => Some(len),
             TupleLength::Variable(_, _) => None,
@@ -78,7 +78,7 @@ impl TupleLength {
 
     /// Given two [`TupleLength`]s, return the more precise instance,
     /// if it makes sense to consider one more precise than the other.
-    pub(crate) fn most_precise(self, other: Self) -> Option<Self> {
+    pub fn most_precise(self, other: Self) -> Option<Self> {
         match (self, other) {
             // A fixed-length tuple is equally as precise as another fixed-length tuple if they
             // have the same length. For two differently sized fixed-length tuples, however,
@@ -103,7 +103,7 @@ impl TupleLength {
         }
     }
 
-    pub(crate) fn display_minimum(self) -> String {
+    pub fn display_minimum(self) -> String {
         let minimum_length = self.minimum();
         match self {
             TupleLength::Fixed(_) => minimum_length.to_string(),
@@ -111,14 +111,14 @@ impl TupleLength {
         }
     }
 
-    pub(crate) fn display_maximum(self) -> String {
+    pub fn display_maximum(self) -> String {
         match self.maximum() {
             Some(maximum) => maximum.to_string(),
             None => "unlimited".to_string(),
         }
     }
 
-    pub(crate) fn into_fixed_length(self) -> Option<usize> {
+    pub fn into_fixed_length(self) -> Option<usize> {
         match self {
             TupleLength::Fixed(len) => Some(len),
             TupleLength::Variable(_, _) => None,
@@ -129,13 +129,13 @@ impl TupleLength {
 #[salsa::interned(debug, constructor=new_internal, heap_size=ruff_memory_usage::heap_size)]
 pub struct TupleType<'db> {
     #[returns(copy)]
-    pub(crate) program: Program<'db>,
+    pub program: Program<'db>,
 
     #[returns(ref)]
-    pub(crate) tuple: TupleSpec<'db>,
+    pub tuple: TupleSpec<'db>,
 }
 
-pub(super) fn walk_tuple_type<'db, V: super::visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_tuple_type<'db, V: super::visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     tuple: TupleType<'db>,
     visitor: &V,
@@ -170,11 +170,7 @@ impl get_size2::GetSize for TupleType<'_> {}
 
 #[salsa::tracked]
 impl<'db> TupleType<'db> {
-    pub(crate) fn new(
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-        spec: &TupleSpec<'db>,
-    ) -> Self {
+    pub fn new(db: &'db dyn Db, env: &ProgramEnvironment<'db>, spec: &TupleSpec<'db>) -> Self {
         // If the variable-length portion is Never, it can only be instantiated with zero elements.
         // That means this isn't a variable-length tuple after all!
         if let TupleSpec::Variable(tuple) = spec
@@ -191,7 +187,7 @@ impl<'db> TupleType<'db> {
         TupleType::new_internal(db, env.program(db), spec)
     }
 
-    pub(crate) fn empty(db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Self {
+    pub fn empty(db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Self {
         TupleType::new_internal(
             db,
             env.program(db),
@@ -199,7 +195,7 @@ impl<'db> TupleType<'db> {
         )
     }
 
-    pub(crate) fn heterogeneous(
+    pub fn heterogeneous(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         types: impl IntoIterator<Item = Type<'db>>,
@@ -207,7 +203,7 @@ impl<'db> TupleType<'db> {
         TupleType::new(db, env, &TupleSpec::heterogeneous(types))
     }
 
-    pub(crate) fn mixed(
+    pub fn mixed(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         prefix: impl IntoIterator<Item = Type<'db>>,
@@ -223,7 +219,7 @@ impl<'db> TupleType<'db> {
         )
     }
 
-    pub(crate) fn mixed_with_segment(
+    pub fn mixed_with_segment(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         prefix: impl IntoIterator<Item = Type<'db>>,
@@ -237,11 +233,7 @@ impl<'db> TupleType<'db> {
         )
     }
 
-    pub(crate) fn homogeneous(
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-        element: Type<'db>,
-    ) -> Self {
+    pub fn homogeneous(db: &'db dyn Db, env: &ProgramEnvironment<'db>, element: Type<'db>) -> Self {
         match element {
             Type::Never => TupleType::empty(db, env),
             _ => TupleType::new_internal(db, env.program(db), TupleSpec::homogeneous(element)),
@@ -249,7 +241,7 @@ impl<'db> TupleType<'db> {
     }
 
     /// Packs a `TypeVarTuple` into the tuple value used for generic specialization relations.
-    pub(crate) fn unpacked_typevartuple(
+    pub fn unpacked_typevartuple(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         typevar: BoundTypeVarInstance<'db>,
@@ -266,7 +258,7 @@ impl<'db> TupleType<'db> {
     // `static-frame` as part of the ecosystem analysis. This is because it's called
     // from `NominalInstanceType::class()`, which is a very hot method.
     #[salsa::tracked(returns(copy), cycle_initial=to_class_type_cycle_initial, heap_size=ruff_memory_usage::heap_size)]
-    pub(crate) fn to_class_type(self, db: &'db dyn Db) -> ClassType<'db> {
+    pub fn to_class_type(self, db: &'db dyn Db) -> ClassType<'db> {
         let env = &ProgramEnvironment::from_program(self.program(db));
         let tuple_class = KnownClass::Tuple
             .try_to_class_literal(db, env)
@@ -282,7 +274,7 @@ impl<'db> TupleType<'db> {
         })
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -297,7 +289,7 @@ impl<'db> TupleType<'db> {
         ))
     }
 
-    pub(crate) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -313,7 +305,7 @@ impl<'db> TupleType<'db> {
         )
     }
 
-    pub(crate) fn find_legacy_typevars_impl(
+    pub fn find_legacy_typevars_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -327,7 +319,7 @@ impl<'db> TupleType<'db> {
 }
 
 impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
-    pub(super) fn check_tuple_type_pair(
+    pub fn check_tuple_type_pair(
         &self,
         db: &'db dyn Db,
         source: TupleType<'db>,
@@ -782,7 +774,7 @@ impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
 }
 
 impl<'c, 'db> DisjointnessChecker<'_, 'c, 'db> {
-    pub(super) fn check_tuple_type_pair(
+    pub fn check_tuple_type_pair(
         &self,
         db: &'db dyn Db,
         left: TupleType<'db>,
@@ -791,7 +783,7 @@ impl<'c, 'db> DisjointnessChecker<'_, 'c, 'db> {
         self.check_tuple_spec_pair(db, left.tuple(db), right.tuple(db))
     }
 
-    pub(super) fn check_tuple_spec_pair(
+    pub fn check_tuple_spec_pair(
         &self,
         db: &'db dyn Db,
         left: &TupleSpec<'db>,
@@ -887,7 +879,7 @@ fn to_class_type_cycle_initial<'db>(
 }
 
 /// A tuple spec describes the contents of a tuple type, which might be fixed- or variable-length.
-pub(crate) type TupleSpec<'db> = Tuple<Type<'db>, VariableSegment<'db>>;
+pub type TupleSpec<'db> = Tuple<Type<'db>, VariableSegment<'db>>;
 
 /// The variable-length portion of a [`TupleSpec`].
 ///
@@ -903,7 +895,7 @@ pub enum VariableSegment<'db> {
 }
 
 impl<'db> VariableSegment<'db> {
-    pub(crate) const fn homogeneous_type(self) -> Option<Type<'db>> {
+    pub const fn homogeneous_type(self) -> Option<Type<'db>> {
         match self {
             Self::Homogeneous(element) => Some(element),
             Self::TypeVarTuple(_) => None,
@@ -924,14 +916,14 @@ impl<'db> VariableSegment<'db> {
         .then_some(element)
     }
 
-    pub(crate) const fn typevartuple(self) -> Option<BoundTypeVarInstance<'db>> {
+    pub const fn typevartuple(self) -> Option<BoundTypeVarInstance<'db>> {
         match self {
             Self::Homogeneous(_) => None,
             Self::TypeVarTuple(typevartuple) => Some(typevartuple),
         }
     }
 
-    pub(crate) fn element_type(self, _db: &'db dyn Db) -> Type<'db> {
+    pub fn element_type(self, _db: &'db dyn Db) -> Type<'db> {
         match self {
             Self::Homogeneous(element) => element,
             Self::TypeVarTuple(_) => Type::object(),
@@ -966,19 +958,19 @@ impl<T> FixedLengthTuple<T> {
         Self(elements.into_iter().collect())
     }
 
-    pub(crate) fn elements_slice(&self) -> &[T] {
+    pub fn elements_slice(&self) -> &[T] {
         &self.0
     }
 
-    pub(crate) fn owned_elements(self) -> Box<[T]> {
+    pub fn owned_elements(self) -> Box<[T]> {
         self.0
     }
 
-    pub(crate) fn all_elements(&self) -> &[T] {
+    pub fn all_elements(&self) -> &[T] {
         &self.0
     }
 
-    pub(crate) fn iter_all_elements(&self) -> impl DoubleEndedIterator<Item = T>
+    pub fn iter_all_elements(&self) -> impl DoubleEndedIterator<Item = T>
     where
         T: Copy,
     {
@@ -986,7 +978,7 @@ impl<T> FixedLengthTuple<T> {
     }
 
     /// Returns the length of this tuple.
-    pub(crate) fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.0.len()
     }
 }
@@ -1125,7 +1117,7 @@ impl<T, V> VariableLengthTuple<T, V> {
         }
     }
 
-    pub(super) fn mixed(
+    pub fn mixed(
         prefix: impl IntoIterator<Item = T>,
         variable: V,
         suffix: impl IntoIterator<Item = T>,
@@ -1197,29 +1189,29 @@ impl<T, V> VariableLengthTuple<T, V> {
         }
     }
 
-    pub(crate) fn variable(&self) -> V
+    pub fn variable(&self) -> V
     where
         V: Copy,
     {
         self.variable_segment
     }
 
-    pub(crate) fn prefix_elements(&self) -> &[T] {
+    pub fn prefix_elements(&self) -> &[T] {
         &self.fixed_elements[..self.prefix_len]
     }
 
-    pub(crate) fn iter_prefix_elements(&self) -> impl DoubleEndedIterator<Item = T>
+    pub fn iter_prefix_elements(&self) -> impl DoubleEndedIterator<Item = T>
     where
         T: Copy,
     {
         self.prefix_elements().iter().copied()
     }
 
-    pub(crate) fn suffix_elements(&self) -> &[T] {
+    pub fn suffix_elements(&self) -> &[T] {
         &self.fixed_elements[self.prefix_len..]
     }
 
-    pub(crate) fn iter_suffix_elements(&self) -> impl DoubleEndedIterator<Item = T>
+    pub fn iter_suffix_elements(&self) -> impl DoubleEndedIterator<Item = T>
     where
         T: Copy,
     {
@@ -2383,7 +2375,7 @@ impl<T, V> Tuple<T, V> {
     /// The returned variable segment still keeps the candidates for `rest` separate.
     ///
     /// A length error means the source's known length bounds cannot fit the targets.
-    pub(crate) fn unpack(
+    pub fn unpack(
         &self,
         length: TupleLength,
         variable_elements: impl Fn(&V) -> Vec<T>,
@@ -2499,30 +2491,30 @@ impl<T, V> Tuple<T, V> {
     }
 
     /// Returns the inner fixed-length tuple if this is a `Tuple::Fixed` variant.
-    pub(crate) fn as_fixed_length(&self) -> Option<&FixedLengthTuple<T>> {
+    pub fn as_fixed_length(&self) -> Option<&FixedLengthTuple<T>> {
         match self {
             Tuple::Fixed(tuple) => Some(tuple),
             Tuple::Variable(_) => None,
         }
     }
 
-    pub(crate) const fn is_variadic(&self) -> bool {
+    pub const fn is_variadic(&self) -> bool {
         matches!(self, Tuple::Variable(_))
     }
 
-    pub(crate) fn heterogeneous(elements: impl IntoIterator<Item = T>) -> Self {
+    pub fn heterogeneous(elements: impl IntoIterator<Item = T>) -> Self {
         Self::Fixed(FixedLengthTuple::from_elements(elements))
     }
 
     /// Returns an iterator of all of the fixed-length element types of this tuple.
-    pub(crate) fn fixed_elements(&self) -> impl Iterator<Item = &T> + '_ {
+    pub fn fixed_elements(&self) -> impl Iterator<Item = &T> + '_ {
         match self {
             Tuple::Fixed(tuple) => Either::Left(tuple.all_elements().iter()),
             Tuple::Variable(tuple) => Either::Right(tuple.fixed_elements()),
         }
     }
 
-    pub(crate) fn into_all_elements_with_kind(self) -> impl Iterator<Item = TupleElement<T, V>> {
+    pub fn into_all_elements_with_kind(self) -> impl Iterator<Item = TupleElement<T, V>> {
         match self {
             Tuple::Fixed(tuple) => {
                 Either::Left(tuple.owned_elements().into_iter().map(TupleElement::Fixed))
@@ -2532,14 +2524,14 @@ impl<T, V> Tuple<T, V> {
     }
 
     /// Returns the length of this tuple.
-    pub(crate) fn len(&self) -> TupleLength {
+    pub fn len(&self) -> TupleLength {
         match self {
             Tuple::Fixed(tuple) => TupleLength::Fixed(tuple.len()),
             Tuple::Variable(tuple) => tuple.len(),
         }
     }
 
-    pub(crate) fn truthiness(&self) -> Truthiness {
+    pub fn truthiness(&self) -> Truthiness {
         match self.len().size_hint() {
             // The tuple type is AlwaysFalse if it contains only the empty tuple
             (_, Some(0)) => Truthiness::AlwaysFalse,
@@ -2552,13 +2544,13 @@ impl<T, V> Tuple<T, V> {
 }
 
 impl<'db> Tuple<Type<'db>, VariableSegment<'db>> {
-    pub(crate) const fn homogeneous(element: Type<'db>) -> Self {
+    pub const fn homogeneous(element: Type<'db>) -> Self {
         Self::Variable(VariableLengthTuple::homogeneous(
             VariableSegment::Homogeneous(element),
         ))
     }
 
-    pub(crate) fn homogeneous_element_type(
+    pub fn homogeneous_element_type(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -2589,14 +2581,14 @@ impl<'db> Tuple<Type<'db>, VariableSegment<'db>> {
         }
     }
 
-    pub(crate) fn variable_element_type(&self, db: &'db dyn Db) -> Option<Type<'db>> {
+    pub fn variable_element_type(&self, db: &'db dyn Db) -> Option<Type<'db>> {
         match self {
             Tuple::Fixed(_) => None,
             Tuple::Variable(tuple) => Some(tuple.variable().element_type(db)),
         }
     }
 
-    pub(crate) fn iter_element_types(
+    pub fn iter_element_types(
         &self,
         db: &'db dyn Db,
     ) -> impl DoubleEndedIterator<Item = Type<'db>> + '_ {
@@ -2610,7 +2602,7 @@ impl<'db> Tuple<Type<'db>, VariableSegment<'db>> {
     ///
     /// Fixed-length tuples produce an exact heterogeneous tuple. Variable-length tuples preserve
     /// exact shape where it is cheap to do so, and otherwise use a sound homogeneous approximation.
-    pub(crate) fn py_slice_type(
+    pub fn py_slice_type(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -2631,7 +2623,7 @@ impl<'db> Tuple<Type<'db>, VariableSegment<'db>> {
     /// Resizes this tuple to a different length, if possible. If this tuple cannot satisfy the
     /// desired minimum or maximum length, we return an error. If we return an `Ok` result, the
     /// [`len`][Self::len] of the resulting tuple is guaranteed to be equal to `new_length`.
-    pub(crate) fn resize(
+    pub fn resize(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -2709,7 +2701,7 @@ impl<'db> Tuple<Type<'db>, VariableSegment<'db>> {
     /// For variable-length tuples, this yields all pairs of elements that could overlap at runtime,
     /// including prefix/suffix elements matched by position, and variable elements that could
     /// align with any position in the other tuple.
-    pub(crate) fn try_for_each_element_pair<F, E>(
+    pub fn try_for_each_element_pair<F, E>(
         &self,
         db: &'db dyn Db,
         other: &Self,
@@ -2853,10 +2845,7 @@ impl<'db> Tuple<Type<'db>, VariableSegment<'db>> {
     }
 
     /// Return the `TupleSpec` for the singleton `sys.version_info`
-    pub(crate) fn version_info_spec(
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> TupleSpec<'db> {
+    pub fn version_info_spec(db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> TupleSpec<'db> {
         let python_version = env.python_version(db);
         let int_instance_ty = KnownClass::Int.to_instance(db, env);
 
@@ -2912,7 +2901,7 @@ impl<'db> PyIndex<'db> for &TupleSpec<'db> {
     }
 }
 
-pub(crate) enum TupleElement<T, V = T> {
+pub enum TupleElement<T, V = T> {
     Fixed(T),
     Prefix(T),
     Variable(V),
@@ -2920,14 +2909,14 @@ pub(crate) enum TupleElement<T, V = T> {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) enum ResizeTupleError {
+pub enum ResizeTupleError {
     TooFewValues,
     TooManyValues,
 }
 
 /// A builder for a fixed or variable-length sequence.
 #[derive(Clone)]
-pub(crate) enum TupleBuilder<T, V = T> {
+pub enum TupleBuilder<T, V = T> {
     Fixed(Vec<T>),
     Variable {
         prefix: Vec<T>,
@@ -2936,14 +2925,14 @@ pub(crate) enum TupleBuilder<T, V = T> {
     },
 }
 
-pub(crate) type TupleSpecBuilder<'db> = TupleBuilder<Type<'db>, VariableSegment<'db>>;
+pub type TupleSpecBuilder<'db> = TupleBuilder<Type<'db>, VariableSegment<'db>>;
 
 impl<T, V> TupleBuilder<T, V> {
-    pub(crate) fn with_capacity(capacity: usize) -> Self {
+    pub fn with_capacity(capacity: usize) -> Self {
         Self::Fixed(Vec::with_capacity(capacity))
     }
 
-    pub(crate) fn push(&mut self, element: T) {
+    pub fn push(&mut self, element: T) {
         match self {
             Self::Fixed(elements) => elements.push(element),
             Self::Variable { suffix, .. } => suffix.push(element),
@@ -2980,7 +2969,7 @@ impl<T, V> TupleBuilder<T, V> {
     /// the suffix, prefix, and right segment into the left segment. Only `1` and `4` remain
     /// fixed in the result. The caller decides how to combine the segments' types or source
     /// expressions; `merge` is not called unless both sequences have variable segments.
-    pub(crate) fn concat_with(
+    pub fn concat_with(
         mut self,
         other: &Tuple<T, V>,
         merge: impl FnOnce(&[T], &mut V, &V, &[T]),
@@ -3052,7 +3041,7 @@ impl<T, V> TupleBuilder<T, V> {
         }
     }
 
-    pub(super) fn build(self) -> Tuple<T, V> {
+    pub fn build(self) -> Tuple<T, V> {
         match self {
             Self::Fixed(elements) => Tuple::Fixed(FixedLengthTuple(elements.into_boxed_slice())),
             Self::Variable {
@@ -3066,7 +3055,7 @@ impl<T, V> TupleBuilder<T, V> {
 
 impl<'db> TupleSpecBuilder<'db> {
     /// Concatenates an unpacked `TypeVarTuple` as the variable-length portion of this tuple.
-    pub(crate) fn concat_variadic_typevar(
+    pub fn concat_variadic_typevar(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -3078,7 +3067,7 @@ impl<'db> TupleSpecBuilder<'db> {
     }
 
     /// Concatenates another tuple to the end of this tuple, returning a new tuple.
-    pub(crate) fn concat(
+    pub fn concat(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -3126,7 +3115,7 @@ impl<'db> TupleSpecBuilder<'db> {
     /// `tuple[int, str, bytes]`, the result will be a tuple-spec builder for
     /// `tuple[int | str | bytes, ...]`. We could consider improving this in the future if real-world
     /// use cases arise.
-    pub(crate) fn union(
+    pub fn union(
         mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -3172,7 +3161,7 @@ impl<'db> TupleSpecBuilder<'db> {
     /// For example, if `self` is a tuple-spec builder for `tuple[int, str]` and `other` is a
     /// tuple-spec for `tuple[object, object]`, the result will be a tuple-spec builder for
     /// `tuple[int, str]` (since `int & object` simplifies to `int`, and `str & object` to `str`).
-    pub(crate) fn intersect(
+    pub fn intersect(
         mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

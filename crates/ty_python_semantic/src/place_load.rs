@@ -97,7 +97,7 @@ use ty_python_core::{
 use crate::Db;
 
 /// Returns an iterator over the steps that resolve a value for a place load.
-pub(crate) fn resolve_place_load<'db, 'ast>(
+pub fn resolve_place_load<'db, 'ast>(
     db: &'db dyn Db,
     index: &'db SemanticIndex<'db>,
     scope: ScopeId<'db>,
@@ -118,7 +118,7 @@ pub(crate) fn resolve_place_load<'db, 'ast>(
 
 /// Selects the binding state used for a place load's own scope.
 #[derive(Clone, Copy)]
-pub(crate) enum PlaceLoadMode<'ast> {
+pub enum PlaceLoadMode<'ast> {
     /// Resolve bindings live at an expression occurrence.
     ///
     /// For example, a caller resolving `value` in `print(value)` uses this mode so that only
@@ -146,7 +146,7 @@ pub(crate) enum PlaceLoadMode<'ast> {
 }
 
 /// Exposes an iterator over the steps that resolve the value for a place load.
-pub(crate) struct PlaceLoadResolution<'db, 'ast> {
+pub struct PlaceLoadResolution<'db, 'ast> {
     /// The place expression whose loaded value is being resolved.
     place_expr: PlaceExpr,
     /// Read-only context shared by every source-selection phase.
@@ -585,18 +585,18 @@ impl<'db, 'ast> PlaceLoadResolution<'db, 'ast> {
         }
     }
 
-    pub(crate) fn narrowing_constraints_for(
+    pub fn narrowing_constraints_for(
         &self,
         source: &PlaceLoadSource<'_>,
     ) -> &[(FileScopeId, ConstraintKey)] {
         self.constraints.narrowing_constraints_for(source)
     }
 
-    pub(crate) fn into_constraints(self) -> Vec<(FileScopeId, ConstraintKey)> {
+    pub fn into_constraints(self) -> Vec<(FileScopeId, ConstraintKey)> {
         self.constraints.into_constraints()
     }
 
-    pub(crate) fn place_expr(&self) -> PlaceExprRef<'_> {
+    pub fn place_expr(&self) -> PlaceExprRef<'_> {
         PlaceExprRef::from(&self.place_expr)
     }
 
@@ -608,7 +608,7 @@ impl<'db, 'ast> PlaceLoadResolution<'db, 'ast> {
     }
 }
 
-pub(crate) enum PlaceLoadResolutionStep<'db> {
+pub enum PlaceLoadResolutionStep<'db> {
     // A source that can supply the value for a load.
     Source(PlaceLoadSource<'db>),
     // A condition that the caller must evaluate to determine whether resolution should continue
@@ -677,9 +677,9 @@ pub(crate) enum PlaceLoadResolutionStep<'db> {
 /// that source is undefined and the consumer requests the next source, the
 /// `UseId` key narrows the enclosing `int | None` place to `int`. If both
 /// sources are exhausted, the key remains active for expression-level narrowing.
-pub(crate) struct PlaceLoadSource<'db> {
+pub struct PlaceLoadSource<'db> {
     /// How this source supplies the loaded value.
-    pub(crate) kind: PlaceLoadSourceKind<'db>,
+    pub kind: PlaceLoadSourceKind<'db>,
     /// Selects the constraints used to narrow this source.
     entry_checkpoint: usize,
     /// The role this source plays in the load.
@@ -688,12 +688,12 @@ pub(crate) struct PlaceLoadSource<'db> {
 
 impl PlaceLoadSource<'_> {
     /// Returns whether this source is the module fallback for a class-local name.
-    pub(crate) fn is_class_body_global_fallback(&self) -> bool {
+    pub fn is_class_body_global_fallback(&self) -> bool {
         self.role == PlaceLoadSourceRole::ClassBodyGlobalFallback
     }
 
     /// Returns whether this source is considered after lexical name resolution.
-    pub(crate) fn is_post_lexical(&self) -> bool {
+    pub fn is_post_lexical(&self) -> bool {
         matches!(
             self.kind,
             PlaceLoadSourceKind::Implicit(
@@ -704,7 +704,7 @@ impl PlaceLoadSource<'_> {
 }
 
 /// Describes how a source can supply a place's value.
-pub(crate) enum PlaceLoadSourceKind<'db> {
+pub enum PlaceLoadSourceKind<'db> {
     /// Bindings already selected for this load state.
     ///
     /// For an ordinary expression, these are the bindings that reach that point:
@@ -747,7 +747,7 @@ pub(crate) enum PlaceLoadSourceKind<'db> {
 }
 
 /// A source that consumers evaluate using a specialized query or rule.
-pub(crate) enum ImplicitPlaceLoad<'db> {
+pub enum ImplicitPlaceLoad<'db> {
     /// The implicit `__class__` cell for a method, lambda, or generator expression defined directly
     /// in a class body, e.g.:
     ///
@@ -790,7 +790,7 @@ enum PlaceLoadSourceRole {
 
 /// The reason resolution stops if the preceding sources do not supply a value.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum PlaceLoadFailure {
+pub enum PlaceLoadFailure {
     /// No additional place-load source applies.
     ///
     /// For a symbol load, this means runtime lookup raises `NameError`.
@@ -831,7 +831,7 @@ pub(crate) enum PlaceLoadFailure {
 ///
 /// The nested scope binds `obj` to a different object, so normal member lookup on the local
 /// `obj` must handle the load instead.
-pub(crate) struct PlaceExprPrefixLoads<'db> {
+pub struct PlaceExprPrefixLoads<'db> {
     scope: ScopeId<'db>,
     loads: SmallVec<[PlaceExprPrefixLoad; 2]>,
 }
@@ -847,19 +847,19 @@ impl<'db> PlaceExprPrefixLoads<'db> {
     }
 
     /// Returns the scope containing the prefix loads.
-    pub(crate) fn scope(&self) -> ScopeId<'db> {
+    pub fn scope(&self) -> ScopeId<'db> {
         self.scope
     }
 
     /// Iterates over the prefix loads.
-    pub(crate) fn iter(&self) -> impl Iterator<Item = PlaceExprPrefixLoad> + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = PlaceExprPrefixLoad> + '_ {
         self.loads.iter().copied()
     }
 }
 
 /// Describes how a consumer can evaluate one prefix of a place expression.
 #[derive(Clone, Copy)]
-pub(crate) enum PlaceExprPrefixLoad {
+pub enum PlaceExprPrefixLoad {
     /// Use the bindings that reach this expression occurrence.
     AtUse(ScopedUseId),
     /// Use every binding reachable for this place in its scope.

@@ -21,7 +21,7 @@ use crate::{
 };
 use ty_python_core::definition::Definition;
 
-pub(super) fn validate_typed_dict_class<'db>(
+pub fn validate_typed_dict_class<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     class_node: &ast::StmtClassDef,

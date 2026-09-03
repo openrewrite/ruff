@@ -30,7 +30,7 @@ use ty_python_core::{
 
 /// Iterate over all declarations and bindings that exist at the end
 /// of the given scope.
-pub(crate) fn all_end_of_scope_members<'db>(
+pub fn all_end_of_scope_members<'db>(
     db: &'db dyn Db,
     scope_id: ScopeId<'db>,
 ) -> impl Iterator<Item = MemberWithDefinition<'db>> + 'db {
@@ -86,7 +86,7 @@ pub(crate) fn all_end_of_scope_members<'db>(
 
 /// Iterate over all declarations and bindings that are reachable anywhere
 /// in the given scope.
-pub(crate) fn all_reachable_members<'db>(
+pub fn all_reachable_members<'db>(
     db: &'db dyn Db,
     scope_id: ScopeId<'db>,
 ) -> impl Iterator<Item = MemberWithDefinition<'db>> + 'db {
@@ -696,8 +696,8 @@ impl<'db> AllMembers<'db> {
 /// A member of a type or scope, with the first reachable definition of that member.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct MemberWithDefinition<'db> {
-    pub(crate) member: Member<'db>,
-    pub(crate) first_reachable_definition: Definition<'db>,
+    pub member: Member<'db>,
+    pub first_reachable_definition: Definition<'db>,
 }
 
 /// A member of a type or scope.
@@ -715,10 +715,10 @@ pub struct MemberWithDefinition<'db> {
 /// ordered comparisons.
 #[derive(Clone, Debug)]
 pub struct Member<'db> {
-    pub(crate) name: Name,
-    pub(crate) ty: Type<'db>,
+    pub name: Name,
+    pub ty: Type<'db>,
     /// Whether this member is known to exist only during type checking.
-    pub(crate) is_type_check_only: bool,
+    pub is_type_check_only: bool,
 }
 
 impl<'db> Member<'db> {
@@ -767,7 +767,7 @@ impl<'db> Member<'db> {
     /// a function's type while its definition still carries exclusions or diagnostic locations.
     /// Functions recovered from the type must belong to this member, so aliases and replacements
     /// from another class are not treated as local method definitions.
-    pub(super) fn local_functions(
+    pub fn local_functions(
         &self,
         db: &'db dyn Db,
         scope: ScopeId<'db>,
@@ -866,7 +866,7 @@ fn is_local_member_function<'db>(
 
 /// Extract callable functions represented by a type.
 /// These may be defined in files other than the one being checked.
-pub(super) fn extract_underlying_functions<'db>(
+pub fn extract_underlying_functions<'db>(
     db: &'db dyn Db,
     ty: Type<'db>,
 ) -> smallvec::SmallVec<[FunctionType<'db>; 1]> {
@@ -890,7 +890,7 @@ pub(super) fn extract_underlying_functions<'db>(
 
 /// List all members of a given type: anything that would be valid when accessed
 /// as an attribute on an object of the given type.
-pub(crate) fn all_members<'db>(
+pub fn all_members<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     ty: Type<'db>,

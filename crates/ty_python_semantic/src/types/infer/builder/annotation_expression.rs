@@ -13,7 +13,7 @@ use crate::types::{
 };
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub(super) enum PEP613Policy {
+pub enum PEP613Policy {
     Allowed,
     Disallowed,
 }
@@ -48,7 +48,7 @@ impl<'db> AnnotationExpressionInference<'db> {
 /// Annotation expressions.
 impl<'db> TypeInferenceBuilder<'db, '_> {
     /// Infer the type of an annotation expression with the given [`DeferredExpressionState`].
-    pub(super) fn infer_annotation_expression(
+    pub fn infer_annotation_expression(
         &mut self,
         annotation: &ast::Expr,
         deferred_state: DeferredExpressionState,
@@ -58,7 +58,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
 
     /// Infer the type of an annotation expression with the given [`DeferredExpressionState`],
     /// allowing a PEP 613 `typing.TypeAlias` annotation.
-    pub(super) fn infer_annotation_expression_allow_pep_613(
+    pub fn infer_annotation_expression_allow_pep_613(
         &mut self,
         annotation: &ast::Expr,
         deferred_state: DeferredExpressionState,
@@ -100,7 +100,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// Implementation of [`infer_annotation_expression`].
     ///
     /// [`infer_annotation_expression`]: TypeInferenceBuilder::infer_annotation_expression
-    pub(super) fn infer_annotation_expression_impl(
+    pub fn infer_annotation_expression_impl(
         &mut self,
         annotation: &ast::Expr,
         pep_613_policy: PEP613Policy,

@@ -76,7 +76,7 @@ use self::containment::{elements_of, narrow_string_membership};
 ///
 /// But if we called this with the same `test` expression, but the `symbol` of `y`, no
 /// constraint is applied to that symbol, so we'd just return `(None, None)`.
-pub(crate) fn infer_narrowing_constraints<'db>(
+pub fn infer_narrowing_constraints<'db>(
     db: &'db dyn Db,
     predicate: Predicate<'db>,
     place: ScopedPlaceId,
@@ -209,7 +209,7 @@ fn all_narrowing_constraints_for_subject_element_pattern<'db>(
 /// pattern. Definite-match analysis, which is used for negative narrowing and exhaustiveness,
 /// intentionally remains separate.
 #[derive(Debug, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct PatternSuccessTypes<'db> {
+pub struct PatternSuccessTypes<'db> {
     bindings: FrozenMap<ScopedPlaceId, Type<'db>>,
     missing_binding_ty: Type<'db>,
 }
@@ -220,7 +220,7 @@ impl<'db> PatternSuccessTypes<'db> {
     /// A missing entry is `Never` when the whole pattern cannot match. Otherwise, it is `Unknown`
     /// as defensive recovery for a malformed pattern or a binding that was not recorded. During
     /// cycle recovery, it is the divergent type for that cycle.
-    pub(crate) fn binding_type(&self, place: ScopedPlaceId) -> Type<'db> {
+    pub fn binding_type(&self, place: ScopedPlaceId) -> Type<'db> {
         // An OR pattern's alternatives define one runtime binding, so their types are merged by
         // place.
         self.bindings
@@ -435,7 +435,7 @@ struct PatternSuccessAnalyzer<'db> {
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(crate) fn pattern_success_types<'db>(
+pub fn pattern_success_types<'db>(
     db: &'db dyn Db,
     pattern: PatternPredicate<'db>,
 ) -> PatternSuccessTypes<'db> {
@@ -1084,7 +1084,7 @@ fn specialize_generic_class_from_solutions<'db>(
 ///   => `NarrowingConstraint { intersection_disjuncts: [A], replacement_disjuncts: [B] }`
 ///   => evaluates to `(P & A) | B`, where `P` is our previously-known type
 #[derive(Hash, PartialEq, Debug, Eq, Clone, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct NarrowingConstraint<'db> {
+pub struct NarrowingConstraint<'db> {
     /// Intersection constraint (from `isinstance()` narrowing comparisons, `TypeIs`, and
     /// similar). We keep these as a disjunction of conjunctions to avoid constructing
     /// union/intersection types while merging constraints.
@@ -1101,7 +1101,7 @@ pub(crate) struct NarrowingConstraint<'db> {
 impl<'db> NarrowingConstraint<'db> {
     /// Create an "intersection" constraint: the previous type will be
     /// intersected with this constraint
-    pub(crate) fn intersection(constraint: Type<'db>) -> Self {
+    pub fn intersection(constraint: Type<'db>) -> Self {
         Self {
             intersection_disjuncts: smallvec_inline![Conjunctions::singleton(constraint)],
             replacement_disjuncts: smallvec![],
@@ -1128,7 +1128,7 @@ impl<'db> NarrowingConstraint<'db> {
 
     /// Merge two constraints, taking their intersection but respecting "replacement" semantics (with
     /// `other` winning)
-    pub(crate) fn merge_constraint_and(&self, other: Self) -> Self {
+    pub fn merge_constraint_and(&self, other: Self) -> Self {
         // Distribute AND over OR: (A1 | A2 | ...) AND (B1 | B2 | ...)
         // becomes (A1 & B1) | (A1 & B2) | ... | (A2 & B1) | ...
         //
@@ -1190,7 +1190,7 @@ impl<'db> NarrowingConstraint<'db> {
     /// Evaluate the type this effectively constrains to
     ///
     /// Forgets whether each constraint originated from a `replacement` disjunct or not
-    pub(crate) fn evaluate_constraint_type(
+    pub fn evaluate_constraint_type(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -5412,7 +5412,7 @@ fn all_matching_tuple_elements_have_literal_types<'db>(
     })
 }
 
-pub(crate) trait NarrowingEvaluatorExtension<'db> {
+pub trait NarrowingEvaluatorExtension<'db> {
     fn narrow(
         &self,
         db: &'db dyn Db,

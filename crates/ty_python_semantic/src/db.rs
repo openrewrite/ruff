@@ -38,7 +38,7 @@ pub trait Db: PythonCoreDb {
 }
 
 #[cfg(test)]
-pub(crate) mod tests {
+pub mod tests {
     use super::*;
 
     use std::sync::{Arc, Mutex};
@@ -63,7 +63,7 @@ pub(crate) mod tests {
 
     #[salsa::db]
     #[derive(Clone)]
-    pub(crate) struct TestDb {
+    pub struct TestDb {
         storage: salsa::Storage<Self>,
         files: Files,
         system: TestSystem,
@@ -100,23 +100,23 @@ pub(crate) mod tests {
             }
         }
 
-        pub(crate) fn python_version(&self) -> PythonVersion {
+        pub fn python_version(&self) -> PythonVersion {
             self.program().python_version(self)
         }
 
-        pub(crate) fn program_environment(&self) -> ProgramEnvironment<'_> {
+        pub fn program_environment(&self) -> ProgramEnvironment<'_> {
             ProgramEnvironment::from_program(self.program())
         }
 
         /// Marks `file` as open in the editor.
         ///
         /// This is untracked state: open a file before running any queries.
-        pub(crate) fn open_file(&mut self, file: File) {
+        pub fn open_file(&mut self, file: File) {
             self.open_files.insert(file);
         }
 
         /// Takes the salsa events.
-        pub(crate) fn take_salsa_events(&mut self) -> Vec<salsa::Event> {
+        pub fn take_salsa_events(&mut self) -> Vec<salsa::Event> {
             let mut events = self.events.lock().unwrap();
 
             std::mem::take(&mut *events)
@@ -126,7 +126,7 @@ pub(crate) mod tests {
         ///
         /// ## Panics
         /// If there are any pending salsa snapshots.
-        pub(crate) fn clear_salsa_events(&mut self) {
+        pub fn clear_salsa_events(&mut self) {
             self.take_salsa_events();
         }
     }
@@ -223,7 +223,7 @@ pub(crate) mod tests {
     #[salsa::db]
     impl salsa::Database for TestDb {}
 
-    pub(crate) struct TestDbBuilder<'a> {
+    pub struct TestDbBuilder<'a> {
         /// Target Python version
         python_version: PythonVersion,
         /// Target Python platform
@@ -237,7 +237,7 @@ pub(crate) mod tests {
     }
 
     impl<'a> TestDbBuilder<'a> {
-        pub(crate) fn new() -> Self {
+        pub fn new() -> Self {
             Self {
                 python_version: PythonVersion::default(),
                 python_platform: PythonPlatform::default(),
@@ -247,22 +247,22 @@ pub(crate) mod tests {
             }
         }
 
-        pub(crate) fn with_python_version(mut self, version: PythonVersion) -> Self {
+        pub fn with_python_version(mut self, version: PythonVersion) -> Self {
             self.python_version = version;
             self
         }
 
-        pub(crate) fn with_python_platform(mut self, platform: PythonPlatform) -> Self {
+        pub fn with_python_platform(mut self, platform: PythonPlatform) -> Self {
             self.python_platform = platform;
             self
         }
 
-        pub(crate) fn with_src_roots(mut self, src_roots: Vec<SystemPathBuf>) -> Self {
+        pub fn with_src_roots(mut self, src_roots: Vec<SystemPathBuf>) -> Self {
             self.src_roots = src_roots;
             self
         }
 
-        pub(crate) fn with_file(
+        pub fn with_file(
             mut self,
             path: &'a (impl AsRef<SystemPath> + ?Sized),
             content: &'a str,
@@ -275,12 +275,12 @@ pub(crate) mod tests {
         ///
         /// Files under `/.venv/lib/python3.13/site-packages` are treated as third-party modules,
         /// mirroring the import roots discovered from a project's configured Python environment.
-        pub(crate) fn with_third_party_packages(mut self) -> Self {
+        pub fn with_third_party_packages(mut self) -> Self {
             self.third_party_packages = true;
             self
         }
 
-        pub(crate) fn build(self) -> anyhow::Result<TestDb> {
+        pub fn build(self) -> anyhow::Result<TestDb> {
             let mut db = TestDb::new();
 
             for src_root in &self.src_roots {
@@ -323,7 +323,7 @@ pub(crate) mod tests {
         }
     }
 
-    pub(crate) fn setup_db() -> TestDb {
+    pub fn setup_db() -> TestDb {
         TestDbBuilder::new().build().expect("valid TestDb setup")
     }
 }

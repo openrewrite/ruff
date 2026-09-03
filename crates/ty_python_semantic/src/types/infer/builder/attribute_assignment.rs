@@ -28,7 +28,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// `target` is the node for the left-hand side, `object_ty` is the type of `obj`, `attribute` is
     /// the name of the attribute being assigned, `value` is the right-hand side, and `infer_value_ty`
     /// infers its type with the supplied context. If the assignment is invalid, emit diagnostics.
-    pub(super) fn validate_attribute_assignment(
+    pub fn validate_attribute_assignment(
         &mut self,
         target: &ast::ExprAttribute,
         value: &ast::Expr,

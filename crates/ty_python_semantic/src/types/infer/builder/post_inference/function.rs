@@ -26,7 +26,7 @@ use ruff_python_ast as ast;
 use ruff_text_size::{Ranged, TextRange};
 use ty_python_core::{definition::Definition, semantic_index};
 
-pub(crate) fn check_function_definition<'db>(
+pub fn check_function_definition<'db>(
     context: &InferContext<'db, '_>,
     definition: Definition<'db>,
     file_expression_type: &impl Fn(&ast::Expr) -> Type<'db>,

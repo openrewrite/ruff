@@ -22,7 +22,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// This method *does not* call `infer_expression` on the object being called;
     /// it is assumed that the type for this AST node has already been inferred before this method
     /// is called.
-    pub(super) fn infer_new_class_call(
+    pub fn infer_new_class_call(
         &mut self,
         call_expr: &ast::ExprCall,
         definition: Option<Definition<'db>>,
@@ -195,11 +195,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// Infers the bases argument that was skipped during initial inference to handle
     /// forward references and recursive definitions.
-    pub(super) fn infer_new_class_deferred(
-        &mut self,
-        definition: Definition<'db>,
-        call_expr: &ast::Expr,
-    ) {
+    pub fn infer_new_class_deferred(&mut self, definition: Definition<'db>, call_expr: &ast::Expr) {
         let db = self.db();
 
         let ast::Expr::Call(call) = call_expr else {

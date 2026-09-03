@@ -174,7 +174,7 @@ impl KnownClass {
     ///
     /// Built-in and extension types can inherit from collection ABCs only in their stubs. Those
     /// bases must not give the runtime class an inferred protocol metaclass.
-    pub(super) fn has_known_type_metaclass(self, python_version: PythonVersion) -> bool {
+    pub fn has_known_type_metaclass(self, python_version: PythonVersion) -> bool {
         match self {
             Self::Bool
             | Self::Object
@@ -293,11 +293,11 @@ impl KnownClass {
         }
     }
 
-    pub(crate) const fn is_bool(self) -> bool {
+    pub const fn is_bool(self) -> bool {
         matches!(self, Self::Bool)
     }
 
-    pub(crate) const fn is_special_form(self) -> bool {
+    pub const fn is_special_form(self) -> bool {
         matches!(self, Self::SpecialForm)
     }
 
@@ -306,7 +306,7 @@ impl KnownClass {
     ///
     /// Returns `None` for `KnownClass::Tuple`, since the truthiness of a tuple
     /// depends on its spec.
-    pub(crate) const fn bool(self) -> Option<Truthiness> {
+    pub const fn bool(self) -> Option<Truthiness> {
         match self {
             // N.B. It's only generally safe to infer `Truthiness::AlwaysTrue` for a `KnownClass`
             // variant if the class's `__bool__` method always returns the same thing *and* the
@@ -438,7 +438,7 @@ impl KnownClass {
 
     /// Return `true` if this class is a subclass of `enum.Enum` *and* has enum members, i.e.
     /// if it is an "actual" enum, not `enum.Enum` itself or a similar custom enum class.
-    pub(crate) const fn is_enum_subclass_with_members(self) -> bool {
+    pub const fn is_enum_subclass_with_members(self) -> bool {
         match self {
             KnownClass::Bool
             | KnownClass::Object
@@ -556,7 +556,7 @@ impl KnownClass {
     }
 
     /// Return `true` if this class is a (true) subclass of `typing.TypedDict`.
-    pub(crate) const fn is_typed_dict_subclass(self) -> bool {
+    pub const fn is_typed_dict_subclass(self) -> bool {
         match self {
             KnownClass::Bool
             | KnownClass::Object
@@ -674,7 +674,7 @@ impl KnownClass {
         }
     }
 
-    pub(crate) const fn is_tuple_subclass(self) -> bool {
+    pub const fn is_tuple_subclass(self) -> bool {
         match self {
             KnownClass::Tuple | KnownClass::VersionInfo => true,
 
@@ -803,7 +803,7 @@ impl KnownClass {
     ///    on, but it causes problems if we attempt to infer the types of their bases
     ///    too soon.
     /// 2. It's probably more performant.
-    pub(crate) const fn is_protocol(self) -> bool {
+    pub const fn is_protocol(self) -> bool {
         match self {
             Self::Hashable
             | Self::SupportsIndex
@@ -926,7 +926,7 @@ impl KnownClass {
     /// classes need special treatment in some places. For example, implicit usages of `Self` should not
     /// be eagerly replaced with the fallback class itself. Instead, `Self` should eventually be treated
     /// as referring to the destination type (e.g. the actual `NamedTuple`).
-    pub(crate) const fn is_fallback_class(self) -> bool {
+    pub const fn is_fallback_class(self) -> bool {
         match self {
             KnownClass::Bool
             | KnownClass::Object
@@ -1043,7 +1043,7 @@ impl KnownClass {
         }
     }
 
-    pub(crate) fn name(self, python_version: PythonVersion) -> &'static str {
+    pub fn name(self, python_version: PythonVersion) -> &'static str {
         match self {
             Self::Bool => "bool",
             Self::Object => "object",
@@ -1171,7 +1171,7 @@ impl KnownClass {
         }
     }
 
-    pub(crate) fn display(self, python_version: PythonVersion) -> impl std::fmt::Display {
+    pub fn display(self, python_version: PythonVersion) -> impl std::fmt::Display {
         std::fmt::from_fn(move |f| {
             write!(
                 f,
@@ -1215,7 +1215,7 @@ impl KnownClass {
     /// Similar to [`KnownClass::to_instance`], but returns the Unknown-specialization where each type
     /// parameter is specialized to `Unknown`.
     #[track_caller]
-    pub(crate) fn to_instance_unknown<'db>(
+    pub fn to_instance_unknown<'db>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1235,7 +1235,7 @@ impl KnownClass {
     ///
     /// If the class cannot be found, or if you provide a specialization with the wrong number of
     /// types, a debug-level log message will be emitted stating this.
-    pub(crate) fn to_specialized_class_type<'t, 'db, T>(
+    pub fn to_specialized_class_type<'t, 'db, T>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1295,7 +1295,7 @@ impl KnownClass {
     /// If the class cannot be found, or if you provide a specialization with the wrong number of
     /// types, a debug-level log message will be emitted stating this.
     #[track_caller]
-    pub(crate) fn to_specialized_instance<'t, 'db, T>(
+    pub fn to_specialized_instance<'t, 'db, T>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1382,7 +1382,7 @@ impl KnownClass {
     /// class literal.
     ///
     /// If the class cannot be found, a debug-level log message will be emitted stating this.
-    pub(crate) fn try_to_class_literal<'db>(
+    pub fn try_to_class_literal<'db>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1403,7 +1403,7 @@ impl KnownClass {
     /// class literal.
     ///
     /// If the class cannot be found, a debug-level log message will be emitted stating this.
-    pub(crate) fn to_class_literal<'db>(
+    pub fn to_class_literal<'db>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1424,7 +1424,7 @@ impl KnownClass {
             .unwrap_or_else(SubclassOfType::subclass_of_unknown)
     }
 
-    pub(crate) fn to_specialized_subclass_of<'db>(
+    pub fn to_specialized_subclass_of<'db>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1437,7 +1437,7 @@ impl KnownClass {
 
     /// Return `true` if this symbol can be resolved to a class definition `class` in its canonical
     /// module, *and* `class` is a subclass of `other`.
-    pub(crate) fn is_subclass_of<'db>(
+    pub fn is_subclass_of<'db>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1447,7 +1447,7 @@ impl KnownClass {
             .is_ok_and(|class| class.is_some_and(|class| class.is_subclass_of(db, None, other)))
     }
 
-    pub(crate) fn when_subclass_of<'db, 'c>(
+    pub fn when_subclass_of<'db, 'c>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1458,7 +1458,7 @@ impl KnownClass {
     }
 
     /// Return the module in which we should look up the definition for this class
-    fn canonical_module(self, python_version: PythonVersion) -> KnownModule {
+    pub fn canonical_module(self, python_version: PythonVersion) -> KnownModule {
         match self {
             Self::Bool
             | Self::Object
@@ -1602,7 +1602,7 @@ impl KnownClass {
     /// Is this class a singleton class?
     ///
     /// A singleton class is a class where it is known that only one instance can ever exist at runtime.
-    pub(crate) const fn is_singleton(self) -> bool {
+    pub const fn is_singleton(self) -> bool {
         match self {
             Self::NoneType
             | Self::EllipsisType
@@ -1720,7 +1720,7 @@ impl KnownClass {
         }
     }
 
-    pub(crate) fn try_from_file_and_name(
+    pub fn try_from_file_and_name(
         db: &dyn Db,
         file: ImportingFile<'_>,
         class_name: &str,
@@ -1978,7 +1978,7 @@ impl KnownClass {
 
     /// Evaluate a call to this known class, emit any diagnostics that are necessary
     /// as a result of the call, and return the type that results from the call.
-    pub(crate) fn check_call<'db>(
+    pub fn check_call<'db>(
         self,
         context: &InferContext<'db, '_>,
         index: &SemanticIndex<'db>,
@@ -2143,7 +2143,7 @@ struct KnownClassArgument {
 
 /// Enumeration of ways in which looking up a [`KnownClass`] in its canonical module could fail.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum KnownClassLookupError<'db> {
+pub enum KnownClassLookupError<'db> {
     /// There is no symbol by that name in the expected module.
     ClassNotFound { third_party: bool },
     /// There is a symbol by that name in the expected module, but it's not a class.

@@ -17,7 +17,7 @@ const MAX_TUPLE_EXPANSION: usize = 64;
 /// Expands a type into its possible subtypes, if applicable.
 ///
 /// Returns [`None`] if the type cannot be expanded.
-pub(crate) fn expand_type<'db>(
+pub fn expand_type<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     ty: Type<'db>,

@@ -21,7 +21,7 @@ pub struct SubclassOfType<'db> {
     subclass_of: SubclassOfInner<'db>,
 }
 
-pub(super) fn walk_subclass_of_type<'db, V: super::visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_subclass_of_type<'db, V: super::visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     subclass_of: SubclassOfType<'db>,
     visitor: &V,
@@ -41,7 +41,7 @@ impl<'db> SubclassOfType<'db> {
     ///
     /// The eager normalization here means that we do not need to worry elsewhere about distinguishing
     /// between `@final` classes and other classes when dealing with [`Type::SubclassOf`] variants.
-    pub(crate) fn from(
+    pub fn from(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         subclass_of: impl Into<SubclassOfInner<'db>>,
@@ -64,14 +64,14 @@ impl<'db> SubclassOfType<'db> {
     }
 
     /// Construct the meta-type of a class-backed protocol.
-    pub(super) const fn from_protocol(protocol: ProtocolInstanceType<'db>) -> Type<'db> {
+    pub const fn from_protocol(protocol: ProtocolInstanceType<'db>) -> Type<'db> {
         Type::SubclassOf(Self {
             subclass_of: SubclassOfInner::Protocol(protocol),
         })
     }
 
     /// Given the class object `T`, returns a [`Type`] instance representing `type[T]`.
-    pub(crate) fn try_from_type(
+    pub fn try_from_type(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         ty: Type<'db>,
@@ -93,7 +93,7 @@ impl<'db> SubclassOfType<'db> {
     }
 
     /// Given an instance of the class or type variable `T`, returns a [`Type`] instance representing `type[T]`.
-    pub(crate) fn try_from_instance(
+    pub fn try_from_instance(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         ty: Type<'db>,
@@ -116,7 +116,7 @@ impl<'db> SubclassOfType<'db> {
     }
 
     /// Return a [`Type`] instance representing the type `type[Unknown]`.
-    pub(crate) const fn subclass_of_unknown() -> Type<'db> {
+    pub const fn subclass_of_unknown() -> Type<'db> {
         Type::SubclassOf(SubclassOfType {
             subclass_of: SubclassOfInner::unknown(),
         })
@@ -124,7 +124,7 @@ impl<'db> SubclassOfType<'db> {
 
     /// Return a [`Type`] instance representing the type `type[Any]`.
     #[cfg(test)]
-    pub(crate) const fn subclass_of_any() -> Type<'db> {
+    pub const fn subclass_of_any() -> Type<'db> {
         Type::SubclassOf(SubclassOfType {
             subclass_of: SubclassOfInner::Dynamic(DynamicType::Any),
         })
@@ -137,12 +137,12 @@ impl<'db> SubclassOfType<'db> {
     }
 
     /// Return the inner [`SubclassOfInner`] value wrapped by this `SubclassOfType`.
-    pub(crate) const fn subclass_of(self) -> SubclassOfInner<'db> {
+    pub const fn subclass_of(self) -> SubclassOfInner<'db> {
         self.subclass_of
     }
 
     /// Returns the effective write requirement exposed by `type[Protocol]` attribute lookup.
-    pub(super) fn meta_write_requirement(
+    pub fn meta_write_requirement(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -161,13 +161,13 @@ impl<'db> SubclassOfType<'db> {
             })
     }
 
-    pub(crate) const fn is_dynamic(self) -> bool {
+    pub const fn is_dynamic(self) -> bool {
         // Unpack `self` so that we're forced to update this method if any more fields are added in the future.
         let Self { subclass_of } = self;
         subclass_of.is_dynamic()
     }
 
-    pub(crate) const fn is_type_var(self) -> bool {
+    pub const fn is_type_var(self) -> bool {
         let Self { subclass_of } = self;
         subclass_of.is_type_var()
     }
@@ -179,7 +179,7 @@ impl<'db> SubclassOfType<'db> {
     /// Return the exact class-object type of this `type[T]` `TypeVar`'s upper bound, if it has one.
     ///
     /// This can only succeed when the upper bound normalizes to a final class.
-    pub(crate) fn exact_typevar_upper_bound(
+    pub fn exact_typevar_upper_bound(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -192,7 +192,7 @@ impl<'db> SubclassOfType<'db> {
             })
     }
 
-    pub(super) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -226,7 +226,7 @@ impl<'db> SubclassOfType<'db> {
         }
     }
 
-    pub(super) fn find_legacy_typevars_impl(
+    pub fn find_legacy_typevars_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -254,7 +254,7 @@ impl<'db> SubclassOfType<'db> {
         }
     }
 
-    pub(crate) fn find_name_in_mro_with_policy(
+    pub fn find_name_in_mro_with_policy(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -285,7 +285,7 @@ impl<'db> SubclassOfType<'db> {
         class_like.find_name_in_mro_with_policy(db, env, name, policy)
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -299,7 +299,7 @@ impl<'db> SubclassOfType<'db> {
         })
     }
 
-    pub(crate) fn to_instance(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn to_instance(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         match self.subclass_of {
             SubclassOfInner::Class(class) => Type::instance(db, env, class),
             SubclassOfInner::Dynamic(dynamic_type) => Type::Dynamic(dynamic_type),
@@ -309,7 +309,7 @@ impl<'db> SubclassOfType<'db> {
     }
 
     /// Return a type representing "the set of all instances of the metaclass of this type".
-    pub(crate) fn to_metaclass_instance(
+    pub fn to_metaclass_instance(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -334,7 +334,7 @@ impl<'db> SubclassOfType<'db> {
         Type::SubclassOf(self).to_meta_type(db, env)
     }
 
-    pub(super) fn to_meta_type_with_recursion(
+    pub fn to_meta_type_with_recursion(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -378,7 +378,7 @@ impl<'db> SubclassOfType<'db> {
         }
     }
 
-    pub(crate) fn is_typed_dict(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> bool {
+    pub fn is_typed_dict(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> bool {
         self.subclass_of
             .into_class(db, env)
             .is_some_and(|class| class.class_literal(db).is_typed_dict(db))
@@ -403,7 +403,7 @@ impl<'db> VarianceInferable<'db> for SubclassOfType<'db> {
 
 impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
     /// Return `true` if `source` has a certain relation to `other`.
-    pub(crate) fn check_subclassof_pair(
+    pub fn check_subclassof_pair(
         &self,
         db: &'db dyn Db,
         source: SubclassOfType<'db>,
@@ -459,7 +459,7 @@ impl<'c, 'db> DisjointnessChecker<'_, 'c, 'db> {
     /// Return` true` if `left` is a disjoint type from `right`.
     ///
     /// See [`Type::is_disjoint_from`] for more details.
-    pub(super) fn check_subclassof_pair(
+    pub fn check_subclassof_pair(
         &self,
         db: &'db dyn Db,
         left: SubclassOfType<'db>,
@@ -510,7 +510,7 @@ impl<'c, 'db> DisjointnessChecker<'_, 'c, 'db> {
 /// `ClassBase::Protocol` and `ClassBase::Generic` special-form variants (`type[Protocol]` and
 /// `type[Generic]` are not valid types).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum SubclassOfInner<'db> {
+pub enum SubclassOfInner<'db> {
     Class(ClassType<'db>),
     Dynamic(DynamicType<'db>),
     Protocol(ProtocolInstanceType<'db>),
@@ -530,7 +530,7 @@ impl<'db> SubclassOfInner<'db> {
         matches!(self, Self::TypeVar(_))
     }
 
-    pub(crate) fn into_class(
+    pub fn into_class(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -554,14 +554,14 @@ impl<'db> SubclassOfInner<'db> {
         }
     }
 
-    pub(crate) const fn into_dynamic(self) -> Option<DynamicType<'db>> {
+    pub const fn into_dynamic(self) -> Option<DynamicType<'db>> {
         match self {
             Self::Class(_) | Self::Protocol(_) | Self::TypeVar(_) => None,
             Self::Dynamic(dynamic) => Some(dynamic),
         }
     }
 
-    pub(crate) const fn into_type_var(self) -> Option<BoundTypeVarInstance<'db>> {
+    pub const fn into_type_var(self) -> Option<BoundTypeVarInstance<'db>> {
         match self {
             Self::Class(_) | Self::Dynamic(_) | Self::Protocol(_) => None,
             Self::TypeVar(bound_typevar) => Some(bound_typevar),
@@ -604,11 +604,7 @@ impl<'db> SubclassOfInner<'db> {
     /// - Otherwise, for an unbounded type variable, this returns `type[object]`.
     ///
     /// If this is type of a concrete type `C`, returns the type unchanged.
-    pub(crate) fn with_transposed_type_var(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Self {
+    pub fn with_transposed_type_var(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Self {
         self.with_transposed_type_var_with_recursion(db, env, &TypeRecursionContext::default())
     }
 

@@ -19,7 +19,7 @@ use ty_python_core::EvaluationMode;
 ///
 /// List and tuple literals are expanded directly so we preserve precise element types, including
 /// recursively unpacking starred elements whose iterables are also fixed-length.
-pub(crate) fn extract_fixed_length_iterable_element_types<'db>(
+pub fn extract_fixed_length_iterable_element_types<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     iterable: &ast::Expr,
@@ -72,7 +72,7 @@ impl<'db> Type<'db> {
     ///
     /// This method should only be used outside of type checking because it omits any errors.
     /// For type checking, use [`try_iterate`](Self::try_iterate) instead.
-    pub(super) fn iterate(
+    pub fn iterate(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -90,7 +90,7 @@ impl<'db> Type<'db> {
     /// ```python
     /// y(*x)
     /// ```
-    pub(super) fn try_iterate(
+    pub fn try_iterate(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -98,7 +98,7 @@ impl<'db> Type<'db> {
         self.try_iterate_with_mode(db, env, EvaluationMode::Sync)
     }
 
-    pub(super) fn try_iterate_with_mode(
+    pub fn try_iterate_with_mode(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -472,7 +472,7 @@ impl<'db> Type<'db> {
 
 /// Error returned if a type is not (or may not be) iterable.
 #[derive(Debug)]
-pub(super) enum IterationError<'db> {
+pub enum IterationError<'db> {
     /// The object being iterated over has a bound `__(a)iter__` method,
     /// but calling it with the expected arguments results in an error.
     IterCallError {
@@ -521,7 +521,7 @@ pub(super) enum IterationError<'db> {
 }
 
 impl<'db> IterationError<'db> {
-    pub(super) fn fallback_element_type(
+    pub fn fallback_element_type(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -530,7 +530,7 @@ impl<'db> IterationError<'db> {
     }
 
     /// Returns the element type if it is known, or `None` if the type is never iterable.
-    pub(super) fn element_type(
+    pub fn element_type(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -626,7 +626,7 @@ impl<'db> IterationError<'db> {
     }
 
     /// Reports the diagnostic for this error.
-    pub(super) fn report_diagnostic(
+    pub fn report_diagnostic(
         &self,
         context: &InferContext<'db, '_>,
         iterable_type: Type<'db>,

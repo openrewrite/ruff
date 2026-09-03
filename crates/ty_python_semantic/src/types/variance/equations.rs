@@ -23,7 +23,7 @@ use crate::{Db, ProgramEnvironment};
 
 /// A variance expression whose recursive references name equations rather than expand types.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum VarianceTerm<'db> {
+pub enum VarianceTerm<'db> {
     Constant(TypeVarVariance),
     Variable(VarianceVariable<'db>),
     Join(VarianceSum<'db>),
@@ -31,9 +31,9 @@ pub(crate) enum VarianceTerm<'db> {
 }
 
 impl<'db> VarianceTerm<'db> {
-    pub(crate) const BIVARIANT: Self = Self::Constant(TypeVarVariance::Bivariant);
+    pub const BIVARIANT: Self = Self::Constant(TypeVarVariance::Bivariant);
 
-    pub(crate) fn variable(
+    pub fn variable(
         db: &'db dyn Db,
         origin: VarianceOrigin<'db>,
         typevar: BoundTypeVarIdentity<'db>,
@@ -43,7 +43,7 @@ impl<'db> VarianceTerm<'db> {
 
     /// Combine occurrences without discarding symbolic dependencies at `Invariant`.
     /// Only evaluation can short-circuit there: later terms can still connect a recursive group.
-    pub(crate) fn join(db: &'db dyn Db, terms: impl IntoIterator<Item = Self>) -> Self {
+    pub fn join(db: &'db dyn Db, terms: impl IntoIterator<Item = Self>) -> Self {
         let mut constant = TypeVarVariance::Bivariant;
         let mut symbolic = Vec::new();
         for term in terms {
@@ -63,7 +63,7 @@ impl<'db> VarianceTerm<'db> {
     }
 
     /// Compose definition-site and use-site variance, preserving erasure in either position.
-    pub(crate) fn compose_thunk(self, db: &'db dyn Db, other: impl FnOnce() -> Self) -> Self {
+    pub fn compose_thunk(self, db: &'db dyn Db, other: impl FnOnce() -> Self) -> Self {
         if self == Self::BIVARIANT {
             return self;
         }
@@ -78,7 +78,7 @@ impl<'db> VarianceTerm<'db> {
     }
 
     /// Evaluate an expression using declared variance at protocol-parameter references.
-    pub(crate) fn evaluate(self, db: &'db dyn Db) -> TypeVarVariance {
+    pub fn evaluate(self, db: &'db dyn Db) -> TypeVarVariance {
         self.evaluate_with(db, &|variable| variable.effective_variance(db))
     }
 
@@ -130,7 +130,7 @@ impl From<TypeVarVariance> for VarianceTerm<'_> {
 }
 
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(crate) struct VarianceSum<'db> {
+pub struct VarianceSum<'db> {
     #[returns(ref)]
     terms: Box<[VarianceTerm<'db>]>,
 }
@@ -138,7 +138,7 @@ pub(crate) struct VarianceSum<'db> {
 impl get_size2::GetSize for VarianceSum<'_> {}
 
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(crate) struct VarianceProduct<'db> {
+pub struct VarianceProduct<'db> {
     #[returns(copy)]
     left: VarianceTerm<'db>,
     #[returns(copy)]
@@ -149,7 +149,7 @@ impl get_size2::GetSize for VarianceProduct<'_> {}
 
 /// Definition bodies that can occur recursively in variance expressions.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum VarianceOrigin<'db> {
+pub enum VarianceOrigin<'db> {
     Class(StaticClassLiteral<'db>),
     /// A use of an explicitly declared protocol parameter, distinct from inferring its body.
     ProtocolParameter(StaticClassLiteral<'db>, TypeVarVariance),
@@ -162,7 +162,7 @@ pub(crate) enum VarianceOrigin<'db> {
 /// One unknown in the equation graph. Generic references use the origin's formal parameters;
 /// specialization arguments contribute separate terms instead of expanding definition bodies.
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(crate) struct VarianceVariable<'db> {
+pub struct VarianceVariable<'db> {
     #[returns(copy)]
     origin: VarianceOrigin<'db>,
     #[returns(copy)]
@@ -305,7 +305,7 @@ impl<'db> VarianceComponent<'db> {
 /// Callers select supported protocol parameters and normalize bivariance to covariance only
 /// after inference, so unused parameters do not introduce constraints into a recursive component.
 #[salsa::tracked(returns(copy), cycle_initial=|_, _, _, _, _| TypeVarVariance::Bivariant, heap_size=ruff_memory_usage::heap_size)]
-pub(crate) fn infer_protocol_variance<'db>(
+pub fn infer_protocol_variance<'db>(
     db: &'db dyn Db,
     class: StaticClassLiteral<'db>,
     typevar: BoundTypeVarIdentity<'db>,

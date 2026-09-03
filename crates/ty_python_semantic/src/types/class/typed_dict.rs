@@ -31,7 +31,7 @@ use crate::{Db, FxIndexMap};
 use ty_python_core::definition::Definition;
 use ty_python_core::scope::ScopeId;
 
-pub(super) fn synthesize_typed_dict_method<'db>(
+pub fn synthesize_typed_dict_method<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     typed_dict: TypedDictType<'db>,
@@ -100,7 +100,7 @@ pub(super) fn synthesize_typed_dict_method<'db>(
 
 /// Enum unifying the field schema for both dynamic and static `TypedDict` representations.
 #[derive(Debug, Copy, Clone)]
-pub(super) enum TypedDictFields<'db> {
+pub enum TypedDictFields<'db> {
     Dynamic(&'db TypedDictSchema<'db>),
     Static(&'db FxIndexMap<Name, super::Field<'db>>),
 }
@@ -881,7 +881,7 @@ impl<'db> DynamicTypedDictAnchor<'db> {
 pub struct DynamicTypedDictLiteral<'db> {
     /// The name of the TypedDict (from the first argument).
     #[returns(ref)]
-    pub(crate) name: Name,
+    pub name: Name,
 
     /// The anchor for this dynamic TypedDict, providing stable identity.
     ///
@@ -890,16 +890,16 @@ pub struct DynamicTypedDictLiteral<'db> {
     /// - `ScopeOffset`: The call is "dangling" (not assigned). Its location
     ///   is relative to the enclosing scope, and the eagerly computed spec is stored on the anchor.
     #[returns(ref)]
-    pub(crate) anchor: DynamicTypedDictAnchor<'db>,
+    pub anchor: DynamicTypedDictAnchor<'db>,
 
     #[returns(copy)]
-    pub(crate) typed_dict_module: TypingModule,
+    pub typed_dict_module: TypingModule,
 }
 
 impl get_size2::GetSize for DynamicTypedDictLiteral<'_> {}
 
 impl<'db> DynamicTypedDictLiteral<'db> {
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -919,7 +919,7 @@ impl<'db> DynamicTypedDictLiteral<'db> {
 #[salsa::tracked]
 impl<'db> DynamicTypedDictLiteral<'db> {
     /// Returns the definition where this `TypedDict` is created, if it was assigned to a variable.
-    pub(crate) fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
+    pub fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
         match self.anchor(db) {
             DynamicTypedDictAnchor::Definition(definition) => Some(*definition),
             DynamicTypedDictAnchor::ScopeOffset { .. } => None,
@@ -927,7 +927,7 @@ impl<'db> DynamicTypedDictLiteral<'db> {
     }
 
     /// Returns the scope in which this dynamic `TypedDict` was created.
-    pub(crate) fn scope(self, db: &'db dyn Db) -> ScopeId<'db> {
+    pub fn scope(self, db: &'db dyn Db) -> ScopeId<'db> {
         match self.anchor(db) {
             DynamicTypedDictAnchor::Definition(definition) => definition.scope(db),
             DynamicTypedDictAnchor::ScopeOffset { scope, .. } => *scope,
@@ -935,7 +935,7 @@ impl<'db> DynamicTypedDictLiteral<'db> {
     }
 
     /// Returns the range of the `TypedDict` call expression.
-    pub(crate) fn header_range(self, db: &'db dyn Db) -> TextRange {
+    pub fn header_range(self, db: &'db dyn Db) -> TextRange {
         let anchor = match self.anchor(db) {
             DynamicTypedDictAnchor::Definition(definition) => {
                 DynamicClassHeaderAnchor::Definition(*definition)
@@ -948,11 +948,11 @@ impl<'db> DynamicTypedDictLiteral<'db> {
     }
 
     /// Returns a [`Span`] pointing to the `TypedDict` call expression.
-    pub(super) fn header_span(self, db: &'db dyn Db) -> Span {
+    pub fn header_span(self, db: &'db dyn Db) -> Span {
         Span::from(self.scope(db).file(db)).with_range(self.header_range(db))
     }
 
-    pub(crate) fn items(self, db: &'db dyn Db) -> &'db TypedDictSchema<'db> {
+    pub fn items(self, db: &'db dyn Db) -> &'db TypedDictSchema<'db> {
         match self.anchor(db) {
             DynamicTypedDictAnchor::Definition(definition) => {
                 deferred_functional_typed_dict_schema(db, *definition)
@@ -961,7 +961,7 @@ impl<'db> DynamicTypedDictLiteral<'db> {
         }
     }
 
-    pub(crate) fn openness(self, db: &'db dyn Db) -> TypedDictOpenness<'db> {
+    pub fn openness(self, db: &'db dyn Db) -> TypedDictOpenness<'db> {
         match self.anchor(db) {
             DynamicTypedDictAnchor::Definition(definition) => {
                 deferred_functional_typed_dict_openness(db, *definition)
@@ -975,7 +975,7 @@ impl<'db> DynamicTypedDictLiteral<'db> {
     /// Functional `TypedDict` classes have the same MRO as class-based ones:
     /// [self, `TypedDict`, object]
     #[salsa::tracked(returns(ref), heap_size = ruff_memory_usage::heap_size)]
-    pub(crate) fn mro(self, db: &'db dyn Db) -> Mro<'db> {
+    pub fn mro(self, db: &'db dyn Db) -> Mro<'db> {
         let self_base = ClassBase::Class(ClassType::NonGeneric(self.into()));
         let env = ProgramEnvironment::from_scope(self.scope(db));
         let object_class = ClassType::object(db, &env);
@@ -989,13 +989,13 @@ impl<'db> DynamicTypedDictLiteral<'db> {
     /// Returns the metaclass of this `TypedDict`.
     ///
     /// `TypedDict`s use `type` as their metaclass.
-    pub(crate) fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
         let env = ProgramEnvironment::from_scope(self.scope(db));
         KnownClass::Type.to_class_literal(db, &env)
     }
 
     /// Look up a class-level member defined directly on this `TypedDict` (not inherited).
-    pub(super) fn own_class_member(self, db: &'db dyn Db, name: &str) -> Member<'db> {
+    pub fn own_class_member(self, db: &'db dyn Db, name: &str) -> Member<'db> {
         let env = ProgramEnvironment::from_scope(self.scope(db));
         let typed_dict =
             TypedDictType::new(ClassType::NonGeneric(ClassLiteral::DynamicTypedDict(self)));
@@ -1007,7 +1007,7 @@ impl<'db> DynamicTypedDictLiteral<'db> {
     }
 
     /// Look up a class-level member by name (including superclasses).
-    pub(crate) fn class_member(
+    pub fn class_member(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1034,7 +1034,7 @@ impl<'db> DynamicTypedDictLiteral<'db> {
 }
 
 /// Resolves members of a schema that has no defining `TypedDict` class.
-pub(in crate::types) fn synthesized_typed_dict_class_member<'db>(
+pub fn synthesized_typed_dict_class_member<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     synthesized: SynthesizedTypedDictType<'db>,
@@ -1060,7 +1060,7 @@ pub(in crate::types) fn synthesized_typed_dict_class_member<'db>(
     )
 }
 
-pub(super) fn typed_dict_fallback_class_member<'db>(
+pub fn typed_dict_fallback_class_member<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     module: TypingModule,
@@ -1078,7 +1078,7 @@ pub(super) fn typed_dict_fallback_class_member<'db>(
         .expect("Will return Some() when called on class literal")
 }
 
-pub(super) fn typed_dict_class_member<'db>(
+pub fn typed_dict_class_member<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     class: ClassType<'db>,

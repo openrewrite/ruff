@@ -43,11 +43,11 @@ pub enum ClassBase<'db> {
 }
 
 impl<'db> ClassBase<'db> {
-    pub(crate) const fn unknown() -> Self {
+    pub const fn unknown() -> Self {
         Self::Dynamic(DynamicType::Unknown)
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -64,7 +64,7 @@ impl<'db> ClassBase<'db> {
         }
     }
 
-    pub(crate) fn name(self, db: &'db dyn Db) -> &'db str {
+    pub fn name(self, db: &'db dyn Db) -> &'db str {
         match self {
             ClassBase::Any => "Any",
             ClassBase::Class(class) => class.name(db),
@@ -86,15 +86,15 @@ impl<'db> ClassBase<'db> {
     }
 
     /// Return a `ClassBase` representing the class `builtins.object`
-    pub(super) fn object(db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Self {
+    pub fn object(db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Self {
         Self::Class(ClassType::object(db, env))
     }
 
-    pub(super) const fn is_typed_dict(self) -> bool {
+    pub const fn is_typed_dict(self) -> bool {
         self.typed_dict_module().is_some()
     }
 
-    pub(super) const fn typed_dict_module(self) -> Option<TypingModule> {
+    pub const fn typed_dict_module(self) -> Option<TypingModule> {
         match self {
             ClassBase::TypedDict(module) => Some(module),
             _ => None,
@@ -105,7 +105,7 @@ impl<'db> ClassBase<'db> {
     ///
     /// The `TypedDict` module affects member lookup, but both special forms represent the same
     /// pseudo-base when detecting duplicate or conflicting bases.
-    pub(super) const fn mro_identity(self) -> Self {
+    pub const fn mro_identity(self) -> Self {
         match self {
             Self::TypedDict(_) => Self::TypedDict(TypingModule::Typing),
             _ => self,
@@ -113,12 +113,12 @@ impl<'db> ClassBase<'db> {
     }
 
     /// Return whether this is an explicit `Any` base.
-    pub(super) const fn is_explicit_any_base(self) -> bool {
+    pub const fn is_explicit_any_base(self) -> bool {
         matches!(self, ClassBase::Any)
     }
 
     /// Convert an explicit base while preserving a direct use of the `Any` special form.
-    pub(super) fn try_from_explicit_base(
+    pub fn try_from_explicit_base(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         ty: Type<'db>,
@@ -134,7 +134,7 @@ impl<'db> ClassBase<'db> {
     /// Attempt to resolve `ty` into a `ClassBase`.
     ///
     /// Return `None` if `ty` is not an acceptable type for a class base.
-    pub(super) fn try_from_type(
+    pub fn try_from_type(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         ty: Type<'db>,
@@ -353,7 +353,7 @@ impl<'db> ClassBase<'db> {
         }
     }
 
-    pub(super) fn into_class(self) -> Option<ClassType<'db>> {
+    pub fn into_class(self) -> Option<ClassType<'db>> {
         match self {
             Self::Class(class) => Some(class),
             Self::Any
@@ -370,7 +370,7 @@ impl<'db> ClassBase<'db> {
     /// `subclass` is the class whose declaration names this base. Only a direct `Protocol` base
     /// depends on whether its declaration is in the bundled or configured typeshed stdlib;
     /// named bases retain their own metaclass constraints or fallback wherever they are inherited.
-    pub(super) fn inferred_metaclass(
+    pub fn inferred_metaclass(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -416,7 +416,7 @@ impl<'db> ClassBase<'db> {
         }
     }
 
-    pub(crate) fn apply_optional_specialization(
+    pub fn apply_optional_specialization(
         self,
         db: &'db dyn Db,
         specialization: Option<Specialization<'db>>,
@@ -455,7 +455,7 @@ impl<'db> ClassBase<'db> {
         )
     }
 
-    pub(super) fn has_cyclic_mro(self, db: &'db dyn Db) -> bool {
+    pub fn has_cyclic_mro(self, db: &'db dyn Db) -> bool {
         match self {
             ClassBase::Class(class) => {
                 let Some((class_literal, specialization)) = class.static_class_literal(db) else {
@@ -479,7 +479,7 @@ impl<'db> ClassBase<'db> {
     }
 
     /// Iterate over the MRO of this base
-    pub(super) fn mro(
+    pub fn mro(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -500,15 +500,11 @@ impl<'db> ClassBase<'db> {
         }
     }
 
-    pub(super) fn display(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> impl std::fmt::Display {
+    pub fn display(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> impl std::fmt::Display {
         self.display_with(db, env, DisplaySettings::default())
     }
 
-    pub(super) fn display_with<'env>(
+    pub fn display_with<'env>(
         self,
         db: &'db dyn Db,
         env: &'env ProgramEnvironment<'db>,

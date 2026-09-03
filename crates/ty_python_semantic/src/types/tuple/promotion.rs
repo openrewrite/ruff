@@ -11,18 +11,18 @@ use crate::types::{Type, UnionBuilder};
 
 /// Tracks the typevars of a collection to which tuple size promotion should **not** apply.
 #[derive(Default)]
-pub(crate) struct TupleSizePromotionConstraints<'db> {
+pub struct TupleSizePromotionConstraints<'db> {
     blocked_typevars: FxHashSet<BoundTypeVarIdentity<'db>>,
 }
 
 impl<'db> TupleSizePromotionConstraints<'db> {
     /// Records that a typevar has a declared type. This makes it ineligible for tuple size promotion.
-    pub(crate) fn record_declared_type(&mut self, typevar_identity: BoundTypeVarIdentity<'db>) {
+    pub fn record_declared_type(&mut self, typevar_identity: BoundTypeVarIdentity<'db>) {
         self.blocked_typevars.insert(typevar_identity);
     }
 
     /// Records whether an inferred collection element blocks tuple size promotion for the typevar.
-    pub(crate) fn record_inferred_expression_type(
+    pub fn record_inferred_expression_type(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -37,7 +37,7 @@ impl<'db> TupleSizePromotionConstraints<'db> {
 
     /// Records that a typevar is ineligible for tuple size promotion if the given type contains
     /// a tuple type.
-    pub(crate) fn record_unpromotable_type(
+    pub fn record_unpromotable_type(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -51,7 +51,7 @@ impl<'db> TupleSizePromotionConstraints<'db> {
 
     /// Reports whether or not tuple size promotion is allowed for the given typevar in light
     /// of the constraints recorded on this object.
-    pub(crate) fn allow(&self, typevar_identity: BoundTypeVarIdentity<'db>) -> bool {
+    pub fn allow(&self, typevar_identity: BoundTypeVarIdentity<'db>) -> bool {
         !self.blocked_typevars.contains(&typevar_identity)
     }
 
@@ -65,7 +65,7 @@ impl<'db> TupleSizePromotionConstraints<'db> {
     /// The supplied `ty` should already have undergone literal promotion, so `(2, 3)` has the
     /// homogeneous type `tuple[int, int]` when checking its eligibility.
     /// If no source expression is available, any tuple type blocks tuple-size promotion.
-    pub(crate) fn allows_expression(
+    pub fn allows_expression(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         expression: Option<&ast::Expr>,
@@ -207,7 +207,7 @@ impl<'db> Type<'db> {
     /// reveal_type(languages)  # revealed: dict[str, tuple[str, ...]]
     /// ```
     ///
-    pub(crate) fn promote_tuple_size_in_union(
+    pub fn promote_tuple_size_in_union(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

@@ -25,7 +25,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum TypeVarOwnerContext<'db> {
+pub enum TypeVarOwnerContext<'db> {
     Bare(BoundTypeVarInstance<'db>),
     SubclassOf(BoundTypeVarInstance<'db>),
 }
@@ -70,7 +70,7 @@ impl<'db> TypeVarOwnerContext<'db> {
 
 /// Enumeration of ways in which a `super()` call can cause us to emit a diagnostic.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum BoundSuperError<'db> {
+pub enum BoundSuperError<'db> {
     /// The second argument to `super()` (which may have been implicitly provided by
     /// the Python interpreter) has an abstract or structural type.
     /// It's impossible to determine whether a `Callable` type or a synthesized protocol
@@ -98,7 +98,7 @@ pub(crate) enum BoundSuperError<'db> {
 }
 
 impl<'db> BoundSuperError<'db> {
-    pub(super) fn report_diagnostic(&self, context: &'db InferContext<'db, '_>, node: AnyNodeRef) {
+    pub fn report_diagnostic(&self, context: &'db InferContext<'db, '_>, node: AnyNodeRef) {
         let db = context.db();
         match self {
             BoundSuperError::AbstractOwnerType {
@@ -352,7 +352,7 @@ impl<'db> SuperOwnerKind<'db> {
     }
 
     /// Returns the type representation of this owner.
-    pub(super) fn owner_type(&self) -> Type<'db> {
+    pub fn owner_type(&self) -> Type<'db> {
         match self {
             SuperOwnerKind::Dynamic(dynamic) => Type::Dynamic(*dynamic),
             SuperOwnerKind::Divergent(divergent) => Type::Divergent(*divergent),
@@ -386,7 +386,7 @@ pub struct BoundSuperType<'db> {
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for BoundSuperType<'_> {}
 
-pub(super) fn walk_bound_super_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_bound_super_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     bound_super: BoundSuperType<'db>,
     visitor: &V,
@@ -520,7 +520,7 @@ impl<'db> BoundSuperType<'db> {
     /// - `super(pivot, owner_instance)` is valid only if `isinstance(owner_instance, pivot)`
     ///
     /// However, the checking is skipped when any of the arguments is a dynamic type.
-    pub(super) fn build(
+    pub fn build(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         pivot_class_type: Type<'db>,
@@ -943,7 +943,7 @@ impl<'db> BoundSuperType<'db> {
     /// The arguments passed to `__get__` depend on whether the owner is an instance or a class.
     /// See the `CPython` implementation for reference:
     /// <https://github.com/python/cpython/blob/3b3720f1a26ab34377542b48eb6a6565f78ff892/Objects/typeobject.c#L11690-L11693>
-    pub(super) fn try_call_dunder_get_on_attribute(
+    pub fn try_call_dunder_get_on_attribute(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -966,7 +966,7 @@ impl<'db> BoundSuperType<'db> {
 
     /// Similar to `Type::find_name_in_mro_with_policy`, but performs lookup starting *after* the
     /// pivot class in the MRO, based on the `owner` type instead of the `super` type.
-    pub(super) fn find_name_in_mro_after_pivot(
+    pub fn find_name_in_mro_after_pivot(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1013,7 +1013,7 @@ impl<'db> BoundSuperType<'db> {
         result
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1041,7 +1041,7 @@ impl<'c, 'db> EquivalenceChecker<'_, 'c, 'db> {
     /// [`EquivalenceChecker::check_type_pair`] for this case, because
     /// `EquivalenceChecker::check_type_pair` itself delegates back to
     /// `TypeRelationChecker::check_type_pair`, which would cause an infinite loop.
-    pub(super) fn check_bound_super_pair(
+    pub fn check_bound_super_pair(
         &self,
         db: &'db dyn Db,
         left: BoundSuperType<'db>,

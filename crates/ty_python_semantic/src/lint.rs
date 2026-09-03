@@ -123,7 +123,7 @@ impl LintMetadata {
         self.documentation_lines().join("\n")
     }
 
-    pub(crate) fn documentation_url(&self) -> String {
+    pub fn documentation_url(&self) -> String {
         lint_documentation_url(self.name())
     }
 
@@ -144,7 +144,7 @@ impl LintMetadata {
     }
 }
 
-pub(crate) fn lint_documentation_url(lint_name: LintName) -> String {
+pub fn lint_documentation_url(lint_name: LintName) -> String {
     format!("https://ty.dev/rules#{lint_name}")
 }
 
@@ -203,7 +203,7 @@ pub enum LintStatus {
 }
 
 impl LintStatus {
-    pub(crate) const fn preview(since: &'static str) -> Self {
+    pub const fn preview(since: &'static str) -> Self {
         LintStatus::Preview { since }
     }
 
@@ -215,7 +215,7 @@ impl LintStatus {
         LintStatus::Deprecated { since, reason }
     }
 
-    pub(crate) const fn removed(since: &'static str, reason: &'static str) -> Self {
+    pub const fn removed(since: &'static str, reason: &'static str) -> Self {
         LintStatus::Removed { since, reason }
     }
 
@@ -246,7 +246,7 @@ impl LintStatus {
 ///     /// ```python
 ///     /// print(x)  # NameError: name 'x' is not defined
 ///     /// ```
-///     pub(crate) static UNRESOLVED_REFERENCE = {
+///     pub static UNRESOLVED_REFERENCE = {
 ///         summary: "detects references to names that are not defined",
 ///         status: LintStatus::stable("1.0.0"),
 ///         default_level: Level::Warn,
@@ -369,7 +369,7 @@ pub struct LintRegistryBuilder {
 
 impl LintRegistryBuilder {
     #[track_caller]
-    pub(crate) fn register_lint(&mut self, lint: &'static LintMetadata) {
+    pub fn register_lint(&mut self, lint: &'static LintMetadata) {
         assert_eq!(
             self.by_name.insert(&*lint.name, lint.into()),
             None,
@@ -406,7 +406,7 @@ impl LintRegistryBuilder {
         );
     }
 
-    pub(crate) fn build(self) -> LintRegistry {
+    pub fn build(self) -> LintRegistry {
         LintRegistry {
             lints: self.lints,
             by_name: self.by_name,
@@ -603,16 +603,16 @@ impl RuleSelection {
     }
 
     /// Returns the configured severity for the lint with the given id or `None` if the lint is disabled.
-    pub(crate) fn severity(&self, lint: LintId) -> Option<Severity> {
+    pub fn severity(&self, lint: LintId) -> Option<Severity> {
         self.lints.get(&lint).map(|(severity, _)| *severity)
     }
 
-    pub(crate) fn get(&self, lint: LintId) -> Option<(Severity, LintSource)> {
+    pub fn get(&self, lint: LintId) -> Option<(Severity, LintSource)> {
         self.lints.get(&lint).copied()
     }
 
     /// Returns `true` if the `lint` is enabled.
-    pub(crate) fn is_enabled(&self, lint: LintId) -> bool {
+    pub fn is_enabled(&self, lint: LintId) -> bool {
         self.severity(lint).is_some()
     }
 

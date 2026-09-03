@@ -4,7 +4,7 @@ use crate::types::{
 };
 use ty_python_core::definition::{AnnotatedAssignmentDefinitionKind, Definition};
 
-pub(crate) fn check_pep_613_alias<'db>(
+pub fn check_pep_613_alias<'db>(
     assignment: &AnnotatedAssignmentDefinitionKind,
     definition: Definition<'db>,
     builder: &TypeInferenceBuilder<'db, '_>,

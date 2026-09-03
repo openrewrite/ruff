@@ -7,7 +7,7 @@ use crate::Db;
 use crate::types::Type;
 use crate::types::call::{Binding, Bindings};
 
-pub(super) fn bind_type_guard_return_type<'db>(
+pub fn bind_type_guard_return_type<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
     return_ty: Type<'db>,

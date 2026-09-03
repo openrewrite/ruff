@@ -99,11 +99,7 @@ impl<'db> SemanticModel<'db> {
     /// name precisely would require more complex analysis.
     ///
     /// Definitions in a project-level `__builtins__.pyi` also shadow standard builtins.
-    pub(crate) fn definitely_has_builtin_binding(
-        &self,
-        name: &str,
-        node: ast::AnyNodeRef<'_>,
-    ) -> bool {
+    pub fn definitely_has_builtin_binding(&self, name: &str, node: ast::AnyNodeRef<'_>) -> bool {
         let index = semantic_index(self.db, self.program_file());
         let Some(scope) = self.scope(node) else {
             return false;

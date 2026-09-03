@@ -3,7 +3,7 @@ use crate::{ProgramEnvironment, types::BoundTypeVarIdentity};
 
 mod equations;
 
-pub(super) use equations::{VarianceOrigin, VarianceTerm, infer_protocol_variance};
+pub use equations::{VarianceOrigin, VarianceTerm, infer_protocol_variance};
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, get_size2::GetSize)]
 pub enum TypeVarVariance {
@@ -16,7 +16,7 @@ pub enum TypeVarVariance {
 impl TypeVarVariance {
     // supremum
     #[must_use]
-    pub(crate) const fn join(self, other: Self) -> Self {
+    pub const fn join(self, other: Self) -> Self {
         use TypeVarVariance::{Bivariant, Contravariant, Covariant, Invariant};
         match (self, other) {
             (Invariant, _) | (_, Invariant) => Invariant,
@@ -46,14 +46,14 @@ impl TypeVarVariance {
     /// We would say `ConstantInt[str]` = `ConstantInt[float]`, so we qualify as
     /// using semantic equivalence.
     #[must_use]
-    pub(crate) fn compose(self, other: Self) -> Self {
+    pub fn compose(self, other: Self) -> Self {
         self.compose_thunk(|| other)
     }
 
     /// Like `compose`, but takes `other` as a thunk to avoid unnecessary
     /// computation when `self` is `Bivariant`.
     #[must_use]
-    pub(crate) fn compose_thunk<F>(self, other: F) -> Self
+    pub fn compose_thunk<F>(self, other: F) -> Self
     where
         F: FnOnce() -> Self,
     {
@@ -74,7 +74,7 @@ impl TypeVarVariance {
     /// Flips the polarity of the variance.
     ///
     /// Covariant becomes contravariant, contravariant becomes covariant, others remain unchanged.
-    pub(crate) const fn flip(self) -> Self {
+    pub const fn flip(self) -> Self {
         match self {
             TypeVarVariance::Invariant => TypeVarVariance::Invariant,
             TypeVarVariance::Covariant => TypeVarVariance::Contravariant,
@@ -83,14 +83,14 @@ impl TypeVarVariance {
         }
     }
 
-    pub(crate) const fn is_covariant(self) -> bool {
+    pub const fn is_covariant(self) -> bool {
         matches!(
             self,
             TypeVarVariance::Covariant | TypeVarVariance::Bivariant
         )
     }
 
-    pub(crate) const fn is_contravariant(self) -> bool {
+    pub const fn is_contravariant(self) -> bool {
         matches!(
             self,
             TypeVarVariance::Contravariant | TypeVarVariance::Bivariant
@@ -99,7 +99,7 @@ impl TypeVarVariance {
 
     /// Returns a human-readable name for this variance, matching the keyword
     /// argument names used in `TypeVar(covariant=True)` / `TypeVar(contravariant=True)`.
-    pub(crate) const fn as_str(self) -> &'static str {
+    pub const fn as_str(self) -> &'static str {
         match self {
             TypeVarVariance::Invariant => "invariant",
             TypeVarVariance::Covariant => "covariant",
@@ -129,7 +129,7 @@ impl std::iter::FromIterator<Self> for TypeVarVariance {
     }
 }
 
-pub(crate) trait VarianceInferable<'db>: Sized {
+pub trait VarianceInferable<'db>: Sized {
     /// Builds a variance expression without choosing how protocol declarations are evaluated.
     ///
     /// Recursive definitions contribute named variables instead of expanding their bodies.
@@ -163,7 +163,7 @@ pub(crate) trait VarianceInferable<'db>: Sized {
     }
 }
 
-pub(crate) struct WithPolarity<T> {
+pub struct WithPolarity<T> {
     variance_inferable: T,
     polarity: TypeVarVariance,
 }

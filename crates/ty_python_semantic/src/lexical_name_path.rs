@@ -14,10 +14,7 @@ use crate::Db;
 /// class Outer:
 ///     def method(): ...
 /// ```
-pub(crate) fn lexical_name_path_for_definition(
-    db: &dyn Db,
-    definition: Definition,
-) -> Option<Vec<Name>> {
+pub fn lexical_name_path_for_definition(db: &dyn Db, definition: Definition) -> Option<Vec<Name>> {
     let parsed = parsed_module(db, definition.python_file(db));
     let module = parsed.load(db);
 
@@ -48,7 +45,7 @@ pub(crate) fn lexical_name_path_for_definition(
 /// Computes a lexical name path component for an enclosing scope.
 ///
 /// See [`lexical_name_path_for_definition`][] for details.
-pub(crate) fn lexical_name_path_component_for_node(
+pub fn lexical_name_path_component_for_node(
     parsed: &ParsedModuleRef,
     node: &NodeWithScopeKind,
 ) -> Result<Option<Name>, ()> {

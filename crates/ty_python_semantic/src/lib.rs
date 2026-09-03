@@ -9,7 +9,7 @@ use crate::suppression::{
 };
 use crate::types::check_types;
 pub use db::Db;
-pub(crate) use diagnostic::add_inferred_python_version_hint_to_diagnostic;
+pub use diagnostic::add_inferred_python_version_hint_to_diagnostic;
 pub use diagnostic::inferred_python_version_source_annotation;
 pub use fixes::{fix_all_diagnostics, suppress_all_diagnostics};
 use ruff_db::PythonFile;
@@ -24,7 +24,7 @@ pub use semantic_model::{
 };
 use std::hash::BuildHasherDefault;
 pub use suppression::suppress_single;
-pub(crate) use suppression::{
+pub use suppression::{
     SuppressFix, UNUSED_IGNORE_COMMENT, is_unused_ignore_comment_lint, suppress_all,
 };
 use ty_module_resolver::ModuleGlobSet;
@@ -55,12 +55,12 @@ pub use types::{
 
 mod db;
 pub mod dependency;
-mod dunder_all;
+pub mod dunder_all;
 mod fixes;
 mod lexical_name_path;
 pub mod lint;
-pub(crate) mod place;
-pub(crate) mod place_load;
+pub mod place;
+pub mod place_load;
 mod reachability;
 mod semantic_model;
 mod subscript;
@@ -139,7 +139,7 @@ impl Default for AnalysisSettings {
 ///
 /// Only call this when doing type inference on the same file as `class_body_scope`, otherwise it
 /// introduces a direct dependency on that file's AST.
-pub(crate) fn attribute_assignments<'db, 's>(
+pub fn attribute_assignments<'db, 's>(
     db: &'db dyn Db,
     class_body_scope: ScopeId<'db>,
     name: &'s str,
@@ -171,7 +171,7 @@ pub(crate) fn attribute_assignments<'db, 's>(
 ///
 /// Only call this when doing type inference on the same file as `class_body_scope`, otherwise it
 /// introduces a direct dependency on that file's AST.
-pub(crate) fn attribute_declarations<'db, 's>(
+pub fn attribute_declarations<'db, 's>(
     db: &'db dyn Db,
     class_body_scope: ScopeId<'db>,
     name: &'s str,
@@ -190,7 +190,7 @@ pub(crate) fn attribute_declarations<'db, 's>(
 }
 
 /// Get the module-level docstring for the given file.
-pub(crate) fn module_docstring(db: &dyn Db, file: PythonFile<'_>) -> Option<String> {
+pub fn module_docstring(db: &dyn Db, file: PythonFile<'_>) -> Option<String> {
     let module = parsed_module(db, file).load(db);
     docstring_from_body(module.suite())
         .map(|docstring_expr| docstring_expr.value.to_str().to_owned())

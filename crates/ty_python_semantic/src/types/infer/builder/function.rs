@@ -186,7 +186,7 @@ impl<'db> ExpectedReturnType<'db> {
 }
 
 impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
-    pub(super) fn infer_function_body(&mut self, function: &ast::StmtFunctionDef) {
+    pub fn infer_function_body(&mut self, function: &ast::StmtFunctionDef) {
         fn can_implicitly_return_none<'db>(db: &'db dyn Db, use_def: &UseDefMap<'db>) -> bool {
             !use_def
                 .reachability_constraints()
@@ -397,11 +397,11 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn infer_function_definition_statement(&mut self, function: &ast::StmtFunctionDef) {
+    pub fn infer_function_definition_statement(&mut self, function: &ast::StmtFunctionDef) {
         self.infer_definition(function);
     }
 
-    pub(super) fn infer_function_definition(
+    pub fn infer_function_definition(
         &mut self,
         function: &ast::StmtFunctionDef,
         definition: Definition<'db>,
@@ -664,7 +664,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn extend_function_deferred(
+    pub fn extend_function_deferred(
         &mut self,
         definition: Definition<'db>,
         function: &ast::StmtFunctionDef,
@@ -678,7 +678,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn infer_function_annotations(
+    pub fn infer_function_annotations(
         &mut self,
         definition: Definition<'db>,
         function: &ast::StmtFunctionDef,
@@ -694,7 +694,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         self.typevar_binding_context = previous_typevar_binding_context;
     }
 
-    pub(super) fn infer_function_defaults(
+    pub fn infer_function_defaults(
         &mut self,
         definition: Definition<'db>,
         function: &ast::StmtFunctionDef,
@@ -754,7 +754,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn infer_function_type_params(&mut self, function: &ast::StmtFunctionDef) {
+    pub fn infer_function_type_params(&mut self, function: &ast::StmtFunctionDef) {
         let binding_context = self.index.expect_single_definition(function);
         let previous_typevar_binding_context =
             self.typevar_binding_context.replace(binding_context);
@@ -999,7 +999,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     /// It is safe (non-cycle-causing) to query the annotation type via `file_expression_type`
     /// here, because an outer scope can't depend on a definition from an inner scope, so we
     /// shouldn't be in-process of inferring the outer scope here.
-    pub(super) fn infer_parameter_definition(
+    pub fn infer_parameter_definition(
         &mut self,
         parameter_with_default: &'ast ast::ParameterWithDefault,
         definition: Definition<'db>,
@@ -1099,7 +1099,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     /// See [`infer_parameter_definition`] doc comment for some relevant observations about scopes.
     ///
     /// [`infer_parameter_definition`]: Self::infer_parameter_definition
-    pub(super) fn infer_variadic_positional_parameter_definition(
+    pub fn infer_variadic_positional_parameter_definition(
         &mut self,
         parameter: &'ast ast::Parameter,
         definition: Definition<'db>,
@@ -1232,7 +1232,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     /// See [`infer_parameter_definition`] doc comment for some relevant observations about scopes.
     ///
     /// [`infer_parameter_definition`]: Self::infer_parameter_definition
-    pub(super) fn infer_variadic_keyword_parameter_definition(
+    pub fn infer_variadic_keyword_parameter_definition(
         &mut self,
         parameter: &'ast ast::Parameter,
         definition: Definition<'db>,
@@ -1315,7 +1315,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
 
     /// Set initial declared type (if annotated) and inferred type for a lambda-parameter symbol,
     /// in the lambda body scope.
-    pub(super) fn infer_lambda_parameter_definition(
+    pub fn infer_lambda_parameter_definition(
         &mut self,
         index: u32,
         parameter_with_default: &'ast ast::ParameterWithDefault,
@@ -1350,7 +1350,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
 
     /// Set initial declared/inferred types for a `*args` variadic positional parameter
     /// in a lambda expression.
-    pub(super) fn infer_variadic_positional_lambda_parameter_definition(
+    pub fn infer_variadic_positional_lambda_parameter_definition(
         &mut self,
         index: u32,
         parameter: &'ast ast::Parameter,
@@ -1375,7 +1375,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
 
     /// Set initial declared/inferred types for a `**kwargs` keyword-variadic parameter
     /// in a lambda expression.
-    pub(super) fn infer_variadic_keyword_lambda_parameter_definition(
+    pub fn infer_variadic_keyword_lambda_parameter_definition(
         &mut self,
         parameter: &'ast ast::Parameter,
         definition: Definition<'db>,
