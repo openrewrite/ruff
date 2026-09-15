@@ -26,7 +26,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// If it's unclear which overload we should pick, we return `type[Unknown]`,
     /// to avoid cascading errors later on.
-    pub(super) fn infer_builtins_type_call(
+    pub fn infer_builtins_type_call(
         &mut self,
         call_expr: &ast::ExprCall,
         definition: Option<Definition<'db>>,
@@ -307,7 +307,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// Infers the bases argument that was skipped during initial inference to handle
     /// forward references and recursive definitions.
-    pub(super) fn infer_builtins_type_deferred(
+    pub fn infer_builtins_type_deferred(
         &mut self,
         definition: Definition<'db>,
         call_expr: &ast::Expr,

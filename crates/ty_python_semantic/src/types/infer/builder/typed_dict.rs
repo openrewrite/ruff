@@ -94,7 +94,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// This method *does not* call `infer_expression` on the object being called;
     /// it is assumed that the type for this AST node has already been inferred before this method is called.
-    pub(super) fn infer_typeddict_call_expression(
+    pub fn infer_typeddict_call_expression(
         &mut self,
         call_expr: &ast::ExprCall,
         definition: Option<Definition<'db>>,
@@ -349,7 +349,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         Type::ClassLiteral(ClassLiteral::DynamicTypedDict(typeddict))
     }
 
-    pub(super) fn infer_typed_dict_expression(
+    pub fn infer_typed_dict_expression(
         &mut self,
         dict: &ast::ExprDict,
         typed_dict: TypedDictType<'db>,
@@ -420,7 +420,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// Box(value=1)        # Box[int]
     /// Box({"value": 1})   # Box[Unknown]
     /// ```
-    pub(super) fn infer_typed_dict_constructor<'expr>(
+    pub fn infer_typed_dict_constructor<'expr>(
         &mut self,
         callable_type: Type<'db>,
         class: ClassType<'db>,
@@ -652,7 +652,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// Named keywords are inferred against the declared type of the matching `TypedDict` field.
     /// Unpacked `**kwargs` and unknown keys fall back to default inference because they do not
     /// map to a single field declaration at this stage.
-    pub(super) fn infer_typed_dict_constructor_keyword_values(
+    pub fn infer_typed_dict_constructor_keyword_values(
         &mut self,
         typed_dict: TypedDictType<'db>,
         arguments: &ast::Arguments,
@@ -773,7 +773,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// This is called during `infer_deferred_types` to infer field types after the `TypedDict`
     /// definition is complete. This enables support for recursive `TypedDict`s where field types
     /// may reference the `TypedDict` being defined.
-    pub(super) fn infer_functional_typeddict_deferred(&mut self, arguments: &ast::Arguments) {
+    pub fn infer_functional_typeddict_deferred(&mut self, arguments: &ast::Arguments) {
         if let Some(ast::Expr::Dict(dict_expr)) = arguments.args.get(1) {
             for ast::DictItem { key, value } in dict_expr {
                 if key.is_some() {
@@ -807,7 +807,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         annotation
     }
 
-    pub(super) fn infer_extra_items_kwarg(&mut self, value: &ast::Expr) -> TypeAndQualifiers<'db> {
+    pub fn infer_extra_items_kwarg(&mut self, value: &ast::Expr) -> TypeAndQualifiers<'db> {
         let annotation = self.infer_annotation_expression(value, self.deferred_state);
         for qualifier in TypeQualifier::iter() {
             if qualifier != TypeQualifier::ReadOnly

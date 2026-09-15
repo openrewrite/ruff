@@ -22,27 +22,24 @@ use ty_python_core::definition::Definition;
 
 impl<'db> Type<'db> {
     /// Create a callable type with a single non-overloaded signature.
-    pub(crate) fn single_callable(db: &'db dyn Db, signature: Signature<'db>) -> Type<'db> {
+    pub fn single_callable(db: &'db dyn Db, signature: Signature<'db>) -> Type<'db> {
         Type::Callable(CallableType::single(db, signature))
     }
 
     /// Create a non-overloaded, function-like callable type with a single signature.
     ///
     /// A function-like callable will bind `self` when accessed as an attribute on an instance.
-    pub(crate) fn function_like_callable(db: &'db dyn Db, signature: Signature<'db>) -> Type<'db> {
+    pub fn function_like_callable(db: &'db dyn Db, signature: Signature<'db>) -> Type<'db> {
         Type::Callable(CallableType::function_like(db, signature))
     }
 
     /// Create a non-overloaded callable type which represents the value bound to a `ParamSpec`
     /// type variable.
-    pub(crate) fn paramspec_value_callable(
-        db: &'db dyn Db,
-        parameters: Parameters<'db>,
-    ) -> Type<'db> {
+    pub fn paramspec_value_callable(db: &'db dyn Db, parameters: Parameters<'db>) -> Type<'db> {
         Type::Callable(CallableType::paramspec_value(db, parameters))
     }
 
-    pub(crate) fn try_upcast_to_callable(
+    pub fn try_upcast_to_callable(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -50,7 +47,7 @@ impl<'db> Type<'db> {
         self.try_upcast_to_callable_with_policy(db, env, UpcastPolicy::default())
     }
 
-    pub(crate) fn try_upcast_to_callable_with_recursive_fallback(
+    pub fn try_upcast_to_callable_with_recursive_fallback(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -66,7 +63,7 @@ impl<'db> Type<'db> {
         )
     }
 
-    pub(crate) fn try_upcast_to_callable_with_policy(
+    pub fn try_upcast_to_callable_with_policy(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -626,7 +623,7 @@ pub enum CallableTypeKind {
 /// subtyping checks, it would ead to nontransitivity of subtyping,
 /// breaking fundamental assumptions in our model.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Default)]
-pub(crate) enum UpcastPolicy {
+pub enum UpcastPolicy {
     /// Only upcast types to callables in a sound fashion.
     ///
     /// This means that `type[T]` is upcast to `Top[Callable[..., T]]`
@@ -660,18 +657,18 @@ impl From<TypeRelation> for UpcastPolicy {
 #[salsa::interned(debug, constructor=new_internal, heap_size=ruff_memory_usage::heap_size)]
 pub struct CallableType<'db> {
     #[returns(ref)]
-    pub(crate) signatures: CallableSignature<'db>,
+    pub signatures: CallableSignature<'db>,
 
     #[returns(copy)]
-    pub(super) kind: CallableTypeKind,
+    pub kind: CallableTypeKind,
 
     /// The declaration on which `@deprecated` wrapped this callable. Retain the declaration
     /// for diagnostic names, source annotations, and deduplication, independently of binding kind.
     #[returns(copy)]
-    pub(crate) deprecated: Option<OverloadLiteral<'db>>,
+    pub deprecated: Option<OverloadLiteral<'db>>,
 }
 
-pub(super) fn walk_callable_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_callable_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     ty: CallableType<'db>,
     visitor: &V,
@@ -685,7 +682,7 @@ pub(super) fn walk_callable_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
 impl get_size2::GetSize for CallableType<'_> {}
 
 impl<'db> CallableType<'db> {
-    pub(crate) fn new<S>(db: &'db dyn Db, signatures: S, kind: CallableTypeKind) -> Self
+    pub fn new<S>(db: &'db dyn Db, signatures: S, kind: CallableTypeKind) -> Self
     where
         S: salsa::Lookup<CallableSignature<'db>> + std::hash::Hash,
         CallableSignature<'db>: salsa::HashEqLike<S>,
@@ -693,12 +690,12 @@ impl<'db> CallableType<'db> {
         Self::new_internal(db, signatures, kind, None)
     }
 
-    pub(crate) fn with_deprecated(self, db: &'db dyn Db, deprecated: OverloadLiteral<'db>) -> Self {
+    pub fn with_deprecated(self, db: &'db dyn Db, deprecated: OverloadLiteral<'db>) -> Self {
         Self::new_internal(db, self.signatures(db), self.kind(db), Some(deprecated))
     }
 
     /// Replace the signatures without losing binding behavior or deprecation metadata.
-    pub(crate) fn with_signatures<S>(self, db: &'db dyn Db, signatures: S) -> Self
+    pub fn with_signatures<S>(self, db: &'db dyn Db, signatures: S) -> Self
     where
         S: salsa::Lookup<CallableSignature<'db>> + std::hash::Hash,
         CallableSignature<'db>: salsa::HashEqLike<S>,
@@ -706,11 +703,11 @@ impl<'db> CallableType<'db> {
         Self::new_internal(db, signatures, self.kind(db), self.deprecated(db))
     }
 
-    pub(crate) fn with_kind(self, db: &'db dyn Db, kind: CallableTypeKind) -> Self {
+    pub fn with_kind(self, db: &'db dyn Db, kind: CallableTypeKind) -> Self {
         Self::new_internal(db, self.signatures(db), kind, self.deprecated(db))
     }
 
-    pub(crate) fn single(db: &'db dyn Db, signature: Signature<'db>) -> CallableType<'db> {
+    pub fn single(db: &'db dyn Db, signature: Signature<'db>) -> CallableType<'db> {
         CallableType::new(
             db,
             CallableSignature::single(signature),
@@ -718,7 +715,7 @@ impl<'db> CallableType<'db> {
         )
     }
 
-    pub(crate) fn function_like(db: &'db dyn Db, signature: Signature<'db>) -> CallableType<'db> {
+    pub fn function_like(db: &'db dyn Db, signature: Signature<'db>) -> CallableType<'db> {
         CallableType::new(
             db,
             CallableSignature::single(signature),
@@ -733,7 +730,7 @@ impl<'db> CallableType<'db> {
         )
     }
 
-    pub(super) fn paramspec_value_from_signatures(
+    pub fn paramspec_value_from_signatures(
         db: &'db dyn Db,
         signatures: CallableSignature<'db>,
     ) -> CallableType<'db> {
@@ -750,20 +747,20 @@ impl<'db> CallableType<'db> {
     }
 
     /// Create a callable type which accepts any parameters and returns an `Unknown` type.
-    pub(crate) fn unknown(db: &'db dyn Db) -> CallableType<'db> {
+    pub fn unknown(db: &'db dyn Db) -> CallableType<'db> {
         Self::single(db, Signature::unknown())
     }
 
     /// Create the fully static `Top[Callable[..., object]]` type.
-    pub(crate) fn top(db: &'db dyn Db) -> CallableType<'db> {
+    pub fn top(db: &'db dyn Db) -> CallableType<'db> {
         Self::single(db, Signature::new(Parameters::top(), Type::object()))
     }
 
-    pub(crate) fn is_function_like(self, db: &'db dyn Db) -> bool {
+    pub fn is_function_like(self, db: &'db dyn Db) -> bool {
         matches!(self.kind(db), CallableTypeKind::FunctionLike)
     }
 
-    pub(crate) fn is_method_wrapper(self, db: &'db dyn Db) -> bool {
+    pub fn is_method_wrapper(self, db: &'db dyn Db) -> bool {
         matches!(self.kind(db), CallableTypeKind::MethodWrapper)
     }
 
@@ -771,15 +768,15 @@ impl<'db> CallableType<'db> {
         matches!(self.kind(db), CallableTypeKind::DunderParamSpec)
     }
 
-    pub(crate) fn is_regular(self, db: &'db dyn Db) -> bool {
+    pub fn is_regular(self, db: &'db dyn Db) -> bool {
         matches!(self.kind(db), CallableTypeKind::Regular)
     }
 
-    pub(crate) fn is_classmethod_like(self, db: &'db dyn Db) -> bool {
+    pub fn is_classmethod_like(self, db: &'db dyn Db) -> bool {
         matches!(self.kind(db), CallableTypeKind::ClassMethodLike)
     }
 
-    pub(crate) fn is_staticmethod_like(self, db: &'db dyn Db) -> bool {
+    pub fn is_staticmethod_like(self, db: &'db dyn Db) -> bool {
         matches!(self.kind(db), CallableTypeKind::StaticMethodLike)
     }
 
@@ -793,22 +790,22 @@ impl<'db> CallableType<'db> {
         )
     }
 
-    pub(crate) fn into_regular(self, db: &'db dyn Db) -> CallableType<'db> {
+    pub fn into_regular(self, db: &'db dyn Db) -> CallableType<'db> {
         self.with_kind(db, CallableTypeKind::Regular)
     }
 
-    pub(crate) fn into_method_wrapper(self, db: &'db dyn Db) -> CallableType<'db> {
+    pub fn into_method_wrapper(self, db: &'db dyn Db) -> CallableType<'db> {
         self.with_kind(db, CallableTypeKind::MethodWrapper)
     }
 
     /// Retain every parameter signature and its generic context, but erase return types
     /// that do not participate in a `ParamSpec` specialization.
-    pub(crate) fn into_paramspec_value(self, db: &'db dyn Db) -> CallableType<'db> {
+    pub fn into_paramspec_value(self, db: &'db dyn Db) -> CallableType<'db> {
         Self::paramspec_value_from_signatures(db, self.signatures(db).clone())
     }
 
     /// Returns the reduced callable produced by partially applying selected overloads.
-    pub(crate) fn partially_apply(
+    pub fn partially_apply(
         db: &'db dyn Db,
         overloads: impl IntoIterator<Item = PartialSignatureApplication<'db>>,
     ) -> Option<Self> {
@@ -820,7 +817,7 @@ impl<'db> CallableType<'db> {
     }
 
     /// Reifies this callable as the nominal `functools.partial[T]` instance for its return type.
-    pub(crate) fn into_functools_partial_instance(
+    pub fn into_functools_partial_instance(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -830,7 +827,7 @@ impl<'db> CallableType<'db> {
     }
 
     /// Wraps this reduced callable as a synthetic `functools.partial(...)` instance type.
-    pub(crate) fn into_precise_functools_partial_instance(
+    pub fn into_precise_functools_partial_instance(
         self,
         db: &'db dyn Db,
         wrapped: Type<'db>,
@@ -840,7 +837,7 @@ impl<'db> CallableType<'db> {
         ))
     }
 
-    pub(crate) fn bind_self(
+    pub fn bind_self(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -850,7 +847,7 @@ impl<'db> CallableType<'db> {
     }
 
     /// Binds the runtime receiver while using `typing_self_type` to replace `typing.Self`.
-    pub(crate) fn bind_self_with_receiver(
+    pub fn bind_self_with_receiver(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -868,15 +865,15 @@ impl<'db> CallableType<'db> {
         )
     }
 
-    pub(crate) fn into_function_like(self, db: &'db dyn Db) -> CallableType<'db> {
+    pub fn into_function_like(self, db: &'db dyn Db) -> CallableType<'db> {
         self.with_kind(db, CallableTypeKind::FunctionLike)
     }
 
-    pub(crate) fn into_dunder_paramspec(self, db: &'db dyn Db) -> CallableType<'db> {
+    pub fn into_dunder_paramspec(self, db: &'db dyn Db) -> CallableType<'db> {
         self.with_kind(db, CallableTypeKind::DunderParamSpec)
     }
 
-    pub(crate) fn apply_self(
+    pub fn apply_self(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -885,7 +882,7 @@ impl<'db> CallableType<'db> {
         self.apply_self_with_receiver(db, env, self_type, self_type)
     }
 
-    pub(crate) fn apply_self_with_receiver(
+    pub fn apply_self_with_receiver(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -903,11 +900,11 @@ impl<'db> CallableType<'db> {
     ///
     /// Specifically, this represents a callable type with a single signature:
     /// `(*args: object, **kwargs: object) -> Never`.
-    pub(crate) fn bottom(db: &'db dyn Db) -> CallableType<'db> {
+    pub fn bottom(db: &'db dyn Db) -> CallableType<'db> {
         Self::new(db, CallableSignature::bottom(), CallableTypeKind::Regular)
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -923,7 +920,7 @@ impl<'db> CallableType<'db> {
         )
     }
 
-    pub(super) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -941,7 +938,7 @@ impl<'db> CallableType<'db> {
         )
     }
 
-    pub(super) fn find_legacy_typevars_impl(
+    pub fn find_legacy_typevars_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -962,7 +959,7 @@ impl<'db> CallableType<'db> {
 /// Note that this type is guaranteed to contain at least one callable. If you need to support "no
 /// callables" as a possibility, use `Option<CallableTypes>`.
 #[derive(Clone, Debug, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct CallableTypes<'db>(SmallVec<[CallableType<'db>; 1]>);
+pub struct CallableTypes<'db>(SmallVec<[CallableType<'db>; 1]>);
 
 impl<'db> CallableTypes<'db> {
     fn new(callables: SmallVec<[CallableType<'db>; 1]>) -> Self {
@@ -970,24 +967,24 @@ impl<'db> CallableTypes<'db> {
         CallableTypes(callables)
     }
 
-    pub(crate) fn one(callable: CallableType<'db>) -> Self {
+    pub fn one(callable: CallableType<'db>) -> Self {
         CallableTypes(smallvec_inline![callable])
     }
 
-    pub(crate) fn from_elements(callables: impl IntoIterator<Item = CallableType<'db>>) -> Self {
+    pub fn from_elements(callables: impl IntoIterator<Item = CallableType<'db>>) -> Self {
         let callables: SmallVec<_> = callables.into_iter().collect();
         assert!(!callables.is_empty(), "CallableTypes should not be empty");
         CallableTypes(callables)
     }
 
-    pub(crate) fn exactly_one(self) -> Option<CallableType<'db>> {
+    pub fn exactly_one(self) -> Option<CallableType<'db>> {
         match self.0.as_slice() {
             [single] => Some(*single),
             _ => None,
         }
     }
 
-    pub(super) fn as_slice(&self) -> &[CallableType<'db>] {
+    pub fn as_slice(&self) -> &[CallableType<'db>] {
         &self.0
     }
 
@@ -995,21 +992,21 @@ impl<'db> CallableTypes<'db> {
         self.0
     }
 
-    pub(super) fn iter(&self) -> std::slice::Iter<'_, CallableType<'db>> {
+    pub fn iter(&self) -> std::slice::Iter<'_, CallableType<'db>> {
         self.0.iter()
     }
 
-    pub(crate) fn into_type(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn into_type(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         assert!(!self.0.is_empty(), "CallableTypes should not be empty");
         UnionType::from_elements(db, env, self.0.into_iter().map(Type::Callable))
     }
 
-    pub(crate) fn map(self, mut f: impl FnMut(CallableType<'db>) -> CallableType<'db>) -> Self {
+    pub fn map(self, mut f: impl FnMut(CallableType<'db>) -> CallableType<'db>) -> Self {
         Self::from_elements(self.0.iter().map(|element| f(*element)))
     }
 
     /// Merges reduced callables into one precise `functools.partial(...)` instance type.
-    pub(crate) fn into_precise_functools_partial_instance(
+    pub fn into_precise_functools_partial_instance(
         self,
         db: &'db dyn Db,
         wrapped: Type<'db>,
@@ -1054,7 +1051,7 @@ impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
     /// Check whether one callable type has the given relation to another callable type.
     ///
     /// See [`Type::is_subtype_of`] and [`Type::is_assignable_to`] for more details.
-    pub(super) fn check_callable_pair(
+    pub fn check_callable_pair(
         &self,
         db: &'db dyn Db,
         source: CallableType<'db>,
@@ -1070,7 +1067,7 @@ impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
         self.check_callable_signature_pair(db, source.signatures(db), target.signatures(db))
     }
 
-    pub(super) fn check_callables_vs_callable(
+    pub fn check_callables_vs_callable(
         &self,
         db: &'db dyn Db,
         source: &CallableTypes<'db>,

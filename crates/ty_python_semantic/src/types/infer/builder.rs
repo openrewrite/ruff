@@ -265,7 +265,7 @@ const NUM_FIELD_SPECIFIERS_INLINE: usize = 1;
 /// Similarly, when we encounter a standalone-inferable expression (right-hand side of an
 /// assignment, type narrowing guard), we use the [`infer_expression_types()`] query to ensure we
 /// don't infer its types more than once.
-pub(super) struct TypeInferenceBuilder<'db, 'ast> {
+pub struct TypeInferenceBuilder<'db, 'ast> {
     context: InferContext<'db, 'ast>,
 
     index: &'db SemanticIndex<'db>,
@@ -484,10 +484,10 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     ///
     /// This is a fairly arbitrary number. It should be *far* more than enough
     /// for most use cases, but we can reevaluate it later if useful.
-    pub(super) const MAX_STRING_LITERAL_SIZE: usize = 4096;
+    pub const MAX_STRING_LITERAL_SIZE: usize = 4096;
 
     /// Creates a new builder for inferring types in a region.
-    pub(super) fn new(
+    pub fn new(
         db: &'db dyn Db,
         env: &'ast ProgramEnvironment<'db>,
         region: InferenceRegion<'db>,
@@ -4453,7 +4453,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     }
 
     /// Initialize a declaration cycle without discarding its annotation diagnostics or metadata.
-    pub(super) fn infer_annotated_assignment_cycle_initial(
+    pub fn infer_annotated_assignment_cycle_initial(
         mut self,
         definition: Definition<'db>,
         assignment: &AnnotatedAssignmentDefinitionKind,
@@ -11632,7 +11632,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn finish_expression(mut self) -> ExpressionInference<'db> {
+    pub fn finish_expression(mut self) -> ExpressionInference<'db> {
         self.infer_region();
         self.into_expression_inference()
     }
@@ -11706,7 +11706,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn finish_statement(mut self) -> StatementInferenceInner<'db> {
+    pub fn finish_statement(mut self) -> StatementInferenceInner<'db> {
         self.infer_region();
 
         let Self {
@@ -11804,7 +11804,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn finish_function_decorator_inference(mut self) -> FunctionDecoratorInference<'db> {
+    pub fn finish_function_decorator_inference(mut self) -> FunctionDecoratorInference<'db> {
         self.infer_region();
 
         let known_decorators = match self.region {
@@ -11867,10 +11867,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn finish_definition(
-        mut self,
-        definition: Definition<'db>,
-    ) -> DefinitionInference<'db> {
+    pub fn finish_definition(mut self, definition: Definition<'db>) -> DefinitionInference<'db> {
         self.infer_region();
         self.finish_inferred_definition(definition)
     }
@@ -12016,7 +12013,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn finish_scope(mut self) -> ScopeInference<'db> {
+    pub fn finish_scope(mut self) -> ScopeInference<'db> {
         self.infer_region();
 
         let Self {

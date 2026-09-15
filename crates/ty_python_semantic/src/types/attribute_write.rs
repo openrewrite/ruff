@@ -31,7 +31,7 @@ use crate::place::{
 /// writes. It deliberately does not infer a value expression, emit diagnostics, or
 /// decide whether assigning to a `Final` member is allowed: those decisions differ
 /// between its two consumers.
-pub(super) enum AttributeWriteRequirement<'db> {
+pub enum AttributeWriteRequirement<'db> {
     /// A write to a union must be valid for every union element.
     All {
         object_ty: Type<'db>,
@@ -71,7 +71,7 @@ pub(super) enum AttributeWriteRequirement<'db> {
 }
 
 /// How a writable protocol member validates an assigned value.
-pub(super) enum ProtocolMemberWriteRequirement<'db> {
+pub enum ProtocolMemberWriteRequirement<'db> {
     /// Check the assigned value against a directly representable write type.
     AssignableTo(Type<'db>),
     /// Invoke every possible descriptor setter with the assigned value.
@@ -93,7 +93,7 @@ pub(super) enum ProtocolMemberWriteRequirement<'db> {
 /// A declared class member takes precedence over an instance fallback. A custom `__setattr__` is
 /// used only when neither lookup produces a declared write target; callers separately account for
 /// a terminal `__setattr__` that blocks every write.
-pub(super) enum InstanceAttributeWriteMember<'db> {
+pub enum InstanceAttributeWriteMember<'db> {
     /// The resolved declaration is a `ClassVar`, which cannot be assigned through an instance.
     ClassVar,
     /// A class or MRO member governs the write.
@@ -115,7 +115,7 @@ pub(super) enum InstanceAttributeWriteMember<'db> {
 /// which in turn take precedence over definitely non-data metaclass members. If the metaclass
 /// member is absent, possibly undefined, or could be a non-data descriptor, the class object's own
 /// attributes form the fallback.
-pub(super) enum ClassAttributeWriteMember<'db> {
+pub enum ClassAttributeWriteMember<'db> {
     /// A metaclass member governs the write, optionally alongside a class-attribute fallback.
     Explicit {
         member: ExplicitAttributeWriteRequirement<'db>,
@@ -131,7 +131,7 @@ pub(super) enum ClassAttributeWriteMember<'db> {
 }
 
 /// How an explicitly resolved member accepts a write.
-pub(super) enum ExplicitAttributeWriteRequirement<'db> {
+pub enum ExplicitAttributeWriteRequirement<'db> {
     /// Invoke a concrete descriptor's `__set__` method.
     Descriptor {
         descriptor_ty: Type<'db>,
@@ -145,7 +145,7 @@ pub(super) enum ExplicitAttributeWriteRequirement<'db> {
 }
 
 impl ExplicitAttributeWriteRequirement<'_> {
-    pub(super) fn qualifiers(&self) -> TypeQualifiers {
+    pub fn qualifiers(&self) -> TypeQualifiers {
         match self {
             Self::Descriptor { qualifiers, .. } | Self::AssignableTo { qualifiers, .. } => {
                 *qualifiers
@@ -155,7 +155,7 @@ impl ExplicitAttributeWriteRequirement<'_> {
 }
 
 /// A receiver-level write target that can govern the write instead of the type member.
-pub(super) enum FallbackAttributeWriteRequirement<'db> {
+pub enum FallbackAttributeWriteRequirement<'db> {
     /// Check the value against `ty`, retaining whether the declaration may be absent at runtime.
     AssignableTo {
         ty: Type<'db>,
@@ -186,7 +186,7 @@ pub(super) enum FallbackAttributeWriteRequirement<'db> {
 /// C.data = 1
 /// C.plain = 1
 /// ```
-pub(super) enum AssignmentAttributeMembers<'db> {
+pub enum AssignmentAttributeMembers<'db> {
     /// The type member governs the write, as `Meta.data` does above because it is a data descriptor.
     /// If the type member may be missing or may be a non-data descriptor, the corresponding
     /// receiver member (`C.data`) is retained as `receiver_fallback`.
@@ -201,7 +201,7 @@ pub(super) enum AssignmentAttributeMembers<'db> {
 
 impl<'db> AssignmentAttributeMembers<'db> {
     /// Return the member whose descriptor protocol applies to the receiver, if any.
-    pub(super) fn type_member(self) -> Option<PlaceAndQualifiers<'db>> {
+    pub fn type_member(self) -> Option<PlaceAndQualifiers<'db>> {
         match self {
             Self::TypeMember { member, .. } => Some(member),
             Self::ReceiverMember(_) => None,
@@ -209,7 +209,7 @@ impl<'db> AssignmentAttributeMembers<'db> {
     }
 
     /// Iterate over every member that can govern the write at runtime.
-    pub(super) fn effective_members(self) -> impl Iterator<Item = PlaceAndQualifiers<'db>> {
+    pub fn effective_members(self) -> impl Iterator<Item = PlaceAndQualifiers<'db>> {
         let members = match self {
             Self::TypeMember {
                 member,
@@ -226,7 +226,7 @@ impl<'db> AssignmentAttributeMembers<'db> {
 /// This expands aliases, preserves the all-arms rule for unions and the any-positive-arm rule for
 /// intersections, and dispatches instance and class-object writes to their respective lookup
 /// paths. It does not compare the assigned value with the resulting types.
-pub(super) fn attribute_write_requirement<'db>(
+pub fn attribute_write_requirement<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     object_ty: Type<'db>,
@@ -715,7 +715,7 @@ fn effective_write_type<'db>(
 ///     @value.setter
 ///     def value(self, value: int) -> Never: ...
 /// ```
-pub(super) fn property_setter_returns_never<'db>(
+pub fn property_setter_returns_never<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     property_ty: Type<'db>,
@@ -793,7 +793,7 @@ fn class_object_assignment_members<'db>(
 ///
 /// This helper deliberately does not bind `Self` or interpret descriptors so that assignment,
 /// protocol compatibility, and `Final` validation share exactly the same lookup precedence.
-pub(super) fn assignment_attribute_members<'db>(
+pub fn assignment_attribute_members<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     object_ty: Type<'db>,
@@ -889,14 +889,14 @@ fn descriptor_setter<'db>(
 
 /// The values accepted by a descriptor setter, when representable as a single type.
 #[derive(Copy, Clone)]
-pub(super) enum DescriptorSetterDomain<'db> {
+pub enum DescriptorSetterDomain<'db> {
     Missing,
     Known(Type<'db>),
     Deferred,
 }
 
 /// Derive the values accepted by every possible descriptor setter when they fit in [`Type`].
-pub(super) fn descriptor_setter_domain<'db>(
+pub fn descriptor_setter_domain<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     descriptor_ty: Type<'db>,
@@ -1081,7 +1081,7 @@ fn contains_signature_typevar<'db>(
 /// ```
 ///
 /// This returns the unbound `Self` and the setter definition; callers choose its receiver.
-pub(super) fn property_setter_value_type<'db>(
+pub fn property_setter_value_type<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     setter: Type<'db>,
@@ -1129,7 +1129,7 @@ impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
     /// Resolution is shared with real assignments, but this path evaluates the result using the
     /// active type relation and constraints instead of inferring an expression or emitting an
     /// assignment diagnostic.
-    pub(super) fn check_attribute_write(
+    pub fn check_attribute_write(
         &self,
         db: &'db dyn Db,
         ty: Type<'db>,

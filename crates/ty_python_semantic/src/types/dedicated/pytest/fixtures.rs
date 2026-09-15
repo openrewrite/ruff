@@ -694,7 +694,7 @@ fn mock_patch_count<'db>(
 
 /// A decorated fixture function.
 #[derive(Debug, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct FixtureDeclaration<'db> {
+pub struct FixtureDeclaration<'db> {
     // The definition for the fixture function.
     definition: Definition<'db>,
     // The way in which the fixture exposes a name.
@@ -1043,7 +1043,7 @@ fn conftest_files<'db>(db: &'db dyn Db, request_file: ProgramFile<'db>) -> Vec<P
 
 /// Returns a fixture declaration for a function with a canonical pytest fixture decorator.
 #[salsa::tracked(returns(ref), heap_size=ruff_memory_usage::heap_size)]
-pub(super) fn fixture_declaration<'db>(
+pub fn fixture_declaration<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> Option<FixtureDeclaration<'db>> {

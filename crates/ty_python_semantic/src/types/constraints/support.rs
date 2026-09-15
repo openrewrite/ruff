@@ -15,10 +15,10 @@ use smallvec::SmallVec;
 
 #[newtype_index]
 #[derive(get_size2::GetSize)]
-pub(super) struct SupportId;
+pub struct SupportId;
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct Support {
+pub struct Support {
     chunks: SmallVec<[usize; 2]>,
     has_skipped_lazy_attributes: bool,
 }
@@ -27,7 +27,7 @@ const CHUNK_SIZE: usize = usize::BITS as usize;
 
 impl Support {
     /// Adds a typevar to this support.
-    pub(super) fn insert(&mut self, typevar: TypeVarId) {
+    pub fn insert(&mut self, typevar: TypeVarId) {
         let index = typevar.index();
         let chunks_needed = (index + 1).div_ceil(CHUNK_SIZE);
         if self.chunks.len() < chunks_needed {
@@ -41,7 +41,7 @@ impl Support {
     }
 
     /// Returns an iterator of all of the typevars in this support.
-    pub(super) fn iter(&self) -> impl Iterator<Item = TypeVarId> + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = TypeVarId> + '_ {
         // Iterate through all of the chunks
         let mut next_chunk_start = 0;
         self.chunks.iter().copied().flat_map(move |mut chunk| {
@@ -67,17 +67,17 @@ impl Support {
     }
 
     /// Returns whether this support contains any type variables in common with `other`.
-    pub(super) fn overlaps_with(&self, other: &Self) -> bool {
+    pub fn overlaps_with(&self, other: &Self) -> bool {
         std::iter::zip(&self.chunks, &other.chunks).any(|(lhs, rhs)| (*lhs & *rhs) != 0)
     }
 
     /// Records that lazy type attributes may contain additional type variables.
-    pub(super) fn mark_incomplete(&mut self) {
+    pub fn mark_incomplete(&mut self) {
         self.has_skipped_lazy_attributes = true;
     }
 
     /// Returns whether all type attributes were inspected while collecting this support.
-    pub(super) fn is_complete(&self) -> bool {
+    pub fn is_complete(&self) -> bool {
         !self.has_skipped_lazy_attributes
     }
 }

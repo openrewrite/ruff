@@ -67,7 +67,7 @@ impl<'db> ResolvedDefinition<'db> {
         }
     }
 
-    pub(crate) fn category(&self, db: &dyn Db) -> DefinitionCategory {
+    pub fn category(&self, db: &dyn Db) -> DefinitionCategory {
         match self {
             ResolvedDefinition::Definition(definition) => {
                 let file = definition.file(db);
@@ -88,7 +88,7 @@ impl<'db> ResolvedDefinition<'db> {
         }
     }
 
-    pub(crate) fn program_file(&self, db: &'db dyn Db) -> Option<ProgramFile<'db>> {
+    pub fn program_file(&self, db: &'db dyn Db) -> Option<ProgramFile<'db>> {
         match *self {
             ResolvedDefinition::Definition(definition) => Some(definition.program_file(db)),
             ResolvedDefinition::Module(file) => Some(file),
@@ -163,7 +163,7 @@ fn implementation_docstring<'db>(db: &'db dyn Db, definition: Definition<'db>) -
 /// [`ide_support::definitions_for_name`](super::ide_support::definitions_for_name) uses the
 /// inferred expression type to recognize these annotations and include the additional numeric classes
 /// as navigation targets.
-pub(crate) fn definitions_for_name<'db>(
+pub fn definitions_for_name<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
     name: &str,
@@ -180,7 +180,7 @@ pub(crate) fn definitions_for_name<'db>(
 }
 
 /// Resolves definitions in visible scopes, without falling back to implicit builtins.
-pub(crate) fn scoped_definitions_for_name<'db>(
+pub fn scoped_definitions_for_name<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
     name_str: &str,
@@ -292,7 +292,7 @@ pub(crate) fn scoped_definitions_for_name<'db>(
 }
 
 /// Resolves a symbol in an implicit builtins scope.
-pub(crate) fn definitions_for_builtin<'db>(
+pub fn definitions_for_builtin<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
     name: &str,
@@ -330,7 +330,7 @@ pub(crate) fn definitions_for_builtin<'db>(
 /// If this becomes a maintenance burden in the future, it may be worth
 /// changing the corresponding logic in the semantic analyzer to conditionally
 /// handle this case through the use of mode flags.
-pub(crate) fn definitions_for_attribute<'db>(
+pub fn definitions_for_attribute<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     lhs_ty: Type<'db>,
@@ -529,7 +529,7 @@ fn definitions_for_attribute_in_class_hierarchy<'db>(
 /// end-of-scope bindings. Nested comprehensions can produce a chain of these proxies. Only
 /// follow sources that resolve to the same variable, so `global` and `nonlocal` writes do not
 /// become definitions of each other.
-pub(super) fn user_visible_definitions<'db>(
+pub fn user_visible_definitions<'db>(
     db: &'db dyn Db,
     definitions: impl IntoIterator<Item = Definition<'db>>,
 ) -> FxIndexSet<Definition<'db>> {
@@ -590,7 +590,7 @@ fn resolve_reachable_definitions<'db>(
 /// Returns resolved definitions which can be either specific definitions or module files.
 /// For non-import definitions, returns the definition wrapped in `ResolvedDefinition::Definition`.
 /// Always returns at least the original definition as a fallback if resolution fails.
-pub(crate) fn resolve_definition<'db>(
+pub fn resolve_definition<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     definition: Definition<'db>,
@@ -717,7 +717,7 @@ fn resolve_definition_recursive<'db>(
 }
 
 /// Helper function to resolve import definitions for `ImportFrom` and `StarImport` cases.
-pub(crate) fn resolve_from_import_definitions<'db>(
+pub fn resolve_from_import_definitions<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     importing_file: ImportingFile<'db>,
@@ -815,7 +815,7 @@ fn resolve_from_import_submodule_definitions<'db>(
 }
 
 /// Find definitions for a symbol name in a specific scope.
-pub(crate) fn find_symbol_in_scope<'db>(
+pub fn find_symbol_in_scope<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
     symbol_name: &str,

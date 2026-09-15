@@ -79,7 +79,7 @@ impl<'db> TypedDictOpenness<'db> {
     /// class ByExtraItems(TypedDict, extra_items=Never): ...
     /// class ByClosed(TypedDict, closed=True): ...
     /// ```
-    pub(crate) fn extra(db: &'db dyn Db, declared_ty: Type<'db>, is_read_only: bool) -> Self {
+    pub fn extra(db: &'db dyn Db, declared_ty: Type<'db>, is_read_only: bool) -> Self {
         if declared_ty.resolve_type_alias(db).is_never() {
             Self::Closed
         } else {
@@ -95,7 +95,7 @@ impl<'db> TypedDictOpenness<'db> {
     /// An implicitly open `TypedDict` returns `None` here because its hidden items are not directly
     /// accessible. Use [`Self::effective_extra_items`] for structural relations that must account
     /// for those hidden items.
-    pub(crate) const fn explicit_extra_items(self) -> Option<TypedDictExtraItems<'db>> {
+    pub const fn explicit_extra_items(self) -> Option<TypedDictExtraItems<'db>> {
         match self {
             Self::Extra(extra_items) => Some(extra_items),
             Self::ImplicitlyOpen | Self::Closed => None,
@@ -106,7 +106,7 @@ impl<'db> TypedDictOpenness<'db> {
     ///
     /// An implicitly open `TypedDict` behaves like it has read-only extra items of type `object`
     /// for these purposes, while a closed `TypedDict` has no extra items.
-    pub(crate) fn effective_extra_items(self) -> Option<TypedDictExtraItems<'db>> {
+    pub fn effective_extra_items(self) -> Option<TypedDictExtraItems<'db>> {
         match self {
             Self::ImplicitlyOpen => Some(TypedDictExtraItems {
                 declared_ty: Type::object(),
@@ -117,11 +117,11 @@ impl<'db> TypedDictOpenness<'db> {
         }
     }
 
-    pub(crate) const fn is_implicitly_open(self) -> bool {
+    pub const fn is_implicitly_open(self) -> bool {
         matches!(self, Self::ImplicitlyOpen)
     }
 
-    pub(crate) const fn is_closed(self) -> bool {
+    pub const fn is_closed(self) -> bool {
         matches!(self, Self::Closed)
     }
 
@@ -144,7 +144,7 @@ impl<'db> TypedDictOpenness<'db> {
         }
     }
 
-    pub(crate) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -175,17 +175,17 @@ impl<'db> TypedDictOpenness<'db> {
 /// [`TypedDictOpenness::effective_extra_items`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, get_size2::GetSize, salsa::SalsaValue)]
 pub struct TypedDictExtraItems<'db> {
-    pub(crate) declared_ty: Type<'db>,
+    pub declared_ty: Type<'db>,
     is_read_only: bool,
 }
 
 impl TypedDictExtraItems<'_> {
-    pub(crate) const fn is_read_only(self) -> bool {
+    pub const fn is_read_only(self) -> bool {
         self.is_read_only
     }
 }
 
-pub(super) fn functional_typed_dict_field(
+pub fn functional_typed_dict_field(
     declared_ty: Type<'_>,
     qualifiers: TypeQualifiers,
     total: bool,
@@ -223,11 +223,11 @@ pub enum SynthesizedTypedDictKind {
 }
 
 impl<'db> TypedDictType<'db> {
-    pub(crate) fn new(defining_class: ClassType<'db>) -> Self {
+    pub fn new(defining_class: ClassType<'db>) -> Self {
         Self::Class(defining_class)
     }
 
-    pub(crate) fn defining_class(self) -> Option<ClassType<'db>> {
+    pub fn defining_class(self) -> Option<ClassType<'db>> {
         match self {
             Self::Class(defining_class) => Some(defining_class),
             Self::Synthesized(_) => None,
@@ -238,7 +238,7 @@ impl<'db> TypedDictType<'db> {
     ///
     /// A class-based `TypedDict` inherits the first explicit policy from its bases unless it
     /// declares its own `closed` or `extra_items` argument.
-    pub(crate) fn openness(self, db: &'db dyn Db) -> TypedDictOpenness<'db> {
+    pub fn openness(self, db: &'db dyn Db) -> TypedDictOpenness<'db> {
         #[salsa::tracked(
             returns(copy),
             cycle_initial=|_, _, _| TypedDictOpenness::ImplicitlyOpen,
@@ -321,7 +321,7 @@ impl<'db> TypedDictType<'db> {
     }
 
     /// Returns extra items only when they were explicitly declared.
-    pub(crate) fn explicit_extra_items(self, db: &'db dyn Db) -> Option<TypedDictExtraItems<'db>> {
+    pub fn explicit_extra_items(self, db: &'db dyn Db) -> Option<TypedDictExtraItems<'db>> {
         self.openness(db).explicit_extra_items()
     }
 
@@ -329,7 +329,7 @@ impl<'db> TypedDictType<'db> {
     ///
     /// An implicitly open `TypedDict` immediately returns `object` because hidden items may have
     /// any value type. This also avoids unnecessarily materializing its declared items.
-    pub(crate) fn value_type(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn value_type(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         let openness = self.openness(db);
         if openness.is_implicitly_open() {
             return Type::object();
@@ -349,7 +349,7 @@ impl<'db> TypedDictType<'db> {
     ///
     /// A closed `TypedDict` has a finite set of literal keys. Open and extra-items `TypedDict`s may
     /// contain arbitrary string keys.
-    pub(crate) fn key_type(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn key_type(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         if !self.openness(db).is_closed() {
             return KnownClass::Str.to_instance(db, env);
         }
@@ -367,7 +367,7 @@ impl<'db> TypedDictType<'db> {
     ///
     /// An undeclared key can still exist in an implicitly open `TypedDict` or one with explicit
     /// extra items. An optional field with an uninhabited value type can never be present.
-    pub(crate) fn key_membership_truthiness(self, db: &'db dyn Db, key: &str) -> Truthiness {
+    pub fn key_membership_truthiness(self, db: &'db dyn Db, key: &str) -> Truthiness {
         match self.items(db).get(key) {
             Some(field) if field.is_required() => Truthiness::AlwaysTrue,
             Some(field) if field.may_be_present(db) => Truthiness::Ambiguous,
@@ -381,7 +381,7 @@ impl<'db> TypedDictType<'db> {
     ///
     /// Undeclared keys synthesize a field only for explicit extra items. Hidden items on an
     /// implicitly open `TypedDict` are intentionally not directly accessible.
-    pub(crate) fn item(self, db: &'db dyn Db, key: &str) -> Option<TypedDictField<'db>> {
+    pub fn item(self, db: &'db dyn Db, key: &str) -> Option<TypedDictField<'db>> {
         self.items(db).get(key).cloned().or_else(|| {
             let extra_items = self.explicit_extra_items(db)?;
             Some(
@@ -398,7 +398,7 @@ impl<'db> TypedDictType<'db> {
     /// The runtime key may name either an extra item or any declared item, so the result is the
     /// intersection of all possible destination item types. Returns `None` unless extra items are
     /// explicit.
-    pub(crate) fn arbitrary_key_initialization_type(
+    pub fn arbitrary_key_initialization_type(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -435,7 +435,7 @@ impl<'db> TypedDictType<'db> {
     ///
     /// A mutation may target any declared or extra item, so no such mutation is allowed if any
     /// possible destination is read-only.
-    pub(crate) fn arbitrary_key_mutation_type(
+    pub fn arbitrary_key_mutation_type(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -455,7 +455,7 @@ impl<'db> TypedDictType<'db> {
     ///
     /// Operations such as `clear()` and `popitem()` require a closed `TypedDict` or mutable explicit
     /// extra items, and cannot be exposed when any declared item is required or read-only.
-    pub(crate) fn supports_arbitrary_key_deletion(self, db: &'db dyn Db) -> bool {
+    pub fn supports_arbitrary_key_deletion(self, db: &'db dyn Db) -> bool {
         let openness_supports_deletion = match self.openness(db) {
             TypedDictOpenness::ImplicitlyOpen => false,
             TypedDictOpenness::Closed => true,
@@ -473,7 +473,7 @@ impl<'db> TypedDictType<'db> {
     ///
     /// This requires mutable explicit extra items and optional, mutable declared items whose value
     /// types are equivalent to the extra-items type.
-    pub(crate) fn dict_value_type(
+    pub fn dict_value_type(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -485,7 +485,7 @@ impl<'db> TypedDictType<'db> {
 
     /// Like [`Self::dict_value_type`], but uses the caller's equivalence or mutual-assignability
     /// check so recursive comparisons can share their cycle guards.
-    pub(super) fn dict_value_type_if(
+    pub fn dict_value_type_if(
         self,
         db: &'db dyn Db,
         types_match: impl Fn(Type<'db>, Type<'db>) -> bool,
@@ -503,7 +503,7 @@ impl<'db> TypedDictType<'db> {
         Some(extra_items.declared_ty)
     }
 
-    pub(crate) fn items(self, db: &'db dyn Db) -> &'db TypedDictSchema<'db> {
+    pub fn items(self, db: &'db dyn Db) -> &'db TypedDictSchema<'db> {
         // Field annotations can recursively inspect this schema while the class fields are still
         // being collected, e.g. through `typing.Self` in a `TypedDict` field.
         #[salsa::tracked(
@@ -553,7 +553,7 @@ impl<'db> TypedDictType<'db> {
         }
     }
 
-    pub(super) fn variance_of_items(
+    pub fn variance_of_items(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -578,7 +578,7 @@ impl<'db> TypedDictType<'db> {
         VarianceTerm::join(db, variances)
     }
 
-    pub(crate) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -596,7 +596,7 @@ impl<'db> TypedDictType<'db> {
         }
     }
 
-    pub(crate) fn from_schema_items(db: &'db dyn Db, items: TypedDictSchema<'db>) -> Self {
+    pub fn from_schema_items(db: &'db dyn Db, items: TypedDictSchema<'db>) -> Self {
         Self::from_schema_items_with_openness(db, items, TypedDictOpenness::ImplicitlyOpen)
     }
 
@@ -621,7 +621,7 @@ impl<'db> TypedDictType<'db> {
     /// to model non-mutating PEP 584 merge operands, accepting dictionary literals that supply any
     /// subset of known keys, and also accepting other `TypedDict`s as long as any overlapping keys
     /// are compatible.
-    pub(crate) fn to_partial(self, db: &'db dyn Db) -> Self {
+    pub fn to_partial(self, db: &'db dyn Db) -> Self {
         let items: TypedDictSchema<'db> = self
             .items(db)
             .iter()
@@ -637,7 +637,7 @@ impl<'db> TypedDictType<'db> {
     /// All fields become optional, and read-only fields become bottom-typed. This preserves the
     /// PEP 705 rule that these operations must reject any source that can write a read-only key,
     /// while still accepting `NotRequired[Never]` placeholders for keys that cannot be present.
-    pub(crate) fn to_update_patch(self, db: &'db dyn Db) -> Self {
+    pub fn to_update_patch(self, db: &'db dyn Db) -> Self {
         let items: TypedDictSchema<'db> = self
             .items(db)
             .iter()
@@ -679,7 +679,7 @@ impl<'db> TypedDictType<'db> {
 impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
     // Subtyping between `TypedDict`s follows the algorithm described at:
     // https://typing.python.org/en/latest/spec/typeddict.html#subtyping-between-typeddict-types
-    pub(super) fn check_typeddict_pair(
+    pub fn check_typeddict_pair(
         &self,
         db: &'db dyn Db,
         source: TypedDictType<'db>,
@@ -1102,7 +1102,7 @@ impl<'c, 'db> DisjointnessChecker<'_, 'c, 'db> {
     /// 4. If both sides are immutable, and their types are disjoint. (Because the type in `C` must
     ///    be assignable to both.)
     ///
-    pub(super) fn check_typeddict_pair(
+    pub fn check_typeddict_pair(
         &self,
         db: &'db dyn Db,
         left: TypedDictType<'db>,
@@ -1346,7 +1346,7 @@ impl<'c, 'db> DisjointnessChecker<'_, 'c, 'db> {
     }
 }
 
-pub(crate) fn walk_typed_dict_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_typed_dict_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     typed_dict: TypedDictType<'db>,
     visitor: &V,
@@ -1396,7 +1396,7 @@ impl<'db> VarianceInferable<'db> for TypedDictType<'db> {
     cycle_initial = |_, _, _|TypedDictSchema::default(),
     heap_size = ruff_memory_usage::heap_size
 )]
-pub(super) fn deferred_functional_typed_dict_schema<'db>(
+pub fn deferred_functional_typed_dict_schema<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> TypedDictSchema<'db> {
@@ -1461,7 +1461,7 @@ pub(super) fn deferred_functional_typed_dict_schema<'db>(
     cycle_initial = |_, _, _| TypedDictOpenness::ImplicitlyOpen,
     heap_size = ruff_memory_usage::heap_size
 )]
-pub(super) fn deferred_functional_typed_dict_openness<'db>(
+pub fn deferred_functional_typed_dict_openness<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> TypedDictOpenness<'db> {
@@ -1497,7 +1497,7 @@ pub(super) fn deferred_functional_typed_dict_openness<'db>(
     TypedDictOpenness::ImplicitlyOpen
 }
 
-pub(super) fn typed_dict_params_from_class_def(class_stmt: &StmtClassDef) -> TypedDictParams {
+pub fn typed_dict_params_from_class_def(class_stmt: &StmtClassDef) -> TypedDictParams {
     let mut typed_dict_params = TypedDictParams::default();
 
     // Check for `total` keyword argument in the class definition
@@ -1520,7 +1520,7 @@ pub(super) fn typed_dict_params_from_class_def(class_stmt: &StmtClassDef) -> Typ
 }
 
 #[derive(Debug, Clone, Copy)]
-pub(super) enum TypedDictAssignmentKind {
+pub enum TypedDictAssignmentKind {
     /// For subscript assignments like `d["key"] = value`
     Subscript,
     /// For constructor arguments like `MyTypedDict(key=value)`
@@ -1548,21 +1548,21 @@ impl TypedDictAssignmentKind {
 }
 
 /// A helper that validates assignments of a value to a specific key on a `TypedDict`.
-pub(super) struct TypedDictKeyAssignment<'a, 'db, 'ast> {
-    pub(super) context: &'a InferContext<'db, 'ast>,
-    pub(super) typed_dict: TypedDictType<'db>,
-    pub(super) full_object_ty: Option<Type<'db>>,
-    pub(super) key: &'a str,
-    pub(super) value_ty: Type<'db>,
-    pub(super) typed_dict_node: AnyNodeRef<'ast>,
-    pub(super) key_node: AnyNodeRef<'ast>,
-    pub(super) value_node: AnyNodeRef<'ast>,
-    pub(super) assignment_kind: TypedDictAssignmentKind,
-    pub(super) emit_diagnostic: bool,
+pub struct TypedDictKeyAssignment<'a, 'db, 'ast> {
+    pub context: &'a InferContext<'db, 'ast>,
+    pub typed_dict: TypedDictType<'db>,
+    pub full_object_ty: Option<Type<'db>>,
+    pub key: &'a str,
+    pub value_ty: Type<'db>,
+    pub typed_dict_node: AnyNodeRef<'ast>,
+    pub key_node: AnyNodeRef<'ast>,
+    pub value_node: AnyNodeRef<'ast>,
+    pub assignment_kind: TypedDictAssignmentKind,
+    pub emit_diagnostic: bool,
 }
 
 impl<'db> TypedDictKeyAssignment<'_, 'db, '_> {
-    pub(super) fn validate(&self) -> bool {
+    pub fn validate(&self) -> bool {
         let db = self.context.db();
         let items = self.typed_dict.items(db);
 
@@ -1747,10 +1747,10 @@ fn validate_typed_dict_required_keys<'db, 'ast>(
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) struct UnpackedTypedDictKey<'db> {
-    pub(crate) value_ty: Type<'db>,
-    pub(crate) is_required: bool,
-    pub(crate) definition: Option<Definition<'db>>,
+pub struct UnpackedTypedDictKey<'db> {
+    pub value_ty: Type<'db>,
+    pub is_required: bool,
+    pub definition: Option<Definition<'db>>,
 }
 
 /// A normalized view of a `TypedDict`-shaped value used when unpacking it.
@@ -1758,10 +1758,10 @@ pub(crate) struct UnpackedTypedDictKey<'db> {
 /// Union and intersection inputs are combined into one set of possible keys and one openness
 /// policy describing arbitrary undeclared keys.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) struct UnpackedTypedDict<'db> {
+pub struct UnpackedTypedDict<'db> {
     /// Declared keys that may be present after unpacking.
-    pub(crate) keys: BTreeMap<Name, UnpackedTypedDictKey<'db>>,
-    pub(crate) openness: TypedDictOpenness<'db>,
+    pub keys: BTreeMap<Name, UnpackedTypedDictKey<'db>>,
+    pub openness: TypedDictOpenness<'db>,
 }
 
 /// Combines the openness policies of intersected `TypedDict`-shaped values.
@@ -1852,7 +1852,7 @@ fn union_unpacked_typed_dict_openness<'db>(
 /// intersected, and the key is considered required if any constituent `TypedDict` requires it.
 /// For unions, returns all keys that may appear in any arm, unioning value types for shared keys,
 /// and a key is only considered required if every arm requires it.
-pub(crate) fn extract_unpacked_typed_dict_keys_from_value_type<'db>(
+pub fn extract_unpacked_typed_dict_keys_from_value_type<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     ty: Type<'db>,
@@ -1861,7 +1861,7 @@ pub(crate) fn extract_unpacked_typed_dict_keys_from_value_type<'db>(
 }
 
 /// Extracts the declared keys and openness from a `TypedDict`-shaped value.
-pub(crate) fn extract_unpacked_typed_dict_from_value_type<'db>(
+pub fn extract_unpacked_typed_dict_from_value_type<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     ty: Type<'db>,
@@ -2065,7 +2065,7 @@ fn merge_unpacked_key_definitions<'db>(
 ///
 /// Per [PEP 692](https://peps.python.org/pep-0692/#typeddict-unions), this accepts only a concrete
 /// `TypedDict` target, or a type alias resolving to one.
-pub(crate) fn extract_unpacked_typed_dict_keys_from_kwargs_annotation<'db>(
+pub fn extract_unpacked_typed_dict_keys_from_kwargs_annotation<'db>(
     db: &'db dyn Db,
     annotated_type: Type<'db>,
     annotation_flags: TypeExpressionFlags,
@@ -2096,7 +2096,7 @@ pub(crate) fn extract_unpacked_typed_dict_keys_from_kwargs_annotation<'db>(
 ///
 /// Mixed positional-and-keyword `TypedDict` construction needs to inspect unpacked keyword types
 /// in multiple validation passes. Precomputing them avoids re-inference in speculative builders.
-pub(super) fn infer_unpacked_keyword_types<'db>(
+pub fn infer_unpacked_keyword_types<'db>(
     arguments: &Arguments,
     mut expression_type_fn: impl FnMut(&ast::Expr, TypeContext<'db>) -> Type<'db>,
 ) -> Vec<Option<Type<'db>>> {
@@ -2128,7 +2128,7 @@ fn unpacked_keyword_is_gradual<'db>(db: &'db dyn Db, ty: Type<'db>) -> bool {
 /// Explicit keyword arguments always provide their key. For `**kwargs`, only required keys are
 /// guaranteed to be present; optional keys may be omitted at runtime and cannot suppress missing
 /// key diagnostics for the positional mapping.
-pub(super) fn collect_guaranteed_keyword_keys<'db>(
+pub fn collect_guaranteed_keyword_keys<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     typed_dict: TypedDictType<'db>,
@@ -2249,7 +2249,7 @@ fn typed_dict_without_keys<'db>(
 /// Keys that are guaranteed to be overridden by later keyword arguments stay in the schema as
 /// optional `object` fields. This preserves missing-key context for the remaining fields while
 /// avoiding premature validation of shadowed keys inside nested dict-literal branches.
-pub(super) fn typed_dict_with_relaxed_keys<'db>(
+pub fn typed_dict_with_relaxed_keys<'db>(
     db: &'db dyn Db,
     typed_dict: TypedDictType<'db>,
     relaxed_keys: &OrderSet<Name>,
@@ -2534,7 +2534,7 @@ fn record_guaranteed_typed_dict_constructor_key<'db, 'ast>(
 /// positional-and-keyword calls. Dictionary literals are validated entry-by-entry so we can report
 /// extra keys and per-field type mismatches precisely; non-literal positional arguments fall back
 /// to assignability against the target `TypedDict`.
-pub(super) fn validate_typed_dict_constructor<'db, 'ast>(
+pub fn validate_typed_dict_constructor<'db, 'ast>(
     context: &InferContext<'db, 'ast>,
     typed_dict: TypedDictType<'db>,
     arguments: &'ast Arguments,
@@ -3012,7 +3012,7 @@ fn validate_merged_unpacked_keyword_argument<'db, 'ast>(
 
 /// Validates a `TypedDict` dictionary literal assignment,
 /// e.g. `person: Person = {"name": "Alice", "age": 30}`
-pub(super) fn validate_typed_dict_dict_literal<'db>(
+pub fn validate_typed_dict_dict_literal<'db>(
     context: &InferContext<'db, '_>,
     typed_dict: TypedDictType<'db>,
     dict_expr: &ast::ExprDict,
@@ -3051,12 +3051,12 @@ pub(super) fn validate_typed_dict_dict_literal<'db>(
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct SynthesizedTypedDictType<'db> {
     #[returns(ref)]
-    pub(crate) items: TypedDictSchema<'db>,
+    pub items: TypedDictSchema<'db>,
     #[returns(copy)]
-    pub(crate) kind: SynthesizedTypedDictKind,
+    pub kind: SynthesizedTypedDictKind,
     /// Whether keys absent from `items` are hidden, forbidden, or explicitly typed.
     #[returns(copy)]
-    pub(crate) openness: TypedDictOpenness<'db>,
+    pub openness: TypedDictOpenness<'db>,
 }
 
 // The Salsa heap is tracked separately.
@@ -3117,7 +3117,7 @@ impl<'db> SynthesizedTypedDictType<'db> {
 pub struct TypedDictSchema<'db>(BTreeMap<Name, TypedDictField<'db>>);
 
 impl<'db> TypedDictSchema<'db> {
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -3173,31 +3173,31 @@ impl<'db> FromIterator<(Name, TypedDictField<'db>)> for TypedDictSchema<'db> {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, get_size2::GetSize, salsa::SalsaValue)]
 pub struct TypedDictField<'db> {
-    pub(super) declared_ty: Type<'db>,
+    pub declared_ty: Type<'db>,
     flags: TypedDictFieldFlags,
     first_declaration: Option<Definition<'db>>,
 }
 
 impl<'db> TypedDictField<'db> {
-    pub(crate) const fn is_required(&self) -> bool {
+    pub const fn is_required(&self) -> bool {
         self.flags.contains(TypedDictFieldFlags::REQUIRED)
     }
 
-    pub(crate) const fn is_read_only(&self) -> bool {
+    pub const fn is_read_only(&self) -> bool {
         self.flags.contains(TypedDictFieldFlags::READ_ONLY)
     }
 
     /// Returns `false` for optional fields whose declared type is uninhabited.
-    pub(crate) fn may_be_present(&self, db: &'db dyn Db) -> bool {
+    pub fn may_be_present(&self, db: &'db dyn Db) -> bool {
         self.is_required() || !self.declared_ty.resolve_type_alias(db).is_never()
     }
 
-    pub(crate) const fn first_declaration(&self) -> Option<Definition<'db>> {
+    pub const fn first_declaration(&self) -> Option<Definition<'db>> {
         self.first_declaration
     }
 
     /// Create a `TypedDictField` from a [`Field`] with `FieldKind::TypedDict`.
-    pub(crate) fn from_field(field: &super::class::Field<'db>) -> Self {
+    pub fn from_field(field: &super::class::Field<'db>) -> Self {
         TypedDictFieldBuilder::new(field.declared_ty)
             .required(field.is_required())
             .read_only(field.is_read_only())
@@ -3227,14 +3227,14 @@ impl<'db> TypedDictField<'db> {
     }
 }
 
-pub(super) struct TypedDictFieldBuilder<'db> {
+pub struct TypedDictFieldBuilder<'db> {
     declared_ty: Type<'db>,
     flags: TypedDictFieldFlags,
     first_declaration: Option<Definition<'db>>,
 }
 
 impl<'db> TypedDictFieldBuilder<'db> {
-    pub(crate) fn new(declared_ty: Type<'db>) -> Self {
+    pub fn new(declared_ty: Type<'db>) -> Self {
         Self {
             declared_ty,
             flags: TypedDictFieldFlags::empty(),
@@ -3242,12 +3242,12 @@ impl<'db> TypedDictFieldBuilder<'db> {
         }
     }
 
-    pub(crate) fn required(mut self, yes: bool) -> Self {
+    pub fn required(mut self, yes: bool) -> Self {
         self.flags.set(TypedDictFieldFlags::REQUIRED, yes);
         self
     }
 
-    pub(crate) fn read_only(mut self, yes: bool) -> Self {
+    pub fn read_only(mut self, yes: bool) -> Self {
         self.flags.set(TypedDictFieldFlags::READ_ONLY, yes);
         self
     }
@@ -3257,7 +3257,7 @@ impl<'db> TypedDictFieldBuilder<'db> {
         self
     }
 
-    pub(crate) fn build(self) -> TypedDictField<'db> {
+    pub fn build(self) -> TypedDictField<'db> {
         TypedDictField {
             declared_ty: self.declared_ty,
             flags: self.flags,

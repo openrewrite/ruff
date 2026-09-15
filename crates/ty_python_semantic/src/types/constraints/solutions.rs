@@ -9,14 +9,14 @@ use crate::types::constraints::{
 use crate::types::{BoundTypeVarInstance, Type};
 use crate::{Db, FxIndexMap, FxIndexSet, ProgramEnvironment};
 
-pub(super) struct SolutionWalker<'db> {
+pub struct SolutionWalker<'db> {
     source_orders: FxIndexSet<ConstraintId>,
     sorted_paths: Vec<Vec<(ConstraintId, usize)>>,
     _phantom: PhantomData<&'db ()>,
 }
 
 impl<'db> SolutionWalker<'db> {
-    pub(super) fn new(source_orders: FxIndexSet<ConstraintId>) -> Self {
+    pub fn new(source_orders: FxIndexSet<ConstraintId>) -> Self {
         Self {
             source_orders,
             sorted_paths: Vec::default(),
@@ -24,7 +24,7 @@ impl<'db> SolutionWalker<'db> {
         }
     }
 
-    pub(super) fn visit_node<L: SolutionLimits>(
+    pub fn visit_node<L: SolutionLimits>(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -89,7 +89,7 @@ impl<'db> SolutionWalker<'db> {
         self.sorted_paths.push(path);
     }
 
-    pub(super) fn finish(
+    pub fn finish(
         mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

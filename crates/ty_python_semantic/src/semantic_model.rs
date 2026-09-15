@@ -99,11 +99,7 @@ impl<'db> SemanticModel<'db> {
     /// name precisely would require more complex analysis.
     ///
     /// Definitions in a project-level `__builtins__.pyi` also shadow standard builtins.
-    pub(crate) fn definitely_has_builtin_binding(
-        &self,
-        name: &str,
-        node: ast::AnyNodeRef<'_>,
-    ) -> bool {
+    pub fn definitely_has_builtin_binding(&self, name: &str, node: ast::AnyNodeRef<'_>) -> bool {
         let index = semantic_index(self.db, self.program_file());
         let Some(scope) = self.scope(node) else {
             return false;
@@ -128,7 +124,7 @@ impl<'db> SemanticModel<'db> {
     ///
     /// The symbols are the symbols in scope at the given
     /// AST node.
-    pub(crate) fn members_in_scope_at(
+    pub fn members_in_scope_at(
         &self,
         node: ast::AnyNodeRef<'_>,
     ) -> FxHashMap<Name, MemberDefinition<'db>> {
@@ -702,9 +698,9 @@ impl<'db> SemanticModel<'db> {
 
 /// The type and definition of a symbol.
 #[derive(Clone, Debug)]
-pub(crate) struct MemberDefinition<'db> {
-    pub(crate) ty: Type<'db>,
-    pub(crate) first_reachable_definition: Definition<'db>,
+pub struct MemberDefinition<'db> {
+    pub ty: Type<'db>,
+    pub first_reachable_definition: Definition<'db>,
 }
 
 /// A classification of symbol names.

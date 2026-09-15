@@ -29,13 +29,13 @@ type BinaryExpressionVisitor<'db> =
 
 /// Diagnostic state shared across the alternatives of one binary or augmented operation.
 #[derive(Default)]
-pub(super) struct BinaryInferenceState<'db> {
-    pub(super) emitted_division_by_zero_diagnostic: bool,
-    pub(super) deprecated_functions: Vec<OverloadLiteral<'db>>,
+pub struct BinaryInferenceState<'db> {
+    pub emitted_division_by_zero_diagnostic: bool,
+    pub deprecated_functions: Vec<OverloadLiteral<'db>>,
 }
 
 impl<'db> TypeInferenceBuilder<'db, '_> {
-    pub(super) fn infer_binary_expression(
+    pub fn infer_binary_expression(
         &mut self,
         binary: &ast::ExprBinOp,
         tcx: TypeContext<'db>,
@@ -221,7 +221,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// the `TypedDict` schema. We probe here to decide the outcome without those side effects.
     ///
     /// Returns `Some` after handling either a compatible or incompatible operand.
-    pub(super) fn try_infer_typed_dict_pep_584_augmented_assignment(
+    pub fn try_infer_typed_dict_pep_584_augmented_assignment(
         &mut self,
         assignment: &ast::StmtAugAssign,
         target_type: Type<'db>,
@@ -270,7 +270,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// Returns the original `TypeVar` if each result is equivalent to its input constraint;
     /// otherwise returns the union of all results.
-    pub(super) fn map_constrained_typevar_constraints(
+    pub fn map_constrained_typevar_constraints(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         typevar: Type<'db>,
@@ -318,7 +318,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
 
     /// Infer the result type and collect deprecated methods for the enclosing operation.
     /// The caller reports them together after expanding union operands and in-place fallbacks.
-    pub(super) fn infer_binary_expression_type(
+    pub fn infer_binary_expression_type(
         &mut self,
         node: AnyNodeRef<'_>,
         left_ty: Type<'db>,

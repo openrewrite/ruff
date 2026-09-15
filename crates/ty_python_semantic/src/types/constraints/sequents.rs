@@ -37,14 +37,14 @@ use crate::{Db, ProgramEnvironment};
 /// also share the work of calculating the sequent map across `PathAssignments` for _different_
 /// constraint sets.)
 #[derive(Debug, Default)]
-pub(super) struct SequentMap {
-    pub(super) sequents: Vec<Sequent>,
+pub struct SequentMap {
+    pub sequents: Vec<Sequent>,
 }
 
 /// Describes one rule for deriving new implicit constraints from existing constraints in a BDD
 /// path.
 #[derive(Clone, Copy, Debug)]
-pub(super) enum Sequent {
+pub enum Sequent {
     /// Sequent of the form `¬C → false`
     ///
     /// This indicates that `C` is always true. Any path that assumes it is false is impossible and
@@ -82,7 +82,7 @@ pub(super) enum Sequent {
 }
 
 impl SequentMap {
-    pub(super) fn consequents(&self) -> impl Iterator<Item = ConstraintId> + '_ {
+    pub fn consequents(&self) -> impl Iterator<Item = ConstraintId> + '_ {
         self.sequents.iter().filter_map(|sequent| match sequent {
             Sequent::SingleImplication { post, .. } | Sequent::PairImplication { post, .. } => {
                 Some(*post)
@@ -94,7 +94,7 @@ impl SequentMap {
     /// Returns a sequent map containing the sequents that we can infer from a single constraint in
     /// isolation. This method is salsa-tracked so that we only perform this work once per
     /// constraint.
-    pub(super) fn for_constraint<'db, 'c>(
+    pub fn for_constraint<'db, 'c>(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         storage: &'c mut ConstraintSetStorage<'db>,
@@ -120,7 +120,7 @@ impl SequentMap {
     /// (Note that this method is _not_ commutative; you should provide `left` and `right` in the
     /// order that they appear in the source code, so that we can construct derived constraints
     /// that retain that ordering.)
-    pub(super) fn for_constraint_pair<'db, 'c>(
+    pub fn for_constraint_pair<'db, 'c>(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         storage: &'c mut ConstraintSetStorage<'db>,
@@ -145,7 +145,7 @@ impl SequentMap {
     /// Quickly determines whether two constraints cannot possibly produce any sequents when passed
     /// to [`for_constraint_pair`][Self::for_constraint_pair]. If this returns `true`, it is safe
     /// to skip calling `for_constraint_pair` for this pair of constraints.
-    pub(super) fn pair_cannot_produce_sequents<'db>(
+    pub fn pair_cannot_produce_sequents<'db>(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         storage: &mut ConstraintSetStorage<'db>,
@@ -1399,7 +1399,7 @@ impl<'db> Type<'db> {
     /// considers the declared bounds/constraints of typevars. In the context of a sequent map,
     /// typevars are opaque symbolic atoms: considering their bounds or defaults could incorrectly
     /// make their eligibility depend on a specialization that the sequent is meant to constrain.
-    pub(super) fn is_static_sequent_eligible(
+    pub fn is_static_sequent_eligible(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1455,7 +1455,7 @@ impl<'db> ConstraintSetStorage<'db> {
     /// type constructors. Each sequent is charged the _increase_ in that complexity between its
     /// antecedents and its consequent. (Measuring growth rather than absolute depth avoids
     /// penalizing a complex concrete bound that is merely propagated unchanged.)
-    pub(super) fn sequent_fuel_cost(
+    pub fn sequent_fuel_cost(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

@@ -53,7 +53,7 @@ pub enum TypeIdentity<'db> {
 }
 
 impl<'db> Type<'db> {
-    pub(crate) fn to_type_identity(self, db: &'db dyn Db) -> TypeIdentity<'db> {
+    pub fn to_type_identity(self, db: &'db dyn Db) -> TypeIdentity<'db> {
         self.recursive_identity(db)
             .unwrap_or(TypeIdentity::Other(self))
     }
@@ -62,7 +62,7 @@ impl<'db> Type<'db> {
     ///
     /// A `true` result is only a candidate match and must be confirmed with
     /// [`Type::to_type_identity`].
-    pub(crate) fn may_share_type_identity(self, db: &'db dyn Db, other: Self) -> bool {
+    pub fn may_share_type_identity(self, db: &'db dyn Db, other: Self) -> bool {
         if self == other {
             return true;
         }
@@ -744,7 +744,7 @@ impl<'db> TypeVisitor<'db> for SourceParameterCollector<'_, 'db> {
 
 impl<'db> TypeAliasType<'db> {
     /// Returns whether this alias can refer back to its own definition.
-    pub(crate) fn is_recursive(self, db: &'db dyn Db) -> bool {
+    pub fn is_recursive(self, db: &'db dyn Db) -> bool {
         let root = RecursiveDefinition::TypeAlias(self.unspecialized(db));
         let root_definition = root.definition(db);
         SpecializationFlowGraph::build(db, root)
@@ -787,7 +787,7 @@ impl<'db> HasIdentity<'db> for Type<'db> {
     }
 }
 
-pub(crate) type PairVisitor<'db, Tag, C> = CycleDetector<'db, Tag, (Type<'db>, Type<'db>), C, 1>;
+pub type PairVisitor<'db, Tag, C> = CycleDetector<'db, Tag, (Type<'db>, Type<'db>), C, 1>;
 
 impl<'db> HasIdentity<'db> for (Type<'db>, Type<'db>) {
     type Id = (TypeIdentity<'db>, TypeIdentity<'db>);
@@ -842,7 +842,7 @@ impl<'db, Tag, T, R, const INLINE_CAPACITY: usize> CycleDetector<'db, Tag, T, R,
 where
     T: HasIdentity<'db>,
 {
-    pub(crate) fn new(fallback: R) -> Self {
+    pub fn new(fallback: R) -> Self {
         CycleDetector {
             seen: RefCell::new(SmallVec::new()),
             cache: RefCell::new(CycleDetectorCache::new()),
@@ -878,7 +878,7 @@ where
     /// recomputes the result using the same active recursion guards, without replacing the cached
     /// value. Results for previously uncached items are memoized as usual.
     #[inline]
-    pub(super) fn try_visit(
+    pub fn try_visit(
         &self,
         db: &'db dyn Db,
         item: T,
@@ -975,7 +975,7 @@ impl<'db, T: fmt::Debug + HasIdentity<'db>> fmt::Debug for ActiveCycleDetectorVi
 }
 
 /// Result of starting a cycle-detector visit.
-pub(super) enum CycleDetectorVisit<T, R> {
+pub enum CycleDetectorVisit<T, R> {
     /// The item already has a completed result or hit an exact recursive edge.
     Ready(R),
     /// A different item with the same abstract identity is already pending.
@@ -985,7 +985,7 @@ pub(super) enum CycleDetectorVisit<T, R> {
 }
 
 /// Guards recursive type transformations.
-pub(crate) struct TypeTransformer<'db, Tag> {
+pub struct TypeTransformer<'db, Tag> {
     /// The active transformation stack and its recursive identities.
     /// Completed visits are removed from the end of the stack.
     seen: RefCell<SmallVec<[ActiveTypeTransformation<'db>; 3]>>,
@@ -1008,7 +1008,7 @@ impl<Tag> Default for TypeTransformer<'_, Tag> {
 
 impl<'db, Tag> TypeTransformer<'db, Tag> {
     #[inline]
-    pub(crate) fn visit_type(
+    pub fn visit_type(
         &self,
         db: &'db dyn Db,
         ty: Type<'db>,
@@ -1150,7 +1150,7 @@ impl<T, R> CycleDetectorCache<T, R> {
 /// goal, assume it for now" step, but completed results are not safe to reuse for future visits to
 /// the same abstract key.
 #[derive(Debug)]
-pub(crate) struct ActiveRecursionDetector<T> {
+pub struct ActiveRecursionDetector<T> {
     seen: RefCell<FxHashSet<T>>,
 }
 
@@ -1163,16 +1163,11 @@ impl<T> Default for ActiveRecursionDetector<T> {
 }
 
 impl<T: Hash + Eq + Clone> ActiveRecursionDetector<T> {
-    pub(crate) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.seen.borrow().is_empty()
     }
 
-    pub(crate) fn visit<R>(
-        &self,
-        item: &T,
-        on_cycle: impl FnOnce() -> R,
-        func: impl FnOnce() -> R,
-    ) -> R {
+    pub fn visit<R>(&self, item: &T, on_cycle: impl FnOnce() -> R, func: impl FnOnce() -> R) -> R {
         if !self.seen.borrow_mut().insert(item.clone()) {
             return on_cycle();
         }

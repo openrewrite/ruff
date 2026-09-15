@@ -139,7 +139,7 @@ fn containment_behavior<'db>(
 }
 
 /// Return the type whose iterated elements may satisfy membership for `ty`.
-pub(super) fn elements_of<'db>(
+pub fn elements_of<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     ty: Type<'db>,
@@ -154,7 +154,7 @@ pub(super) fn elements_of<'db>(
 const MAX_STRING_MEMBERSHIP_EXCLUSIONS: usize = 128;
 
 /// Narrow membership in a known string literal using substring semantics.
-pub(super) fn narrow_string_membership<'db>(
+pub fn narrow_string_membership<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     lhs_ty: Type<'db>,

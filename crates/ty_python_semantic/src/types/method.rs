@@ -21,11 +21,11 @@ pub struct BoundMethodType<'db> {
     /// The callable being bound, exposed as `__func__`. A classmethod can bind a callable
     /// instance as well as a Python function.
     #[returns(copy)]
-    pub(crate) func: Type<'db>,
+    pub func: Type<'db>,
     /// The instance on which this method has been called. Corresponds to the `__self__`
     /// attribute on a bound method object
     #[returns(copy)]
-    pub(super) self_instance: Type<'db>,
+    pub self_instance: Type<'db>,
 
     /// The receiver type used to validate and specialize the function signature.
     ///
@@ -34,13 +34,13 @@ pub struct BoundMethodType<'db> {
     /// declared constraint that this bound method belongs to, while `self_instance` is the typevar
     /// itself.
     #[returns(copy)]
-    pub(super) signature_receiver: Type<'db>,
+    pub signature_receiver: Type<'db>,
 }
 
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for BoundMethodType<'_> {}
 
-pub(super) fn walk_bound_method_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_bound_method_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     method: BoundMethodType<'db>,
     visitor: &V,
@@ -52,7 +52,7 @@ pub(super) fn walk_bound_method_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>
 
 #[salsa::tracked]
 impl<'db> BoundMethodType<'db> {
-    pub(crate) fn new(
+    pub fn new(
         db: &'db dyn Db,
         function: FunctionType<'db>,
         self_instance: Type<'db>,
@@ -67,14 +67,14 @@ impl<'db> BoundMethodType<'db> {
     }
 
     /// Returns the underlying Python function, when the bound callable has a function definition.
-    pub(crate) fn function(self, db: &'db dyn Db) -> Option<FunctionType<'db>> {
+    pub fn function(self, db: &'db dyn Db) -> Option<FunctionType<'db>> {
         self.func(db).as_function_literal()
     }
 
     /// Returns the type that replaces any `typing.Self` annotations in the bound method signature.
     /// This is normally the bound-instance type (the type of `self` or `cls`), but if the bound method is
     /// a `@classmethod`, then it should be an instance of that bound-instance type.
-    pub(crate) fn typing_self_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn typing_self_type(self, db: &'db dyn Db) -> Type<'db> {
         let mut self_instance = self.self_instance(db);
         if let Some(function) = self.function(db)
             && function.is_classmethod(db)
@@ -88,11 +88,7 @@ impl<'db> BoundMethodType<'db> {
         self_instance
     }
 
-    pub(crate) fn map_self_type(
-        self,
-        db: &'db dyn Db,
-        mut f: impl FnMut(Type<'db>) -> Type<'db>,
-    ) -> Self {
+    pub fn map_self_type(self, db: &'db dyn Db, mut f: impl FnMut(Type<'db>) -> Type<'db>) -> Self {
         Self::from_callable(
             db,
             self.func(db),
@@ -101,7 +97,7 @@ impl<'db> BoundMethodType<'db> {
         )
     }
 
-    pub(crate) fn with_signature_receiver(
+    pub fn with_signature_receiver(
         self,
         db: &'db dyn Db,
         self_instance: Type<'db>,
@@ -110,7 +106,7 @@ impl<'db> BoundMethodType<'db> {
         Self::from_callable(db, self.func(db), self_instance, signature_receiver)
     }
 
-    pub(crate) fn callables(
+    pub fn callables(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -132,7 +128,7 @@ impl<'db> BoundMethodType<'db> {
         }
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -152,7 +148,7 @@ impl<'db> BoundMethodType<'db> {
 }
 
 impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
-    pub(super) fn check_bound_method_pair(
+    pub fn check_bound_method_pair(
         &self,
         db: &'db dyn Db,
         source: BoundMethodType<'db>,
@@ -220,7 +216,7 @@ pub enum KnownBoundMethodType<'db> {
     ConstraintSetWithDetailedDisplay(InternedConstraintSet<'db>),
 }
 
-pub(super) fn walk_method_wrapper_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_method_wrapper_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     method_wrapper: KnownBoundMethodType<'db>,
     visitor: &V,
@@ -264,7 +260,7 @@ pub(super) fn walk_method_wrapper_type<'db, V: visitor::TypeVisitor<'db> + ?Size
 }
 
 impl<'db> KnownBoundMethodType<'db> {
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -315,7 +311,7 @@ impl<'db> KnownBoundMethodType<'db> {
     }
 
     /// Return the [`KnownClass`] that inhabitants of this type are instances of at runtime
-    pub(super) fn class(self) -> KnownClass {
+    pub fn class(self) -> KnownClass {
         match self {
             KnownBoundMethodType::FunctionTypeDunderGet(_)
             | KnownBoundMethodType::FunctionTypeDunderCall(_)
@@ -344,7 +340,7 @@ impl<'db> KnownBoundMethodType<'db> {
     /// Return the signatures of this bound method type.
     ///
     /// If the bound method type is overloaded, it may have multiple signatures.
-    pub(super) fn signatures(
+    pub fn signatures(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -609,7 +605,7 @@ impl<'db> KnownBoundMethodType<'db> {
 }
 
 impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
-    pub(super) fn check_known_bound_method_pair(
+    pub fn check_known_bound_method_pair(
         &self,
         db: &'db dyn Db,
         source: KnownBoundMethodType<'db>,
@@ -754,7 +750,7 @@ pub enum WrapperDescriptorKind {
 }
 
 impl WrapperDescriptorKind {
-    pub(super) fn signatures<'db>(
+    pub fn signatures<'db>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

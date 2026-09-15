@@ -16,7 +16,7 @@ use crate::{FxOrderSet, ProgramEnvironment};
 
 /// The relation explained by a diagnostic node, independently of the checker that owns the tree.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub(crate) enum ErrorRelation {
+pub enum ErrorRelation {
     TypeRelation(TypeRelation),
     Disjointness,
 }
@@ -38,14 +38,14 @@ impl ErrorRelation {
 
 /// Identifies a parameter, either by name or by position.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum ParameterDescription {
+pub enum ParameterDescription {
     Named(Name),
     /// 0-based index
     Index(usize),
 }
 
 impl ParameterDescription {
-    pub(crate) fn new(index: usize, name: Option<&Name>) -> Self {
+    pub fn new(index: usize, name: Option<&Name>) -> Self {
         match name {
             Some(name) => Self::Named(name.clone()),
             None => Self::Index(index),
@@ -66,7 +66,7 @@ impl std::fmt::Display for ParameterDescription {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum ErrorContext<'db> {
+pub enum ErrorContext<'db> {
     /// No additional context is available.
     Empty,
     DisjointTypes {
@@ -889,7 +889,7 @@ impl<'db> ErrorContextNode<'db> {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct ErrorContextTree<'db> {
+pub struct ErrorContextTree<'db> {
     root: Rc<RefCell<ErrorContextNode<'db>>>,
     enabled: Cell<bool>,
     relation: ErrorRelation,
@@ -905,7 +905,7 @@ impl Eq for ErrorContextTree<'_> {}
 
 impl<'db> ErrorContextTree<'db> {
     /// Create a new, empty error context tree with collection enabled.
-    pub(crate) fn new(relation: impl Into<ErrorRelation>) -> Self {
+    pub fn new(relation: impl Into<ErrorRelation>) -> Self {
         Self {
             root: Rc::default(),
             enabled: Cell::new(true),
@@ -913,10 +913,7 @@ impl<'db> ErrorContextTree<'db> {
         }
     }
 
-    pub(crate) fn from_context(
-        context: ErrorContext<'db>,
-        relation: impl Into<ErrorRelation>,
-    ) -> Self {
+    pub fn from_context(context: ErrorContext<'db>, relation: impl Into<ErrorRelation>) -> Self {
         let relation = relation.into();
         Self {
             root: Rc::new(RefCell::new(ErrorContextNode {
@@ -929,21 +926,21 @@ impl<'db> ErrorContextTree<'db> {
         }
     }
 
-    pub(crate) fn is_enabled(&self) -> bool {
+    pub fn is_enabled(&self) -> bool {
         self.enabled.get()
     }
 
-    pub(crate) fn set_enabled(&self, enabled: bool) {
+    pub fn set_enabled(&self, enabled: bool) {
         self.enabled.set(enabled);
     }
 
     /// Returns `true` if the tree has no renderable content.
-    pub(crate) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.root.borrow().is_empty()
     }
 
     /// Push a new error context node, making the existing tree a child of the new context.
-    pub(crate) fn push(&self, context: ErrorContext<'db>) {
+    pub fn push(&self, context: ErrorContext<'db>) {
         if !self.is_enabled() {
             return;
         }
@@ -957,7 +954,7 @@ impl<'db> ErrorContextTree<'db> {
     }
 
     /// Overwrite the error context tree with a new root context and child nodes.
-    pub(crate) fn set(
+    pub fn set(
         &self,
         context: ErrorContext<'db>,
         children: impl IntoIterator<Item = ErrorContextTree<'db>>,
@@ -977,7 +974,7 @@ impl<'db> ErrorContextTree<'db> {
     }
 
     /// Return the full tree, replacing it with an empty tree.
-    pub(crate) fn take(&self) -> Self {
+    pub fn take(&self) -> Self {
         ErrorContextTree {
             root: Rc::new(RefCell::new(std::mem::take(&mut *self.root.borrow_mut()))),
             enabled: Cell::new(self.enabled.get()),
@@ -986,14 +983,14 @@ impl<'db> ErrorContextTree<'db> {
     }
 
     /// Replace this tree with another tree, preserving each node's relation.
-    pub(crate) fn replace(&self, other: &Self) {
+    pub fn replace(&self, other: &Self) {
         if self.is_enabled() {
             *self.root.borrow_mut() = other.root.take();
         }
     }
 
     /// Render the error context tree as info sub-diagnostics on `diag`.
-    pub(in crate::types) fn attach_to(
+    pub fn attach_to(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

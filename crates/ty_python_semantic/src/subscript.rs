@@ -8,9 +8,9 @@ use crate::{Db, ProgramEnvironment};
 use itertools::Either;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub(crate) struct OutOfBoundsError;
+pub struct OutOfBoundsError;
 
-pub(crate) trait PyIndex<'db> {
+pub trait PyIndex<'db> {
     type Item: 'db;
 
     fn py_index(
@@ -47,13 +47,13 @@ enum Position {
     AfterEnd,
 }
 
-pub(crate) enum Nth {
+pub enum Nth {
     FromStart(usize),
     FromEnd(usize),
 }
 
 impl Nth {
-    pub(crate) fn from_index(index: i32) -> Self {
+    pub fn from_index(index: i32) -> Self {
         if index >= 0 {
             Nth::FromStart(from_nonnegative_i32(index))
         } else {
@@ -121,9 +121,9 @@ where
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub(crate) struct StepSizeZeroError;
+pub struct StepSizeZeroError;
 
-pub(crate) trait PySlice<'db> {
+pub trait PySlice<'db> {
     type Item: 'db;
 
     fn py_slice(
@@ -136,7 +136,7 @@ pub(crate) trait PySlice<'db> {
 }
 
 /// Returns a static Python slice for a known non-zero step.
-pub(crate) fn py_slice_with_step<T>(
+pub fn py_slice_with_step<T>(
     elements: &[T],
     start: Option<i32>,
     stop: Option<i32>,

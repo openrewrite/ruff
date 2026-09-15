@@ -27,7 +27,7 @@ impl<'db> Type<'db> {
     /// Returns whether expanding aliases and unions can return to the same alias without entering
     /// another type. For example, `type A = int | A` is invalid, but
     /// `type A = int | list[A]` is a valid recursive alias.
-    pub(super) fn has_unguarded_alias_cycle(self, db: &'db dyn Db) -> bool {
+    pub fn has_unguarded_alias_cycle(self, db: &'db dyn Db) -> bool {
         AliasCycleSummary::from_type(db, self).cyclic
     }
 }
@@ -107,17 +107,17 @@ pub struct PEP695TypeAliasType<'db> {
     rhs_scope: ScopeId<'db>,
 
     #[returns(copy)]
-    pub(super) specialization: Option<Specialization<'db>>,
+    pub specialization: Option<Specialization<'db>>,
 
     /// Keeps recursive references stable while their alias body is materialized lazily.
     #[returns(copy)]
-    pub(super) materialization_kind: Option<MaterializationKind>,
+    pub materialization_kind: Option<MaterializationKind>,
 }
 
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for PEP695TypeAliasType<'_> {}
 
-pub(super) fn walk_pep_695_type_alias<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_pep_695_type_alias<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     type_alias: PEP695TypeAliasType<'db>,
     visitor: &V,
@@ -155,7 +155,7 @@ impl<'db> PEP695TypeAliasType<'db> {
         },
         heap_size=ruff_memory_usage::heap_size
     )]
-    pub(super) fn raw_value_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn raw_value_type(self, db: &'db dyn Db) -> Type<'db> {
         let scope = self.rhs_scope(db);
         let program_file = scope.program_file(db);
         let python_file = program_file.python_file(db);
@@ -193,7 +193,7 @@ impl<'db> PEP695TypeAliasType<'db> {
     }
 
     #[salsa::tracked(returns(copy), cycle_initial=|_, _, _| None, heap_size=ruff_memory_usage::heap_size)]
-    pub(crate) fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
+    pub fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
         let scope = self.rhs_scope(db);
         let program_file = scope.program_file(db);
         let python_file = program_file.python_file(db);
@@ -224,20 +224,20 @@ pub struct ManualPEP695TypeAliasType<'db> {
     pub definition: Definition<'db>,
 
     #[returns(copy)]
-    pub(super) typing_module: TypingModule,
+    pub typing_module: TypingModule,
 
     #[returns(copy)]
-    pub(super) specialization: Option<Specialization<'db>>,
+    pub specialization: Option<Specialization<'db>>,
 
     /// Keeps recursive references stable while their alias body is materialized lazily.
     #[returns(copy)]
-    pub(super) materialization_kind: Option<MaterializationKind>,
+    pub materialization_kind: Option<MaterializationKind>,
 }
 
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for ManualPEP695TypeAliasType<'_> {}
 
-pub(super) fn walk_manual_pep_695_type_alias<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_manual_pep_695_type_alias<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     type_alias: ManualPEP695TypeAliasType<'db>,
     visitor: &V,
@@ -273,7 +273,7 @@ impl<'db> ManualPEP695TypeAliasType<'db> {
         },
         heap_size=ruff_memory_usage::heap_size
     )]
-    pub(crate) fn raw_value_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn raw_value_type(self, db: &'db dyn Db) -> Type<'db> {
         let definition = self.definition(db);
         let module = parsed_module(db, definition.python_file(db)).load(db);
         let DefinitionKind::Assignment(assignment) = definition.kind(db) else {
@@ -310,7 +310,7 @@ impl<'db> ManualPEP695TypeAliasType<'db> {
     }
 
     #[salsa::tracked(returns(copy), cycle_initial=|_, _, _| None, heap_size=ruff_memory_usage::heap_size)]
-    pub(crate) fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
+    pub fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
         let definition = self.definition(db);
         let file = definition.program_file(db);
         let env = ProgramEnvironment::from_file(file);
@@ -387,7 +387,7 @@ pub enum TypeAliasType<'db> {
     ManualPEP695(ManualPEP695TypeAliasType<'db>),
 }
 
-pub(super) fn walk_type_alias_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_type_alias_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     type_alias: TypeAliasType<'db>,
     visitor: &V,
@@ -427,7 +427,7 @@ impl<'db> TypeAliasType<'db> {
         cycle_summary(db, self.unspecialized(db), ())
     }
 
-    pub(super) fn known_class(self, db: &'db dyn Db) -> KnownClass {
+    pub fn known_class(self, db: &'db dyn Db) -> KnownClass {
         match self {
             TypeAliasType::PEP695(_) => KnownClass::TypeAliasType,
             TypeAliasType::ManualPEP695(type_alias) => {
@@ -436,14 +436,14 @@ impl<'db> TypeAliasType<'db> {
         }
     }
 
-    pub(crate) fn name(self, db: &'db dyn Db) -> &'db str {
+    pub fn name(self, db: &'db dyn Db) -> &'db str {
         match self {
             TypeAliasType::PEP695(type_alias) => type_alias.name(db),
             TypeAliasType::ManualPEP695(type_alias) => type_alias.name(db),
         }
     }
 
-    pub(crate) fn definition(self, db: &'db dyn Db) -> Definition<'db> {
+    pub fn definition(self, db: &'db dyn Db) -> Definition<'db> {
         match self {
             TypeAliasType::PEP695(type_alias) => type_alias.definition(db),
             TypeAliasType::ManualPEP695(type_alias) => type_alias.definition(db),
@@ -467,7 +467,7 @@ impl<'db> TypeAliasType<'db> {
     /// already being projected and must stay out of the materialization cache. The raw alias body
     /// is still inferred independently by Salsa. Other operations retain ordinary caching unless
     /// their recursion state also requires context-dependent expansion.
-    pub(super) fn value_type_with_recursion(
+    pub fn value_type_with_recursion(
         self,
         db: &'db dyn Db,
         context: Option<&TypeRecursionContext<'db>>,
@@ -525,7 +525,7 @@ impl<'db> TypeAliasType<'db> {
         )
     }
 
-    pub(crate) fn raw_value_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn raw_value_type(self, db: &'db dyn Db) -> Type<'db> {
         match self {
             TypeAliasType::PEP695(type_alias) => type_alias.raw_value_type(db),
             TypeAliasType::ManualPEP695(type_alias) => type_alias.raw_value_type(db),
@@ -533,7 +533,7 @@ impl<'db> TypeAliasType<'db> {
     }
 
     /// Returns the alias without an applied specialization or pending materialization.
-    pub(super) fn unspecialized(self, db: &'db dyn Db) -> Self {
+    pub fn unspecialized(self, db: &'db dyn Db) -> Self {
         match self {
             TypeAliasType::PEP695(alias) => TypeAliasType::PEP695(PEP695TypeAliasType::new(
                 db,
@@ -555,14 +555,14 @@ impl<'db> TypeAliasType<'db> {
         }
     }
 
-    pub(super) fn materialization_kind(self, db: &'db dyn Db) -> Option<MaterializationKind> {
+    pub fn materialization_kind(self, db: &'db dyn Db) -> Option<MaterializationKind> {
         match self {
             TypeAliasType::PEP695(alias) => alias.materialization_kind(db),
             TypeAliasType::ManualPEP695(alias) => alias.materialization_kind(db),
         }
     }
 
-    pub(super) fn with_materialization_kind(
+    pub fn with_materialization_kind(
         self,
         db: &'db dyn Db,
         materialization_kind: Option<MaterializationKind>,
@@ -592,28 +592,28 @@ impl<'db> TypeAliasType<'db> {
         }
     }
 
-    pub(crate) fn as_pep_695_type_alias(self) -> Option<PEP695TypeAliasType<'db>> {
+    pub fn as_pep_695_type_alias(self) -> Option<PEP695TypeAliasType<'db>> {
         match self {
             TypeAliasType::PEP695(type_alias) => Some(type_alias),
             TypeAliasType::ManualPEP695(_) => None,
         }
     }
 
-    pub(crate) fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
+    pub fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
         match self {
             TypeAliasType::PEP695(type_alias) => type_alias.generic_context(db),
             TypeAliasType::ManualPEP695(type_alias) => type_alias.generic_context(db),
         }
     }
 
-    pub(crate) fn specialization(self, db: &'db dyn Db) -> Option<Specialization<'db>> {
+    pub fn specialization(self, db: &'db dyn Db) -> Option<Specialization<'db>> {
         match self {
             TypeAliasType::PEP695(type_alias) => type_alias.specialization(db),
             TypeAliasType::ManualPEP695(type_alias) => type_alias.specialization(db),
         }
     }
 
-    pub(crate) fn apply_specialization(
+    pub fn apply_specialization(
         self,
         db: &'db dyn Db,
         f: impl FnOnce(GenericContext<'db>) -> Specialization<'db>,
@@ -629,7 +629,7 @@ impl<'db> TypeAliasType<'db> {
     }
 
     /// Returns a struct that can display the fully qualified name of this type alias.
-    pub(crate) fn qualified_name(self, db: &'db dyn Db) -> QualifiedTypeAliasName<'db> {
+    pub fn qualified_name(self, db: &'db dyn Db) -> QualifiedTypeAliasName<'db> {
         QualifiedTypeAliasName::from_type_alias(db, self)
     }
 }
@@ -655,7 +655,7 @@ impl<'db> TypeAliasType<'db> {
         cycle_initial=|_, _, _, _| VarianceTerm::BIVARIANT,
         heap_size=ruff_memory_usage::heap_size
     )]
-    pub(in crate::types) fn variance_equation(
+    pub fn variance_equation(
         self,
         db: &'db dyn Db,
         typevar: BoundTypeVarIdentity<'db>,
@@ -697,7 +697,7 @@ impl<'db> TypeAliasType<'db> {
 // have the same components. You'd expect them to compare equal, but they'd compare
 // unequal if `PartialEq`/`Eq` were naively derived.
 #[derive(Clone, Copy)]
-pub(crate) struct QualifiedTypeAliasName<'db> {
+pub struct QualifiedTypeAliasName<'db> {
     db: &'db dyn Db,
     type_alias: TypeAliasType<'db>,
 }
@@ -711,7 +711,7 @@ impl<'db> QualifiedTypeAliasName<'db> {
     ///
     /// For example, calling this method on a type alias `D` inside a class `C` in module `a.b`
     /// would return `["a", "b", "C"]`.
-    pub(crate) fn components_excluding_self(&self) -> Vec<String> {
+    pub fn components_excluding_self(&self) -> Vec<String> {
         let definition = self.type_alias.definition(self.db);
         let file = definition.program_file(self.db);
         let file_scope_id = definition.file_scope(self.db);

@@ -29,7 +29,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// "implicitly" defined (`self.x = …`, `cls.x = …`) in a method of this class.
     /// The `target_method_decorator` parameter is used to skip methods that do not have the
     /// expected decorator.
-    pub(super) fn implicit_attribute(
+    pub fn implicit_attribute(
         self,
         db: &'db dyn Db,
         name: &str,
@@ -49,7 +49,7 @@ impl<'db> StaticClassLiteral<'db> {
     ///
     /// Here, `value` remains undefined until MRO lookup finds an independent class or instance
     /// attribute. The same rule applies to `cls.value` in a classmethod.
-    pub(super) fn implicit_attribute_bindings(
+    pub fn implicit_attribute_bindings(
         self,
         db: &'db dyn Db,
         name: &str,
@@ -331,18 +331,18 @@ impl<'db> StaticClassLiteral<'db> {
 /// directly. Augmented assignments first require an existing instance or class attribute to supply
 /// the value they read.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct ImplicitAttribute<'db> {
+pub struct ImplicitAttribute<'db> {
     /// The attribute established by assignments that do not depend on an existing value.
-    pub(super) member: Member<'db>,
+    pub member: Member<'db>,
     /// Augmented assignments that require an existing instance or class attribute.
-    pub(super) augmented_bindings: Option<AugmentedBindings<'db>>,
+    pub augmented_bindings: Option<AugmentedBindings<'db>>,
 }
 
 /// Augmented assignments deferred until MRO lookup finds the attribute they read.
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(super) struct AugmentedBindings<'db> {
+pub struct AugmentedBindings<'db> {
     #[returns(deref)]
-    pub(super) definitions: Box<[Definition<'db>]>,
+    pub definitions: Box<[Definition<'db>]>,
 }
 
 // The Salsa heap is tracked separately.
@@ -459,7 +459,7 @@ fn implicit_attribute_binding_type<'db>(
 }
 
 #[salsa::tracked(returns(deref), heap_size=ruff_memory_usage::heap_size)]
-pub(super) fn implicit_attribute_names<'db>(
+pub fn implicit_attribute_names<'db>(
     db: &'db dyn Db,
     class_body_scope: ScopeId<'db>,
 ) -> Box<[Name]> {

@@ -49,7 +49,7 @@ use crate::{
 use super::{ConditionKind, RedundantCondition, exemptions::condition_definition_info};
 
 impl<'db> TypeInferenceBuilder<'db, '_> {
-    pub(super) fn report_redundant_condition<'ctx>(
+    pub fn report_redundant_condition<'ctx>(
         &'ctx self,
         condition: &RedundantCondition<'_, 'db>,
     ) -> Option<LintDiagnosticGuard<'ctx, 'ctx>> {
@@ -860,7 +860,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         false
     }
 
-    pub(super) fn annotate_redundant_if_or_elif(
+    pub fn annotate_redundant_if_or_elif(
         &self,
         condition: &RedundantCondition<'_, 'db>,
         diagnostic: &mut Diagnostic,

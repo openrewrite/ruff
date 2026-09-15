@@ -22,7 +22,7 @@ use super::{
 /// If either side also contains other values, compare those values normally.
 ///
 /// Return `None` when the enum comparison does not apply.
-pub(super) fn evaluate_enum_comparison<'db>(
+pub fn evaluate_enum_comparison<'db>(
     evaluator: &mut ComparisonEvaluator<'db>,
     target: Type<'db>,
     other: Type<'db>,
