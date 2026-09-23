@@ -30,7 +30,7 @@ enum SlotDefinition {
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct SlotDescriptorType<'db> {
     #[returns(copy)]
-    pub(crate) value_type: Type<'db>,
+    pub value_type: Type<'db>,
 }
 
 impl get_size2::GetSize for SlotDescriptorType<'_> {}
@@ -215,7 +215,7 @@ impl InstanceLayout {
 #[salsa::tracked]
 impl<'db> StaticClassLiteral<'db> {
     /// Returns whether this class body explicitly defines `__slots__`.
-    pub(crate) fn has_explicit_slots(self, db: &'db dyn Db) -> bool {
+    pub fn has_explicit_slots(self, db: &'db dyn Db) -> bool {
         self.has_own_class_binding(db, "__slots__")
     }
 
@@ -235,7 +235,7 @@ impl<'db> StaticClassLiteral<'db> {
     ///
     /// Inherited slots are excluded; callers that need the complete layout should use
     /// [`Self::has_instance_slot`]. A dynamic declaration returns `None` rather than guessing.
-    pub(crate) fn slot_names(self, db: &'db dyn Db) -> Option<&'db [Name]> {
+    pub fn slot_names(self, db: &'db dyn Db) -> Option<&'db [Name]> {
         if !self.has_explicit_slots(db) && !self.has_generated_slots(db) {
             return None;
         }
@@ -247,7 +247,7 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Returns whether this class definitely introduces at least one instance slot.
-    pub(super) fn has_nonempty_slots(self, db: &'db dyn Db) -> bool {
+    pub fn has_nonempty_slots(self, db: &'db dyn Db) -> bool {
         (self.has_explicit_slots(db) || self.has_generated_slots(db))
             && match self.slot_definition(db) {
                 SlotDefinition::Names(names) => !names.is_empty(),
@@ -257,7 +257,7 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Returns whether this class synthesizes slots through a dataclass or named tuple.
-    pub(super) fn has_generated_slots(self, db: &'db dyn Db) -> bool {
+    pub fn has_generated_slots(self, db: &'db dyn Db) -> bool {
         self.dataclass_params(db).is_some_and(|parameters| {
             parameters.flags(db).contains(DataclassFlags::SLOTS)
                 && ProgramEnvironment::from_scope(self.body_scope(db)).python_version(db)
@@ -509,7 +509,7 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Returns whether this class or any base defines a slot with the given name.
-    pub(crate) fn has_instance_slot(self, db: &'db dyn Db, name: &str) -> bool {
+    pub fn has_instance_slot(self, db: &'db dyn Db, name: &str) -> bool {
         self.instance_layout(db)
             .slots
             .iter()
@@ -520,14 +520,14 @@ impl<'db> StaticClassLiteral<'db> {
     ///
     /// An unknown layout remains permissive, as do builtins whose C-level storage is not fully
     /// described by their stubs.
-    pub(crate) fn lacks_instance_storage(self, db: &'db dyn Db, name: &str) -> bool {
+    pub fn lacks_instance_storage(self, db: &'db dyn Db, name: &str) -> bool {
         self.slot_names(db).is_some()
             && !self.has_instance_slot(db, name)
             && !self.has_instance_dictionary(db)
     }
 
     /// Whether this class creates a descriptor for `name` in its own namespace.
-    pub(in crate::types) fn has_own_slot_descriptor(self, db: &'db dyn Db, name: &str) -> bool {
+    pub fn has_own_slot_descriptor(self, db: &'db dyn Db, name: &str) -> bool {
         // The inherited `object.__dict__` annotation already describes dictionary access. A
         // synthesized slot descriptor would incorrectly replace the class's own namespace.
         name != "__dict__"
@@ -548,7 +548,7 @@ impl<'db> StaticClassLiteral<'db> {
     ///
     /// Ordinary slots use `MemberDescriptorType` descriptors. The weak-reference slot uses the
     /// `GetSetDescriptorType` descriptor declared in typeshed.
-    pub(super) fn own_slot_descriptor(
+    pub fn own_slot_descriptor(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

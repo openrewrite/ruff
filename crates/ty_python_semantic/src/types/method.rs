@@ -22,13 +22,13 @@ pub struct BoundMethodType<'db> {
     /// The callable being bound, exposed as `__func__`. A classmethod can bind a callable
     /// instance as well as a Python function.
     #[returns(copy)]
-    pub(crate) func: Type<'db>,
+    pub func: Type<'db>,
     /// Synthesized functions need not have a definition from which to obtain a program.
     #[returns(copy)]
-    pub(super) program: Program<'db>,
+    pub program: Program<'db>,
     /// Class method binding captures a class object but substitutes its instance type for `Self`.
     #[returns(copy)]
-    pub(super) class_method: bool,
+    pub class_method: bool,
     #[returns(copy)]
     receiver: BoundMethodReceiver<'db>,
 }
@@ -94,7 +94,7 @@ impl<'db> BoundMethodReceiver<'db> {
     }
 }
 
-pub(super) fn walk_bound_method_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_bound_method_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     method: BoundMethodType<'db>,
     visitor: &V,
@@ -106,7 +106,7 @@ pub(super) fn walk_bound_method_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>
 
 #[salsa::tracked]
 impl<'db> BoundMethodType<'db> {
-    pub(crate) fn from_callable(
+    pub fn from_callable(
         db: &'db dyn Db,
         func: Type<'db>,
         program: Program<'db>,
@@ -121,7 +121,7 @@ impl<'db> BoundMethodType<'db> {
         )
     }
 
-    pub(super) fn apply_type_mapping_impl(
+    pub fn apply_type_mapping_impl(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'_, 'db>,
@@ -141,7 +141,7 @@ impl<'db> BoundMethodType<'db> {
         )
     }
 
-    pub(crate) fn new(db: &'db dyn Db, function: FunctionType<'db>, receiver: Type<'db>) -> Self {
+    pub fn new(db: &'db dyn Db, function: FunctionType<'db>, receiver: Type<'db>) -> Self {
         Self::from_callable(
             db,
             Type::FunctionLiteral(function),
@@ -151,20 +151,20 @@ impl<'db> BoundMethodType<'db> {
     }
 
     /// The captured receiver, exposed through the bound method's `__self__` attribute.
-    pub(crate) fn self_instance(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn self_instance(self, db: &'db dyn Db) -> Type<'db> {
         self.receiver(db).self_instance()
     }
 
-    pub(super) fn signature_receiver(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn signature_receiver(self, db: &'db dyn Db) -> Type<'db> {
         self.receiver(db).signature_receiver()
     }
 
     /// Returns the underlying Python function, when the bound callable has a function definition.
-    pub(crate) fn function(self, db: &'db dyn Db) -> Option<FunctionType<'db>> {
+    pub fn function(self, db: &'db dyn Db) -> Option<FunctionType<'db>> {
         self.func(db).as_function_literal()
     }
 
-    pub(super) fn with_func(self, db: &'db dyn Db, func: Type<'db>) -> Self {
+    pub fn with_func(self, db: &'db dyn Db, func: Type<'db>) -> Self {
         Self::new_internal(
             db,
             func,
@@ -177,7 +177,7 @@ impl<'db> BoundMethodType<'db> {
     /// The unbound signatures stored directly on an actual or synthesized function.
     /// Note that this function returns `None` for unions or intersections
     /// of callables. These need to be handled by the caller.
-    pub(crate) fn unbound_signatures(self, db: &'db dyn Db) -> Option<&'db CallableSignature<'db>> {
+    pub fn unbound_signatures(self, db: &'db dyn Db) -> Option<&'db CallableSignature<'db>> {
         match self.func(db) {
             Type::FunctionLiteral(function) => Some(function.signature(db)),
             Type::Callable(callable) => Some(callable.signatures(db)),
@@ -186,7 +186,7 @@ impl<'db> BoundMethodType<'db> {
     }
 
     /// Returns the type that replaces any `typing.Self` annotations in the bound method signature.
-    pub(crate) fn typing_self_type(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn typing_self_type(self, db: &'db dyn Db) -> Type<'db> {
         let self_instance = self.self_instance(db);
 
         if self.class_method(db) {
@@ -199,11 +199,7 @@ impl<'db> BoundMethodType<'db> {
         }
     }
 
-    pub(crate) fn map_self_type(
-        self,
-        db: &'db dyn Db,
-        f: impl FnMut(Type<'db>) -> Type<'db>,
-    ) -> Self {
+    pub fn map_self_type(self, db: &'db dyn Db, f: impl FnMut(Type<'db>) -> Type<'db>) -> Self {
         Self::new_internal(
             db,
             self.func(db),
@@ -213,7 +209,7 @@ impl<'db> BoundMethodType<'db> {
         )
     }
 
-    pub(crate) fn with_constrained_receiver(
+    pub fn with_constrained_receiver(
         self,
         db: &'db dyn Db,
         receiver: Type<'db>,
@@ -238,7 +234,7 @@ impl<'db> BoundMethodType<'db> {
         cycle_initial=|db, _, _| Some(CallableTypes::one(CallableType::bottom(db))),
         heap_size=ruff_memory_usage::heap_size
     )]
-    pub(crate) fn callables(self, db: &'db dyn Db) -> Option<CallableTypes<'db>> {
+    pub fn callables(self, db: &'db dyn Db) -> Option<CallableTypes<'db>> {
         let env = ProgramEnvironment::from_program(self.program(db));
         self.callables_with_receiver(
             db,
@@ -248,7 +244,7 @@ impl<'db> BoundMethodType<'db> {
         )
     }
 
-    pub(crate) fn callables_with_receiver(
+    pub fn callables_with_receiver(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -268,15 +264,15 @@ impl<'db> BoundMethodType<'db> {
     ///
     /// Returns `None` if the wrapped value cannot be converted to a callable or has multiple
     /// callable alternatives. Use [`Self::callables`] to handle multiple alternatives.
-    pub(crate) fn into_callable_type(self, db: &'db dyn Db) -> Option<CallableType<'db>> {
+    pub fn into_callable_type(self, db: &'db dyn Db) -> Option<CallableType<'db>> {
         self.callables(db).and_then(CallableTypes::exactly_one)
     }
 
-    pub(crate) fn bound_signatures(self, db: &'db dyn Db) -> Option<&'db CallableSignature<'db>> {
+    pub fn bound_signatures(self, db: &'db dyn Db) -> Option<&'db CallableSignature<'db>> {
         Some(self.into_callable_type(db)?.signatures(db))
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -296,7 +292,7 @@ impl<'db> BoundMethodType<'db> {
 }
 
 impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
-    pub(super) fn check_bound_method_pair(
+    pub fn check_bound_method_pair(
         &self,
         db: &'db dyn Db,
         source: BoundMethodType<'db>,
@@ -383,7 +379,7 @@ pub enum KnownBoundMethodType<'db> {
     ConstraintSetWithDetailedDisplay(InternedConstraintSet<'db>),
 }
 
-pub(super) fn walk_method_wrapper_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_method_wrapper_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     method_wrapper: KnownBoundMethodType<'db>,
     visitor: &V,
@@ -428,7 +424,7 @@ pub(super) fn walk_method_wrapper_type<'db, V: visitor::TypeVisitor<'db> + ?Size
 }
 
 impl<'db> KnownBoundMethodType<'db> {
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -490,7 +486,7 @@ impl<'db> KnownBoundMethodType<'db> {
     }
 
     /// Return the [`KnownClass`] that inhabitants of this type are instances of at runtime
-    pub(super) fn class(self) -> KnownClass {
+    pub fn class(self) -> KnownClass {
         match self {
             KnownBoundMethodType::FunctionTypeDunderGet(_)
             | KnownBoundMethodType::DunderCall(_)
@@ -518,7 +514,7 @@ impl<'db> KnownBoundMethodType<'db> {
     }
 
     /// Return the call signatures, preserving union alternatives of the captured callable.
-    pub(super) fn callables(
+    pub fn callables(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -802,7 +798,7 @@ impl<'db> KnownBoundMethodType<'db> {
 }
 
 impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
-    pub(super) fn check_known_bound_method_pair(
+    pub fn check_known_bound_method_pair(
         &self,
         db: &'db dyn Db,
         source: KnownBoundMethodType<'db>,
@@ -954,7 +950,7 @@ pub enum WrapperDescriptorKind {
 }
 
 impl WrapperDescriptorKind {
-    pub(super) fn signatures<'db>(
+    pub fn signatures<'db>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

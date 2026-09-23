@@ -135,7 +135,7 @@ pub enum SpecialFormType {
 
 impl SpecialFormType {
     /// Return the [`KnownClass`] which this symbol is an instance of
-    pub(crate) fn class(self, db: &dyn Db, env: &ProgramEnvironment<'_>) -> KnownClass {
+    pub fn class(self, db: &dyn Db, env: &ProgramEnvironment<'_>) -> KnownClass {
         match self {
             Self::Union if env.python_version(db) >= PythonVersion::PY314 => KnownClass::Type,
 
@@ -190,7 +190,7 @@ impl SpecialFormType {
     /// For example, the symbol `typing.Literal` is an instance of `typing._SpecialForm`,
     /// so `SpecialFormType::Literal.instance_fallback(db, env)`
     /// returns `Type::NominalInstance(NominalInstanceType { class: <typing._SpecialForm> })`.
-    pub(super) fn instance_fallback<'db>(
+    pub fn instance_fallback<'db>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -205,14 +205,14 @@ impl SpecialFormType {
     /// E.g. `typing.TypeGuard` is equivalent to `typing_extensions.TypeGuard`, so both are treated
     /// as inhabiting the type `SpecialFormType::TypeGuard` in our model, but they are actually
     /// distinct symbols at different memory addresses at runtime.
-    pub(super) const fn is_guaranteed_singleton(self) -> bool {
+    pub const fn is_guaranteed_singleton(self) -> bool {
         !(self.check_module(KnownModule::Typing)
             && self.check_module(KnownModule::TypingExtensions))
     }
 
     /// Return the type denoted by this retained special-form value when it is valid without
     /// parameters or a surrounding inference scope.
-    pub(crate) fn type_form_argument<'db>(
+    pub fn type_form_argument<'db>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -242,7 +242,7 @@ impl SpecialFormType {
     }
 
     /// Return `true` if this symbol is an instance of `class`.
-    pub(super) fn is_instance_of(
+    pub fn is_instance_of(
         self,
         db: &dyn Db,
         env: &ProgramEnvironment<'_>,
@@ -251,7 +251,7 @@ impl SpecialFormType {
         self.class(db, env).is_subclass_of(db, env, class)
     }
 
-    pub(super) fn try_from_file_and_name(
+    pub fn try_from_file_and_name(
         db: &dyn Db,
         file: ImportingFile<'_>,
         symbol_name: &str,
@@ -278,7 +278,7 @@ impl SpecialFormType {
     ///
     /// Called at module-attribute resolution — the one boundary where the import-path
     /// module is still observable.
-    pub(super) fn rewrap_for_import_module(self, name: &str, import_module: KnownModule) -> Self {
+    pub fn rewrap_for_import_module(self, name: &str, import_module: KnownModule) -> Self {
         match (self, name, import_module) {
             (Self::TypingCallable, "Callable", KnownModule::CollectionsAbcInternal) => {
                 Self::CollectionsAbcCallable
@@ -558,18 +558,14 @@ impl SpecialFormType {
         }
     }
 
-    pub(super) fn to_meta_type<'db>(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn to_meta_type<'db>(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         self.class(db, env).to_class_literal(db, env)
     }
 
     /// Return true if this special form is callable at runtime.
     /// Most special forms are not callable (they are type constructors that are subscripted),
     /// but some like `TypedDict` and collection constructors can be called.
-    pub(super) const fn is_callable(self) -> bool {
+    pub const fn is_callable(self) -> bool {
         match self {
             // TypedDict can be called as a constructor to create TypedDict types
             Self::TypedDict(_) => true,
@@ -635,7 +631,7 @@ impl SpecialFormType {
 
     /// Return `true` if this special form is valid as the second argument
     /// to `issubclass()` and `isinstance()` calls.
-    pub(super) const fn is_valid_isinstance_target(self) -> bool {
+    pub const fn is_valid_isinstance_target(self) -> bool {
         match self {
             Self::TypeQualifier(qualifier) => qualifier.is_valid_isinstance_target(),
 
@@ -682,7 +678,7 @@ impl SpecialFormType {
     }
 
     /// Return the name of the symbol at runtime
-    pub(super) const fn name(self) -> &'static str {
+    pub const fn name(self) -> &'static str {
         match self {
             SpecialFormType::TypeQualifier(qualifier) => qualifier.name(),
             SpecialFormType::Any => "Any",
@@ -784,7 +780,7 @@ impl SpecialFormType {
         }
     }
 
-    pub(super) fn definition<'db>(
+    pub fn definition<'db>(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -811,7 +807,7 @@ impl SpecialFormType {
     ///
     /// This is called for the "misc" special forms that are not aliases, type qualifiers,
     /// `Tuple`, `Type`, or `Callable` (those are handled by their respective call sites).
-    pub(super) fn in_type_expression<'db>(
+    pub fn in_type_expression<'db>(
         self,
         db: &'db dyn Db,
         scope_id: ScopeId<'db>,
@@ -983,7 +979,7 @@ pub enum LegacyStdlibAlias {
 }
 
 impl LegacyStdlibAlias {
-    pub(super) const fn alias_spec(self) -> AliasSpec {
+    pub const fn alias_spec(self) -> AliasSpec {
         let (class, expected_argument_number) = match self {
             LegacyStdlibAlias::List => (KnownClass::List, 1),
             LegacyStdlibAlias::Dict => (KnownClass::Dict, 2),
@@ -1002,7 +998,7 @@ impl LegacyStdlibAlias {
         }
     }
 
-    pub(super) const fn aliased_class(self) -> KnownClass {
+    pub const fn aliased_class(self) -> KnownClass {
         self.alias_spec().class
     }
 }
@@ -1063,7 +1059,7 @@ impl TypeQualifier {
         }
     }
 
-    pub(crate) const fn name(self) -> &'static str {
+    pub const fn name(self) -> &'static str {
         match self {
             Self::ReadOnly => "ReadOnly",
             Self::Final => "Final",
@@ -1094,13 +1090,13 @@ impl TypeQualifier {
 
     /// Return `true` if this type qualifier requires exactly one argument
     /// when used in a type expression.
-    pub(super) const fn requires_one_argument(self) -> bool {
+    pub const fn requires_one_argument(self) -> bool {
         match self {
             Self::Final | Self::ClassVar => false,
             Self::Required | Self::NotRequired | Self::InitVar | Self::ReadOnly => true,
         }
     }
-    pub(crate) const fn is_valid_for_non_name_targets(self) -> bool {
+    pub const fn is_valid_for_non_name_targets(self) -> bool {
         match self {
             TypeQualifier::ReadOnly
             | TypeQualifier::Required
@@ -1111,7 +1107,7 @@ impl TypeQualifier {
         }
     }
 
-    pub(crate) const fn is_valid_in_typeddict_field(self) -> bool {
+    pub const fn is_valid_in_typeddict_field(self) -> bool {
         match self {
             TypeQualifier::ReadOnly | TypeQualifier::Required | TypeQualifier::NotRequired => true,
             TypeQualifier::ClassVar | TypeQualifier::Final | TypeQualifier::InitVar => false,
@@ -1146,7 +1142,7 @@ impl std::fmt::Display for TypeQualifier {
 
 /// Information regarding the [`KnownClass`] a [`LegacyStdlibAlias`] refers to.
 #[derive(Debug)]
-pub(super) struct AliasSpec {
-    pub(super) class: KnownClass,
-    pub(super) expected_argument_number: usize,
+pub struct AliasSpec {
+    pub class: KnownClass,
+    pub expected_argument_number: usize,
 }

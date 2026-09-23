@@ -16,10 +16,10 @@ use crate::types::{
 use crate::types::{TypeVarBoundOrConstraints, visitor};
 use crate::{Db, FxOrderSet, Program};
 
-pub(crate) mod builder;
+pub mod builder;
 mod generic_gradual_intersections;
 
-pub(crate) use builder::{IntersectionBuilder, UnionBuilder};
+pub use builder::{IntersectionBuilder, UnionBuilder};
 
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct UnionType<'db> {
@@ -29,10 +29,10 @@ pub struct UnionType<'db> {
     /// Whether the value pointed to by this type is recursively defined.
     /// If `Yes`, union literal widening is performed early.
     #[returns(copy)]
-    pub(crate) recursively_defined: RecursivelyDefined,
+    pub recursively_defined: RecursivelyDefined,
 }
 
-pub(crate) fn walk_union<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_union<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     union: UnionType<'db>,
     visitor: &V,
@@ -107,7 +107,7 @@ impl<'db> UnionType<'db> {
     }
 
     /// Create a union from a list of elements without unpacking type aliases.
-    pub(crate) fn from_elements_leave_aliases<I, T>(
+    pub fn from_elements_leave_aliases<I, T>(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         elements: I,
@@ -124,18 +124,14 @@ impl<'db> UnionType<'db> {
     }
 
     /// Returns `true` if any direct element of this union is a type alias.
-    pub(crate) fn has_aliases(self, db: &'db dyn Db) -> bool {
+    pub fn has_aliases(self, db: &'db dyn Db) -> bool {
         self.elements(db).iter().copied().any(Type::is_alias_like)
     }
 
     /// Recursively expands aliases that expose top-level union elements.
     ///
     /// Aliases nested inside non-union elements remain part of those elements.
-    pub(crate) fn expand_aliases(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn expand_aliases(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         // Relation checks expand the same target union for many different source types.
         self.cached_expand_aliases(db, env.program(db))
     }
@@ -166,7 +162,7 @@ impl<'db> UnionType<'db> {
         builder.build()
     }
 
-    pub(crate) fn from_elements_cycle_recovery<I, T>(
+    pub fn from_elements_cycle_recovery<I, T>(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         elements: I,
@@ -187,7 +183,7 @@ impl<'db> UnionType<'db> {
     /// Normalizing an existing union during cycle recovery does not imply that its tuple lengths
     /// are growing. Compare the results of successive iterations so stable, finite unions keep
     /// their shapes, including unions nested in a collection's type arguments.
-    pub(crate) fn widen_growing_tuples(
+    pub fn widen_growing_tuples(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         previous: Type<'db>,
@@ -259,7 +255,7 @@ impl<'db> UnionType<'db> {
     /// If all items in `elements` are `Some()`, the result of unioning all elements is returned.
     /// As soon as a `None` element in the iterable is encountered,
     /// the function short-circuits and returns `None`.
-    pub(crate) fn try_from_elements<I, T>(
+    pub fn try_from_elements<I, T>(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         elements: I,
@@ -276,7 +272,7 @@ impl<'db> UnionType<'db> {
     }
 
     /// Map the union's elements, preserving open bodies during structural substitutions.
-    pub(super) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -301,7 +297,7 @@ impl<'db> UnionType<'db> {
 
     /// Apply a transformation function to all elements of the union,
     /// and create a new union from the resulting set of types.
-    pub(crate) fn map(
+    pub fn map(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -349,7 +345,7 @@ impl<'db> UnionType<'db> {
     /// the result of unioning all transformed elements is returned.
     /// As soon as `transform_fn` returns `None` for an element, however,
     /// the function short-circuits and returns `None`.
-    pub(crate) fn try_map(
+    pub fn try_map(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -388,7 +384,7 @@ impl<'db> UnionType<'db> {
         Ok(Type::Union(self))
     }
 
-    pub(crate) fn to_instance(
+    pub fn to_instance(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -406,7 +402,7 @@ impl<'db> UnionType<'db> {
     ///
     /// The returned type is broader than the literal types themselves. For example, the
     /// supertype for `Literal["a"] | Literal["b"]` is `LiteralString`.
-    pub(crate) fn common_literal_supertype(
+    pub fn common_literal_supertype(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -430,7 +426,7 @@ impl<'db> UnionType<'db> {
         })
     }
 
-    pub(crate) fn filter(self, db: &'db dyn Db, f: impl FnMut(&Type<'db>) -> bool) -> Type<'db> {
+    pub fn filter(self, db: &'db dyn Db, f: impl FnMut(&Type<'db>) -> bool) -> Type<'db> {
         let current = self.elements(db);
         let new: Box<[Type<'db>]> = current.iter().copied().filter(f).collect();
         match &*new {
@@ -441,7 +437,7 @@ impl<'db> UnionType<'db> {
         }
     }
 
-    pub(crate) fn map_with_boundness(
+    pub fn map_with_boundness(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -497,7 +493,7 @@ impl<'db> UnionType<'db> {
         }
     }
 
-    pub(crate) fn map_with_boundness_and_qualifiers(
+    pub fn map_with_boundness_and_qualifiers(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -560,7 +556,7 @@ impl<'db> UnionType<'db> {
         }
     }
 
-    pub(crate) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -603,7 +599,7 @@ impl<'db> UnionType<'db> {
 
     /// Identify some specific unions of known classes, currently the ones that `float` and
     /// `complex` expand into in type position.
-    pub(crate) fn known(self, db: &'db dyn Db) -> Option<KnownUnion> {
+    pub fn known(self, db: &'db dyn Db) -> Option<KnownUnion> {
         let mut has_int = false;
         let mut has_float = false;
         let mut has_complex = false;
@@ -624,14 +620,14 @@ impl<'db> UnionType<'db> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum KnownUnion {
+pub enum KnownUnion {
     Float,   // `int | float`
     Complex, // `int | float | complex`
 }
 
 impl KnownUnion {
     /// Returns the class whose annotation denotes this numeric-tower union.
-    pub(crate) const fn annotation_class(self) -> KnownClass {
+    pub const fn annotation_class(self) -> KnownClass {
         match self {
             Self::Float => KnownClass::Float,
             Self::Complex => KnownClass::Complex,
@@ -639,7 +635,7 @@ impl KnownUnion {
     }
 
     /// Returns whether this union contains exact instances of `class`.
-    pub(crate) const fn contains(self, class: KnownClass) -> bool {
+    pub const fn contains(self, class: KnownClass) -> bool {
         match self {
             Self::Float => matches!(class, KnownClass::Int | KnownClass::Float),
             Self::Complex => matches!(
@@ -649,7 +645,7 @@ impl KnownUnion {
         }
     }
 
-    pub(crate) fn to_type<'db>(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn to_type<'db>(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         match self {
             KnownUnion::Float => UnionType::from_two_elements(
                 db,
@@ -674,7 +670,7 @@ impl KnownUnion {
 pub struct IntersectionType<'db> {
     /// The intersection type includes only values in all of these types.
     #[returns(ref)]
-    pub(crate) positive: FxOrderSet<Type<'db>>,
+    pub positive: FxOrderSet<Type<'db>>,
 
     /// The intersection type does not include any value in any of these types.
     ///
@@ -682,7 +678,7 @@ pub struct IntersectionType<'db> {
     /// narrowing along with intersections (e.g. `if not isinstance(...)`), so we represent them
     /// directly in intersections rather than as a separate type.
     #[returns(ref)]
-    pub(crate) negative: NegativeIntersectionElements<'db>,
+    pub negative: NegativeIntersectionElements<'db>,
 }
 
 /// To avoid unnecessary allocations for the common case of 1 negative elements,
@@ -709,7 +705,7 @@ pub enum NegativeIntersectionElements<'db> {
 }
 
 impl<'db> NegativeIntersectionElements<'db> {
-    pub(crate) fn iter(&self) -> NegativeIntersectionElementsIterator<'_, 'db> {
+    pub fn iter(&self) -> NegativeIntersectionElementsIterator<'_, 'db> {
         match self {
             Self::Empty => NegativeIntersectionElementsIterator::EmptyOrOne(None),
             Self::Single(ty) => NegativeIntersectionElementsIterator::EmptyOrOne(Some(ty)),
@@ -725,7 +721,7 @@ impl<'db> NegativeIntersectionElements<'db> {
         }
     }
 
-    pub(crate) fn contains(&self, ty: &Type<'db>) -> bool {
+    pub fn contains(&self, ty: &Type<'db>) -> bool {
         match self {
             Self::Empty => false,
             Self::Single(existing) => existing == ty,
@@ -733,7 +729,7 @@ impl<'db> NegativeIntersectionElements<'db> {
         }
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         // See struct-level comment: we don't try to maintain the invariant that empty
         // collections are represented as `Self::Empty`
         self.len() == 0
@@ -743,7 +739,7 @@ impl<'db> NegativeIntersectionElements<'db> {
     ///
     /// Returns `true` if the elements was newly added.
     /// Returns `false` if the element was already present in the collection.
-    pub(crate) fn insert(&mut self, ty: Type<'db>) -> bool {
+    pub fn insert(&mut self, ty: Type<'db>) -> bool {
         match self {
             Self::Empty => {
                 *self = Self::Single(ty);
@@ -901,7 +897,7 @@ impl std::iter::FusedIterator for NegativeIntersectionElementsIterator<'_, '_> {
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for IntersectionType<'_> {}
 
-pub(crate) fn walk_intersection_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_intersection_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     intersection: IntersectionType<'db>,
     visitor: &V,
@@ -917,7 +913,7 @@ pub(crate) fn walk_intersection_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>
 #[salsa::tracked]
 impl<'db> IntersectionType<'db> {
     /// Return the compact enum-complement view of this intersection, if it has one.
-    pub(crate) fn enum_complement(
+    pub fn enum_complement(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -936,7 +932,7 @@ impl<'db> IntersectionType<'db> {
     }
 
     /// Return the exact finite alternative union represented by this intersection, if available.
-    pub(crate) fn finite_alternative_union(
+    pub fn finite_alternative_union(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -948,7 +944,7 @@ impl<'db> IntersectionType<'db> {
     }
 
     /// Return the finite alternatives only if they remain concise enough for display.
-    pub(crate) fn finite_alternatives_for_display(
+    pub fn finite_alternatives_for_display(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -962,7 +958,7 @@ impl<'db> IntersectionType<'db> {
     ///
     /// For performance reasons, consider using [`IntersectionType::from_two_elements`] if
     /// the intersection is constructed from exactly two elements.
-    pub(crate) fn from_elements<I, T>(
+    pub fn from_elements<I, T>(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         elements: I,
@@ -998,7 +994,7 @@ impl<'db> IntersectionType<'db> {
     /// work, and if so, returns `None`. (Redundant terms do not count toward the budget.)
     ///
     /// Like [`from_elements`][Self::from_elements], a successful result is exact.
-    pub(crate) fn bounded_from_elements<I, T>(
+    pub fn bounded_from_elements<I, T>(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         elements: I,
@@ -1012,7 +1008,7 @@ impl<'db> IntersectionType<'db> {
     }
 
     /// Create an intersection type `A & B` from two elements `A` and `B`.
-    pub(crate) fn from_two_elements(
+    pub fn from_two_elements(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         a: Type<'db>,
@@ -1036,7 +1032,7 @@ impl<'db> IntersectionType<'db> {
         intersection_from_two_elements(db, TypePair::new(db, env.program(db), a, b))
     }
 
-    pub(crate) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1073,10 +1069,7 @@ impl<'db> IntersectionType<'db> {
 
     /// Returns an iterator over the positive elements of the intersection. If
     /// there are no positive elements, returns a single `object` type.
-    pub(crate) fn positive_elements_or_object(
-        self,
-        db: &'db dyn Db,
-    ) -> impl Iterator<Item = Type<'db>> {
+    pub fn positive_elements_or_object(self, db: &'db dyn Db) -> impl Iterator<Item = Type<'db>> {
         let positive = self.positive(db);
         if positive.is_empty() {
             Either::Left(std::iter::once(Type::object()))
@@ -1086,7 +1079,7 @@ impl<'db> IntersectionType<'db> {
     }
 
     /// Map both signs of the intersection, preserving open bodies during structural substitutions.
-    pub(super) fn apply_type_mapping_impl<'a>(
+    pub fn apply_type_mapping_impl<'a>(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'a, 'db>,
@@ -1140,7 +1133,7 @@ impl<'db> IntersectionType<'db> {
 
     /// Map a type transformation over all positive elements of the intersection. Leave the
     /// negative elements unchanged.
-    pub(crate) fn map_positive(
+    pub fn map_positive(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1161,7 +1154,7 @@ impl<'db> IntersectionType<'db> {
     ///
     /// Negative instance constraints are not transferred: an object not satisfying `P` does not
     /// imply that other instances of its class cannot satisfy `P`.
-    pub(crate) fn try_dunder_class(
+    pub fn try_dunder_class(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1182,7 +1175,7 @@ impl<'db> IntersectionType<'db> {
         Some(builder.build())
     }
 
-    pub(crate) fn map_with_boundness(
+    pub fn map_with_boundness(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1234,7 +1227,7 @@ impl<'db> IntersectionType<'db> {
         }
     }
 
-    pub(crate) fn map_with_boundness_and_qualifiers(
+    pub fn map_with_boundness_and_qualifiers(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1297,7 +1290,7 @@ impl<'db> IntersectionType<'db> {
     /// Return a version of this intersection type where any type variables in the positive elements
     /// have been replaced by their bounds or constraints, and where any newtypes in the positive elements
     /// have been replaced by their concrete base types.
-    pub(crate) fn with_expanded_typevars_and_newtypes(
+    pub fn with_expanded_typevars_and_newtypes(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1309,7 +1302,7 @@ impl<'db> IntersectionType<'db> {
         self.positive(db).iter().copied()
     }
 
-    pub(crate) fn iter_negative(self, db: &'db dyn Db) -> impl Iterator<Item = Type<'db>> {
+    pub fn iter_negative(self, db: &'db dyn Db) -> impl Iterator<Item = Type<'db>> {
         self.negative(db).iter().copied()
     }
 
@@ -1339,7 +1332,7 @@ impl<'db> IntersectionType<'db> {
     /// Projecting only the positive `type[Base]` is an over-approximation, since we have no
     /// representation of an exact instance type excluding subclasses, and projecting the negative
     /// `~TypeOf[Base]` to `~Base` would incorrectly exclude `Child` instances too.
-    pub(crate) fn to_instance(
+    pub fn to_instance(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1363,11 +1356,11 @@ impl<'db> IntersectionType<'db> {
         Some(InstanceProjection::new(builder.build(), is_exact))
     }
 
-    pub(crate) fn has_one_element(self, db: &'db dyn Db) -> bool {
+    pub fn has_one_element(self, db: &'db dyn Db) -> bool {
         (self.positive(db).len() + self.negative(db).len()) == 1
     }
 
-    pub(crate) fn is_simple_negation(self, db: &'db dyn Db) -> bool {
+    pub fn is_simple_negation(self, db: &'db dyn Db) -> bool {
         self.positive(db).is_empty() && self.negative(db).len() == 1
     }
 }
@@ -1410,7 +1403,7 @@ pub enum RecursivelyDefined {
 }
 
 impl RecursivelyDefined {
-    pub(crate) const fn is_yes(self) -> bool {
+    pub const fn is_yes(self) -> bool {
         matches!(self, RecursivelyDefined::Yes)
     }
 

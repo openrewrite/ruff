@@ -24,14 +24,14 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Copy)]
-pub(super) struct AbstractMethods<'db> {
+pub struct AbstractMethods<'db> {
     class: ClassType<'db>,
     methods: &'db FxIndexMap<Name, AbstractMethod<'db>>,
 }
 
 impl<'db> AbstractMethods<'db> {
     /// Find methods that remain abstract after applying overrides in MRO order.
-    pub(super) fn of_class(db: &'db dyn Db, class: ClassType<'db>) -> Self {
+    pub fn of_class(db: &'db dyn Db, class: ClassType<'db>) -> Self {
         Self {
             class,
             methods: class.abstract_methods(db),
@@ -39,7 +39,7 @@ impl<'db> AbstractMethods<'db> {
     }
 
     /// Annotate a diagnostic with the unimplemented methods and their declarations.
-    pub(super) fn annotate_diagnostic(
+    pub fn annotate_diagnostic(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -217,7 +217,7 @@ impl<'db> AbstractMethods<'db> {
     /// in this collection.
     ///
     /// This is useful for diagnostics.
-    pub(super) fn formatted_names(&self, db: &'db dyn Db) -> FormattedAbstractMethods {
+    pub fn formatted_names(&self, db: &'db dyn Db) -> FormattedAbstractMethods {
         let len = self.methods.len();
         let max_abstract_methods_to_print = if db.verbose() {
             len
@@ -231,15 +231,15 @@ impl<'db> AbstractMethods<'db> {
         }
     }
 
-    pub(super) fn first_name(&self) -> Option<&Name> {
+    pub fn first_name(&self) -> Option<&Name> {
         self.methods.keys().next()
     }
 
-    pub(super) fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.methods.len()
     }
 
-    pub(super) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.methods.is_empty()
     }
 }
@@ -253,10 +253,7 @@ impl<'db> ClassType<'db> {
     // Inferring class members can call constructors that query abstractness again.
     // Start with no abstract methods while resolving these cycles.
     #[salsa::tracked(returns(ref), heap_size=ruff_memory_usage::heap_size, cycle_initial=|_, _, _| FxIndexMap::default())]
-    pub(in crate::types) fn abstract_methods(
-        self,
-        db: &'db dyn Db,
-    ) -> FxIndexMap<Name, AbstractMethod<'db>> {
+    pub fn abstract_methods(self, db: &'db dyn Db) -> FxIndexMap<Name, AbstractMethod<'db>> {
         fn type_as_abstract_method<'db>(
             db: &'db dyn Db,
             ty: Type<'db>,
@@ -397,20 +394,20 @@ fn might_be_explicitly_abstract<'db>(db: &'db dyn Db, definition: Definition<'db
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct AbstractMethod<'db> {
-    pub(super) defining_class: ClassType<'db>,
-    pub(super) definition: Definition<'db>,
-    pub(super) kind: AbstractMethodKind,
+pub struct AbstractMethod<'db> {
+    pub defining_class: ClassType<'db>,
+    pub definition: Definition<'db>,
+    pub kind: AbstractMethodKind,
 }
 
 #[derive(Debug)]
-pub(super) struct FormattedAbstractMethods {
+pub struct FormattedAbstractMethods {
     inner: String,
 
     /// Boolean flag that indicates whether the wrapped string is an exhaustive
     /// enumeration of *all* abstract methods on a class, or only an enumeration
     /// of a truncated subset
-    pub(super) truncation_occurred: bool,
+    pub truncation_occurred: bool,
 }
 
 impl std::fmt::Display for FormattedAbstractMethods {

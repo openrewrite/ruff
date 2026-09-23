@@ -59,7 +59,7 @@ impl<'db> Type<'db> {
     ///     value = int("invalid")
     /// reveal_type(value)  # int | None
     /// ```
-    pub(crate) fn can_suppress_exceptions(
+    pub fn can_suppress_exceptions(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -153,7 +153,7 @@ impl<'db> Type<'db> {
     ///
     /// This method should only be used outside of type checking because it omits any errors.
     /// For type checking, use [`try_enter_with_mode`](Self::try_enter_with_mode) instead.
-    pub(super) fn enter(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn enter(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         self.try_enter_with_mode(db, env, EvaluationMode::Sync)
             .unwrap_or_else(|err| err.fallback_enter_type(db, env))
     }
@@ -162,7 +162,7 @@ impl<'db> Type<'db> {
     ///
     /// This method should only be used outside of type checking because it omits any errors.
     /// For type checking, use [`try_enter_with_mode`](Self::try_enter_with_mode) instead.
-    pub(super) fn aenter(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn aenter(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         self.try_enter_with_mode(db, env, EvaluationMode::Async)
             .unwrap_or_else(|err| err.fallback_enter_type(db, env))
     }
@@ -175,7 +175,7 @@ impl<'db> Type<'db> {
     /// with x as y:
     ///     pass
     /// ```
-    pub(super) fn try_enter_with_mode(
+    pub fn try_enter_with_mode(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -274,7 +274,7 @@ impl<'db> Type<'db> {
 
 /// Error returned if a type is not (or may not be) a context manager.
 #[derive(Debug)]
-pub(super) enum ContextManagerError<'db> {
+pub enum ContextManagerError<'db> {
     Enter(CallDunderError<'db>, EvaluationMode),
     Exit {
         enter_return_type: Type<'db>,
@@ -303,7 +303,7 @@ pub(super) enum ContextManagerError<'db> {
 /// At least one method must be at fault for the enclosing error to exist, which is why this is an
 /// enum rather than a pair of `Option`s or a collection that could be empty.
 #[derive(Debug)]
-pub(super) enum NonAwaitableMethods<'db> {
+pub enum NonAwaitableMethods<'db> {
     Enter(Type<'db>),
     Exit(Type<'db>),
     Both { enter: Type<'db>, exit: Type<'db> },
@@ -340,11 +340,7 @@ impl<'db> NonAwaitableMethods<'db> {
 }
 
 impl<'db> ContextManagerError<'db> {
-    pub(super) fn fallback_enter_type(
-        &self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn fallback_enter_type(&self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         self.enter_type(db, env).unwrap_or(Type::unknown())
     }
 
@@ -381,7 +377,7 @@ impl<'db> ContextManagerError<'db> {
         }
     }
 
-    pub(super) fn report_diagnostic(
+    pub fn report_diagnostic(
         &self,
         context: &InferContext<'db, '_>,
         context_expression_type: Type<'db>,

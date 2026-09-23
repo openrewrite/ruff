@@ -149,14 +149,14 @@ impl<'db> PytestTest<'db> {
     }
 
     /// Returns the collection mechanism responsible for this test.
-    pub(crate) fn kind(&self) -> PytestTestKind {
+    pub fn kind(&self) -> PytestTestKind {
         self.kind
     }
 }
 
 /// The collection mechanism responsible for a test.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum PytestTestKind {
+pub enum PytestTestKind {
     /// A function or method collected according to pytest's naming and class conventions.
     Pytest,
     /// A method collected because its class inherits from `unittest.TestCase`.
@@ -170,7 +170,7 @@ pub(crate) enum PytestTestKind {
 /// Returns `None` for unavailable bindings, values whose function cannot be identified, fixtures,
 /// and bindings that fail the naming or enclosing-class rules.
 #[salsa::tracked(returns(as_ref))]
-pub(crate) fn pytest_test_for_binding<'db>(
+pub fn pytest_test_for_binding<'db>(
     db: &'db dyn Db,
     binding: Definition<'db>,
 ) -> Option<PytestTest<'db>> {

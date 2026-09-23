@@ -14,7 +14,7 @@ use crate::types::function::KnownFunction;
 use crate::types::{KnownClass, Type, TypeContext};
 
 impl<'db> TypeInferenceBuilder<'db, '_> {
-    pub(super) fn infer_await_expression(
+    pub fn infer_await_expression(
         &mut self,
         await_expression: &ast::ExprAwait,
         tcx: TypeContext<'db>,
@@ -38,7 +38,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         })
     }
 
-    pub(super) fn check_unused_awaitable(&self, expression: &ast::Expr) {
+    pub fn check_unused_awaitable(&self, expression: &ast::Expr) {
         let db = self.db();
         let ty = self.expression_type(expression);
         if ty.is_awaitable(db)
@@ -77,7 +77,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// Accounts for asynchronous functions, notebook cells, annotation restrictions, enclosing
     /// scopes, and the different scoping behavior of comprehensions and generator expressions.
-    pub(super) fn can_await_here(&self, expression: &ast::Expr) -> bool {
+    pub fn can_await_here(&self, expression: &ast::Expr) -> bool {
         let Some(expression_scope) = self.index.try_expression_scope_id(expression) else {
             return false;
         };
@@ -140,7 +140,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Suggest awaiting an expression, adding parentheses if its precedence requires them.
-    pub(super) fn await_expression_fix(&self, expression: &ast::Expr) -> Option<Fix> {
+    pub fn await_expression_fix(&self, expression: &ast::Expr) -> Option<Fix> {
         if !self.can_await_here(expression) {
             return None;
         }

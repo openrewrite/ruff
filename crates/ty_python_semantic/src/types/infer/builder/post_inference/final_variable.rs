@@ -8,10 +8,7 @@ use ty_python_core::SemanticIndex;
 /// Check for `Final`-qualified declarations in module/function scopes that are never
 /// assigned a value. Class body scopes are handled separately in
 /// `check_class_final_without_value`.
-pub(crate) fn check_final_without_value<'db>(
-    context: &InferContext<'db, '_>,
-    index: &SemanticIndex<'db>,
-) {
+pub fn check_final_without_value<'db>(context: &InferContext<'db, '_>, index: &SemanticIndex<'db>) {
     // In stub files, bare declarations without values are normal.
     if context.in_stub() {
         return;

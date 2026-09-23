@@ -15,7 +15,7 @@ use crate::suppression::{
 /// adds diagnostic for each of them to `diagnostics`.
 ///
 /// Does nothing if the [`UNUSED_IGNORE_COMMENT`] rule is disabled.
-pub(super) fn check_unused_suppressions(context: &mut CheckSuppressionsContext) {
+pub fn check_unused_suppressions(context: &mut CheckSuppressionsContext) {
     if context.is_lint_disabled(&UNUSED_IGNORE_COMMENT)
         && context.is_lint_disabled(&UNUSED_TYPE_IGNORE_COMMENT)
     {

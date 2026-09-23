@@ -119,10 +119,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// This includes direct captures from enclosing methods: these are not implicit-attribute
     /// definition scopes, but their annotations were accepted before non-name target validation.
-    pub(super) fn is_receiver_attribute_annotation_target(
-        &self,
-        target: &ast::ExprAttribute,
-    ) -> bool {
+    pub fn is_receiver_attribute_annotation_target(&self, target: &ast::ExprAttribute) -> bool {
         if self.is_instance_attribute_assignment(target) {
             return true;
         }
@@ -146,7 +143,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///         def inner():
     ///             self.attribute = 1
     /// ```
-    pub(super) fn receiver_method_scope(&self, receiver: &ast::ExprName) -> Option<FileScopeId> {
+    pub fn receiver_method_scope(&self, receiver: &ast::ExprName) -> Option<FileScopeId> {
         let receiver_name = receiver.id.as_str();
         let current_scope_id = self.scope().file_scope_id(self.db());
         let (receiver_scope_id, receiver_scope, receiver_symbol) = self
@@ -179,7 +176,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         .then_some(receiver_scope_id)
     }
 
-    pub(super) fn invalid_assignment_to_final_attribute(
+    pub fn invalid_assignment_to_final_attribute(
         &self,
         object_ty: Type<'db>,
         target: &ast::ExprAttribute,
@@ -318,7 +315,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         true
     }
 
-    pub(super) fn validate_final_attribute_assignment(
+    pub fn validate_final_attribute_assignment(
         &mut self,
         target: &ast::ExprAttribute,
         object_ty: Type<'db>,
@@ -343,7 +340,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         }
     }
 
-    pub(super) fn validate_final_attribute_deletion(
+    pub fn validate_final_attribute_deletion(
         &self,
         target: &ast::ExprAttribute,
         object_ty: Type<'db>,

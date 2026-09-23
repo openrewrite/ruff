@@ -64,7 +64,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn infer_import_statement(&mut self, import: &ast::StmtImport) {
+    pub fn infer_import_statement(&mut self, import: &ast::StmtImport) {
         let ast::StmtImport {
             names,
             is_lazy: _,
@@ -253,7 +253,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         );
     }
 
-    pub(super) fn infer_import_definition(
+    pub fn infer_import_definition(
         &mut self,
         alias: &'ast ast::Alias,
         definition: Definition<'db>,
@@ -322,7 +322,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
             .insert(self, binding_ty);
     }
 
-    pub(super) fn infer_import_from_statement(&mut self, import: &ast::StmtImportFrom) {
+    pub fn infer_import_from_statement(&mut self, import: &ast::StmtImportFrom) {
         let ast::StmtImportFrom {
             module: _,
             names,
@@ -467,7 +467,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         resolved
     }
 
-    pub(super) fn infer_import_from_definition(
+    pub fn infer_import_from_definition(
         &mut self,
         import_from: &ast::StmtImportFrom,
         alias: &'ast ast::Alias,
@@ -684,7 +684,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     /// That gap between the semantics and implementation are currently the responsibility of the
     /// code that actually creates these kinds of Definitions (so blindly introducing a local
     /// is all we need to be doing here).
-    pub(super) fn infer_import_from_submodule_definition(
+    pub fn infer_import_from_submodule_definition(
         &mut self,
         import_from: &'ast ast::StmtImportFrom,
         definition: Definition<'db>,

@@ -50,11 +50,11 @@ struct AssignmentIndex;
 /// actually appears in the BDD. If either of those limits are exceeded, we ignore the derived
 /// constraint that we are currently considering.
 #[derive(Debug)]
-pub(crate) struct PathAssignments {
+pub struct PathAssignments {
     /// All of the rules that we know for inferring derived constraints on the current path.
     sequents: Vec<Sequent<ConstraintId, u16>>,
     /// Each assignment's source constraint and greatest remaining per-path fuel.
-    pub(super) assignments: FxIndexMap<ConstraintAssignment, (ConstraintId, u16)>,
+    pub assignments: FxIndexMap<ConstraintAssignment, (ConstraintId, u16)>,
     /// Positions in `assignments`, cleared when their branch is left. Fuel stays in the map so
     /// replenishment and rollback do not need to update these indices.
     positive_assignment_indices: IndexVec<ConstraintId, Option<AssignmentIndex>>,
@@ -150,7 +150,7 @@ impl PathAssignments {
     /// arena. Start with the original source order and visit each rule's consequences in order,
     /// including intermediate facts that are themselves projected away. This only replays cached
     /// rules; it does not derive more facts or change the walk's assignments and fuel.
-    pub(super) fn projection_source_order(
+    pub fn projection_source_order(
         &self,
         storage: &mut ConstraintSetStorage<'_>,
         original_source_order: Option<SourceOrderId>,
@@ -207,7 +207,7 @@ impl PathAssignments {
             })
     }
 
-    pub(super) fn new(
+    pub fn new(
         constraints: impl IntoIterator<Item = ConstraintId>,
         independent_typevars: FxHashSet<TypeVarId>,
     ) -> Self {
@@ -232,7 +232,7 @@ impl PathAssignments {
         }
     }
 
-    pub(super) fn visit<'db, V>(
+    pub fn visit<'db, V>(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -247,7 +247,7 @@ impl PathAssignments {
     }
 
     /// Visits the paths of the negation of `node`, without constructing that negation eagerly.
-    pub(super) fn visit_negated<'db, V>(
+    pub fn visit_negated<'db, V>(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -416,7 +416,7 @@ impl PathAssignments {
     /// the BDD. You should make this call from inside of your callback, so that as you get further
     /// down into the BDD structure, we remember all of the information that we have learned from
     /// the path we're on.
-    pub(super) fn walk_edge<'db, R>(
+    pub fn walk_edge<'db, R>(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -494,9 +494,7 @@ impl PathAssignments {
         result
     }
 
-    pub(super) fn positive_constraints(
-        &self,
-    ) -> impl Iterator<Item = (ConstraintId, ConstraintId)> + '_ {
+    pub fn positive_constraints(&self) -> impl Iterator<Item = (ConstraintId, ConstraintId)> + '_ {
         self.assignments.iter().filter_map(
             |(assignment, (source_constraint, _))| match assignment {
                 ConstraintAssignment::Positive(constraint) => {

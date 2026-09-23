@@ -565,7 +565,7 @@ const MAX_RECURSIVE_UNION_LITERALS: usize = 5;
 /// Huge enums and string literal sets are not uncommon (especially in generated code), and it's annoying
 /// if reachability analysis etc. fails when analysing these enums.
 const MAX_NON_RECURSIVE_UNION_LITERALS: usize = 8192;
-pub(crate) struct UnionBuilder<'db> {
+pub struct UnionBuilder<'db> {
     elements: Vec<UnionElement<'db>>,
     db: &'db dyn Db,
     env: ProgramEnvironment<'db>,
@@ -580,18 +580,18 @@ pub(crate) struct UnionBuilder<'db> {
 ///
 /// Most real-world type variables only accumulate one or two constraints. We keep those cases as
 /// plain `Type`s and only allocate a `UnionBuilder` once we know the accumulation is larger.
-pub(crate) enum UnionAccumulator<'db> {
+pub enum UnionAccumulator<'db> {
     One(Type<'db>),
     Two(Type<'db>, Type<'db>),
     Deferred(UnionBuilder<'db>),
 }
 
 impl<'db> UnionAccumulator<'db> {
-    pub(crate) fn new(ty: Type<'db>) -> Self {
+    pub fn new(ty: Type<'db>) -> Self {
         UnionAccumulator::One(ty)
     }
 
-    pub(crate) fn add(&mut self, db: &'db dyn Db, env: &ProgramEnvironment<'db>, ty: Type<'db>) {
+    pub fn add(&mut self, db: &'db dyn Db, env: &ProgramEnvironment<'db>, ty: Type<'db>) {
         match self {
             UnionAccumulator::One(existing) => {
                 *self = UnionAccumulator::Two(*existing, ty);
@@ -607,11 +607,7 @@ impl<'db> UnionAccumulator<'db> {
         }
     }
 
-    pub(crate) fn get_or_build(
-        &mut self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn get_or_build(&mut self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         match self {
             UnionAccumulator::One(ty) => *ty,
             UnionAccumulator::Two(first, second) => {
@@ -628,7 +624,7 @@ impl<'db> UnionAccumulator<'db> {
         }
     }
 
-    pub(crate) fn into_type(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn into_type(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         match self {
             UnionAccumulator::One(ty) => ty,
             UnionAccumulator::Two(first, second) => {
@@ -640,7 +636,7 @@ impl<'db> UnionAccumulator<'db> {
 }
 
 impl<'db> UnionBuilder<'db> {
-    pub(crate) fn new(db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Self {
+    pub fn new(db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Self {
         Self {
             db,
             env: env.clone(),
@@ -651,12 +647,12 @@ impl<'db> UnionBuilder<'db> {
         }
     }
 
-    pub(crate) fn unpack_aliases(mut self, val: bool) -> Self {
+    pub fn unpack_aliases(mut self, val: bool) -> Self {
         self.unpack_aliases = val;
         self
     }
 
-    pub(crate) fn cycle_recovery(mut self, val: bool) -> Self {
+    pub fn cycle_recovery(mut self, val: bool) -> Self {
         self.cycle_recovery = val;
         if self.cycle_recovery {
             self.unpack_aliases = false;
@@ -665,12 +661,12 @@ impl<'db> UnionBuilder<'db> {
     }
 
     /// Preserve recursion from both the source union and any transformed elements already added.
-    pub(crate) fn or_recursively_defined(mut self, val: RecursivelyDefined) -> Self {
+    pub fn or_recursively_defined(mut self, val: RecursivelyDefined) -> Self {
         self.recursively_defined = self.recursively_defined.or(val);
         self
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.elements.is_empty()
     }
 
@@ -707,13 +703,13 @@ impl<'db> UnionBuilder<'db> {
     }
 
     /// Adds a type to this union.
-    pub(crate) fn add(mut self, ty: Type<'db>) -> Self {
+    pub fn add(mut self, ty: Type<'db>) -> Self {
         self.add_in_place(ty);
         self
     }
 
     /// Adds a type to this union.
-    pub(crate) fn add_in_place(&mut self, ty: Type<'db>) {
+    pub fn add_in_place(&mut self, ty: Type<'db>) {
         ty.assert_not_recursive_var();
         self.add_in_place_impl(ty, &mut vec![]);
     }
@@ -1194,11 +1190,11 @@ impl<'db> UnionBuilder<'db> {
         }
     }
 
-    pub(crate) fn build(self) -> Type<'db> {
+    pub fn build(self) -> Type<'db> {
         self.try_build().unwrap_or(Type::Never)
     }
 
-    pub(crate) fn try_build(self) -> Option<Type<'db>> {
+    pub fn try_build(self) -> Option<Type<'db>> {
         let db = self.db;
 
         let unpack_aliases = self.unpack_aliases;
@@ -1304,7 +1300,7 @@ impl IntersectionLimits for BoundedIntersection {
 }
 
 #[derive(Clone)]
-pub(crate) struct IntersectionBuilder<'db> {
+pub struct IntersectionBuilder<'db> {
     // Really this builds a union-of-intersections, because we always keep our set-theoretic types
     // in disjunctive normal form (DNF), a union of intersections. In the simplest case there's
     // just a single intersection in this vector, and we are building a single intersection type,
@@ -1319,7 +1315,7 @@ pub(crate) struct IntersectionBuilder<'db> {
 }
 
 impl<'db> IntersectionBuilder<'db> {
-    pub(crate) fn new(db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Self {
+    pub fn new(db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Self {
         Self {
             db,
             env: env.clone(),
@@ -1372,7 +1368,7 @@ impl<'db> IntersectionBuilder<'db> {
         ControlFlow::Continue(())
     }
 
-    pub(super) fn bounded_from_elements<I, T>(
+    pub fn bounded_from_elements<I, T>(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         elements: I,
@@ -1445,12 +1441,12 @@ impl<'db> IntersectionBuilder<'db> {
         false
     }
 
-    pub(crate) fn add_positive(mut self, ty: Type<'db>) -> Self {
+    pub fn add_positive(mut self, ty: Type<'db>) -> Self {
         self.add_positive_in_place(ty);
         self
     }
 
-    pub(crate) fn add_positive_in_place(&mut self, ty: Type<'db>) {
+    pub fn add_positive_in_place(&mut self, ty: Type<'db>) {
         let ControlFlow::Continue(()) =
             self.add_positive_impl::<UnboundedIntersection>(ty, &mut vec![]);
     }
@@ -1516,12 +1512,12 @@ impl<'db> IntersectionBuilder<'db> {
         ControlFlow::Continue(())
     }
 
-    pub(crate) fn add_negative(mut self, ty: Type<'db>) -> Self {
+    pub fn add_negative(mut self, ty: Type<'db>) -> Self {
         self.add_negative_in_place(ty);
         self
     }
 
-    pub(crate) fn add_negative_in_place(&mut self, ty: Type<'db>) {
+    pub fn add_negative_in_place(&mut self, ty: Type<'db>) {
         let ControlFlow::Continue(()) =
             self.add_negative_impl::<UnboundedIntersection>(ty, &mut vec![]);
     }
@@ -1595,7 +1591,7 @@ impl<'db> IntersectionBuilder<'db> {
         ControlFlow::Continue(())
     }
 
-    pub(crate) fn positive_elements<I, T>(mut self, elements: I) -> Self
+    pub fn positive_elements<I, T>(mut self, elements: I) -> Self
     where
         I: IntoIterator<Item = T>,
         T: Into<Type<'db>>,
@@ -1606,7 +1602,7 @@ impl<'db> IntersectionBuilder<'db> {
         self
     }
 
-    pub(crate) fn build(self) -> Type<'db> {
+    pub fn build(self) -> Type<'db> {
         let db = self.db;
         UnionType::from_elements(
             db,

@@ -42,11 +42,11 @@ use crate::{Db, Program, ProgramEnvironment};
 /// also share the work of calculating the sequent map across `PathAssignments` for _different_
 /// constraint sets.)
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct SequentMap<'db> {
+pub struct SequentMap<'db> {
     /// The sequents that were discovered while creating this sequent map. Some of those sequents
     /// will be "grouped", so that [`PathAssignments`][super::paths::PathAssignments] can add them
     /// to a [`ConstraintSetBuilder`] in a way that respects the builder's typevar ordering.
-    pub(super) sequents: Vec<SequentGroup<'db>>,
+    pub sequents: Vec<SequentGroup<'db>>,
 
     /// Pending sequents that have not yet been added to [`sequents`][Self::sequents]. This is only
     /// used during construction, and will be empty in a finalized sequent map.
@@ -70,7 +70,7 @@ pub(super) struct SequentMap<'db> {
 /// substitution separately. This allows `PathAssignments` to choose which substitution direction
 /// to import first, based on its builder's local typevar ordering.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) enum SequentGroup<'db> {
+pub enum SequentGroup<'db> {
     Ungrouped(Box<[Sequent<Constraint<'db>>]>),
     Grouped {
         equivalence: TypeVarEquivalenceBound<'db>,
@@ -82,7 +82,7 @@ pub(super) enum SequentGroup<'db> {
 /// Describes one rule for deriving new implicit constraints from existing constraints in a BDD
 /// path. Fuel costs are filled in when cached sequents are imported into a builder.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) enum Sequent<C, FuelCost = ()> {
+pub enum Sequent<C, FuelCost = ()> {
     /// Sequent of the form `¬C → false`
     ///
     /// This indicates that `C` is always true. Any path that assumes it is false is impossible and
@@ -304,7 +304,7 @@ impl<'db> SequentMap<'db> {
     /// Returns a sequent map containing the sequents that we can infer from a single constraint in
     /// isolation. This method is cached so that we only perform this work once per
     /// constraint.
-    pub(super) fn for_constraint(
+    pub fn for_constraint(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         constraint: Constraint<'db>,
@@ -340,7 +340,7 @@ impl<'db> SequentMap<'db> {
     /// (Note that this method is _not_ commutative; you should provide `left` and `right` in the
     /// order that they appear in the source code, so that we can construct derived constraints
     /// that retain that ordering.)
-    pub(super) fn for_constraint_pair(
+    pub fn for_constraint_pair(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         left: Constraint<'db>,
@@ -376,7 +376,7 @@ impl<'db> SequentMap<'db> {
     /// Quickly determines whether two constraints cannot possibly produce any sequents when passed
     /// to [`for_constraint_pair`][Self::for_constraint_pair]. If this returns `true`, it is safe
     /// to skip calling `for_constraint_pair` for this pair of constraints.
-    pub(super) fn pair_cannot_produce_sequents(
+    pub fn pair_cannot_produce_sequents(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         left: Constraint<'db>,
@@ -1931,7 +1931,7 @@ impl<'db> ConstraintSetStorage<'db> {
     /// type constructors. Each sequent is charged the _increase_ in that complexity between its
     /// antecedents and its consequent. (Measuring growth rather than absolute depth avoids
     /// penalizing a complex concrete bound that is merely propagated unchanged.)
-    pub(super) fn sequent_fuel_cost(
+    pub fn sequent_fuel_cost(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

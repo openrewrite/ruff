@@ -185,7 +185,7 @@ impl<'db> DisplaySettings<'db> {
     /// For example, a relation error that discusses the `int` member of a `float` annotation
     /// displays the union as `int | float*` instead of hiding that member behind `float`.
     #[must_use]
-    pub(crate) fn expand_numeric_tower_unions(&self) -> Self {
+    pub fn expand_numeric_tower_unions(&self) -> Self {
         Self {
             numeric_tower_display: NumericTowerDisplay::Expanded,
             ..self.clone()
@@ -244,7 +244,7 @@ impl<'db> DisplaySettings<'db> {
     }
 
     #[must_use]
-    pub(crate) fn from_possibly_ambiguous_types<I, T>(
+    pub fn from_possibly_ambiguous_types<I, T>(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         types: I,
@@ -728,7 +728,7 @@ impl<'db> Type<'db> {
         }
     }
 
-    pub(crate) fn display_with<'env>(
+    pub fn display_with<'env>(
         self,
         db: &'db dyn Db,
         env: &'env ProgramEnvironment<'db>,
@@ -775,7 +775,7 @@ impl<'db> DisplayType<'_, 'db> {
     }
 
     #[must_use]
-    pub(crate) fn preserve_long_unions(self) -> Self {
+    pub fn preserve_long_unions(self) -> Self {
         Self {
             settings: self.settings.preserve_long_unions(),
             ..self
@@ -852,7 +852,7 @@ fn fmt_file_location<'db>(
 ///
 /// # Returns
 /// A vector of path components in order (e.g., `["module", "OuterClass", "InnerClass"]`)
-pub(super) fn qualified_name_components_from_scope(
+pub fn qualified_name_components_from_scope(
     db: &dyn Db,
     file: ProgramFile<'_>,
     file_scope_id: FileScopeId,
@@ -894,7 +894,7 @@ pub(super) fn qualified_name_components_from_scope(
 }
 
 impl<'db> ClassLiteral<'db> {
-    pub(crate) fn display_with(
+    pub fn display_with(
         self,
         db: &'db dyn Db,
         settings: DisplaySettings<'db>,
@@ -907,7 +907,7 @@ impl<'db> ClassLiteral<'db> {
     }
 }
 
-pub(crate) struct ClassDisplay<'db> {
+pub struct ClassDisplay<'db> {
     db: &'db dyn Db,
     class: ClassLiteral<'db>,
     settings: DisplaySettings<'db>,
@@ -1780,7 +1780,7 @@ impl<'db> FmtDetailed<'db> for DisplayRepresentation<'_, 'db> {
 }
 
 impl<'db> BoundTypeVarIdentity<'db> {
-    pub(crate) fn display(self, db: &'db dyn Db) -> impl Display {
+    pub fn display(self, db: &'db dyn Db) -> impl Display {
         self.display_with(db, DisplaySettings::default())
     }
 
@@ -1938,7 +1938,7 @@ impl<'db> OverloadLiteral<'db> {
     }
 }
 
-pub(crate) struct DisplayOverloadLiteral<'env, 'db> {
+pub struct DisplayOverloadLiteral<'env, 'db> {
     literal: OverloadLiteral<'db>,
     db: &'db dyn Db,
     env: &'env ProgramEnvironment<'db>,
@@ -2065,7 +2065,7 @@ impl Display for DisplayFunctionType<'_, '_> {
 }
 
 impl<'db> GenericAlias<'db> {
-    pub(crate) fn display<'env>(
+    pub fn display<'env>(
         self,
         db: &'db dyn Db,
         env: &'env ProgramEnvironment<'db>,
@@ -2073,7 +2073,7 @@ impl<'db> GenericAlias<'db> {
         self.display_with(db, env, DisplaySettings::default())
     }
 
-    pub(crate) fn display_with<'env>(
+    pub fn display_with<'env>(
         self,
         db: &'db dyn Db,
         env: &'env ProgramEnvironment<'db>,
@@ -2089,7 +2089,7 @@ impl<'db> GenericAlias<'db> {
     }
 }
 
-pub(crate) struct DisplayGenericAlias<'env, 'db> {
+pub struct DisplayGenericAlias<'env, 'db> {
     origin: ClassLiteral<'db>,
     specialization: Specialization<'db>,
     db: &'db dyn Db,
@@ -2455,7 +2455,7 @@ impl<'db> CallableType<'db> {
     }
 }
 
-pub(crate) struct DisplayCallableType<'a, 'db> {
+pub struct DisplayCallableType<'a, 'db> {
     signatures: &'a CallableSignature<'db>,
     kind: CallableTypeKind,
     db: &'db dyn Db,
@@ -2527,7 +2527,7 @@ impl<'db> Signature<'db> {
     ///
     /// def f(value: builtins.float | float) -> None: ...
     /// ```
-    pub(crate) fn display<'a>(
+    pub fn display<'a>(
         &'a self,
         db: &'db dyn Db,
         env: &'a ProgramEnvironment<'db>,
@@ -2565,7 +2565,7 @@ impl<'db> Signature<'db> {
     }
 }
 
-pub(crate) struct DisplaySignature<'a, 'db> {
+pub struct DisplaySignature<'a, 'db> {
     definition: Option<Definition<'db>>,
     generic_context: Option<&'a GenericContext<'db>>,
     parameters: &'a Parameters<'db>,
@@ -2577,7 +2577,7 @@ pub(crate) struct DisplaySignature<'a, 'db> {
 
 impl DisplaySignature<'_, '_> {
     #[must_use]
-    pub(crate) fn multiline(self) -> Self {
+    pub fn multiline(self) -> Self {
         Self {
             settings: self.settings.multiline(),
             ..self
@@ -2585,7 +2585,7 @@ impl DisplaySignature<'_, '_> {
     }
 
     #[must_use]
-    pub(crate) fn disallow_name(self) -> Self {
+    pub fn disallow_name(self) -> Self {
         Self {
             settings: self.settings.disallow_signature_name(),
             ..self
@@ -2593,7 +2593,7 @@ impl DisplaySignature<'_, '_> {
     }
 
     #[must_use]
-    pub(crate) fn hide_return_type(self) -> Self {
+    pub fn hide_return_type(self) -> Self {
         Self {
             settings: self.settings.hide_return_type(),
             ..self
@@ -2601,7 +2601,7 @@ impl DisplaySignature<'_, '_> {
     }
 
     /// Get detailed display information including component ranges
-    pub(crate) fn to_string_parts(&self) -> SignatureDisplayDetails {
+    pub fn to_string_parts(&self) -> SignatureDisplayDetails {
         let mut f = TypeWriter::Details(TypeDetailsWriter::new());
         self.fmt_detailed(&mut f).unwrap();
 
@@ -2709,7 +2709,7 @@ impl Display for DisplaySignature<'_, '_> {
 
 /// Details about signature display components, including ranges for parameters and return type
 #[derive(Debug, Clone)]
-pub(crate) struct SignatureDisplayDetails {
+pub struct SignatureDisplayDetails {
     /// The full signature string
     pub label: String,
     /// Ranges for each parameter within the label
@@ -3795,7 +3795,7 @@ impl<'db> StringLiteralType<'db> {
     }
 }
 
-pub(crate) struct DisplayKnownInstanceRepr<'env, 'db> {
+pub struct DisplayKnownInstanceRepr<'env, 'db> {
     known_instance: KnownInstanceType<'db>,
     db: &'db dyn Db,
     env: &'env ProgramEnvironment<'db>,
@@ -3803,7 +3803,7 @@ pub(crate) struct DisplayKnownInstanceRepr<'env, 'db> {
 }
 
 impl<'db> KnownInstanceType<'db> {
-    pub(crate) fn display_with<'env>(
+    pub fn display_with<'env>(
         self,
         db: &'db dyn Db,
         env: &'env ProgramEnvironment<'db>,

@@ -10,7 +10,7 @@ use crate::types::typed_dict::{
 use crate::types::{KnownClass, Type, TypeContext};
 
 impl<'db> TypeInferenceBuilder<'db, '_> {
-    pub(super) fn infer_keyword_only_dict_call(
+    pub fn infer_keyword_only_dict_call(
         &mut self,
         func: &ast::Expr,
         arguments: &ast::Arguments,

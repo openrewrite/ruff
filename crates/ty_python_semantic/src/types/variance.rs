@@ -8,16 +8,12 @@ use crate::{
 
 mod equations;
 
-pub(super) use equations::{VarianceOrigin, VarianceTerm, infer_protocol_variance};
+pub use equations::{VarianceOrigin, VarianceTerm, infer_protocol_variance};
 
 impl<'db> StaticClassLiteral<'db> {
     /// Keeps `Self` symbolic while inspecting a class's interface. Substituting `C[T]` would
     /// incorrectly make a parameter annotated as `Self` consume the class's `T`.
-    pub(super) fn variance_receiver(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn variance_receiver(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         Type::TypeVar(BoundTypeVarInstance::synthetic_self(
             db,
             Type::instance(db, env, self.identity_specialization(db)),
@@ -29,14 +25,14 @@ impl<'db> StaticClassLiteral<'db> {
 /// The read and write contributions of one exposed member, before attribute mutability or
 /// source-specific exclusions are applied.
 #[derive(Clone, Copy)]
-pub(super) struct MemberVariance<'db> {
-    pub(super) read_ty: Type<'db>,
-    pub(super) write_domain: DescriptorSetterDomain<'db>,
+pub struct MemberVariance<'db> {
+    pub read_ty: Type<'db>,
+    pub write_domain: DescriptorSetterDomain<'db>,
 }
 
 impl<'db> MemberVariance<'db> {
     /// Resolves the instance read and descriptor write types of a class member.
-    pub(super) fn of(
+    pub fn of(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         ty: Type<'db>,
@@ -57,7 +53,7 @@ impl<'db> MemberVariance<'db> {
     }
 
     /// An accessor contributes its bound callable signature, including a setter's input.
-    pub(super) fn accessor(
+    pub fn accessor(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         ty: Type<'db>,
@@ -112,7 +108,7 @@ pub enum TypeVarVariance {
 impl TypeVarVariance {
     // supremum
     #[must_use]
-    pub(crate) const fn join(self, other: Self) -> Self {
+    pub const fn join(self, other: Self) -> Self {
         use TypeVarVariance::{Bivariant, Contravariant, Covariant, Invariant};
         match (self, other) {
             (Invariant, _) | (_, Invariant) => Invariant,
@@ -142,14 +138,14 @@ impl TypeVarVariance {
     /// We would say `ConstantInt[str]` = `ConstantInt[float]`, so we qualify as
     /// using semantic equivalence.
     #[must_use]
-    pub(crate) fn compose(self, other: Self) -> Self {
+    pub fn compose(self, other: Self) -> Self {
         self.compose_thunk(|| other)
     }
 
     /// Like `compose`, but takes `other` as a thunk to avoid unnecessary
     /// computation when `self` is `Bivariant`.
     #[must_use]
-    pub(crate) fn compose_thunk<F>(self, other: F) -> Self
+    pub fn compose_thunk<F>(self, other: F) -> Self
     where
         F: FnOnce() -> Self,
     {
@@ -170,7 +166,7 @@ impl TypeVarVariance {
     /// Flips the polarity of the variance.
     ///
     /// Covariant becomes contravariant, contravariant becomes covariant, others remain unchanged.
-    pub(crate) const fn flip(self) -> Self {
+    pub const fn flip(self) -> Self {
         match self {
             TypeVarVariance::Invariant => TypeVarVariance::Invariant,
             TypeVarVariance::Covariant => TypeVarVariance::Contravariant,
@@ -179,14 +175,14 @@ impl TypeVarVariance {
         }
     }
 
-    pub(crate) const fn is_covariant(self) -> bool {
+    pub const fn is_covariant(self) -> bool {
         matches!(
             self,
             TypeVarVariance::Covariant | TypeVarVariance::Bivariant
         )
     }
 
-    pub(crate) const fn is_contravariant(self) -> bool {
+    pub const fn is_contravariant(self) -> bool {
         matches!(
             self,
             TypeVarVariance::Contravariant | TypeVarVariance::Bivariant
@@ -195,7 +191,7 @@ impl TypeVarVariance {
 
     /// Returns a human-readable name for this variance, matching the keyword
     /// argument names used in `TypeVar(covariant=True)` / `TypeVar(contravariant=True)`.
-    pub(crate) const fn as_str(self) -> &'static str {
+    pub const fn as_str(self) -> &'static str {
         match self {
             TypeVarVariance::Invariant => "invariant",
             TypeVarVariance::Covariant => "covariant",
@@ -225,7 +221,7 @@ impl std::iter::FromIterator<Self> for TypeVarVariance {
     }
 }
 
-pub(crate) trait VarianceInferable<'db>: Sized {
+pub trait VarianceInferable<'db>: Sized {
     /// Builds a variance expression without choosing how protocol declarations are evaluated.
     ///
     /// Recursive definitions contribute named variables instead of expanding their bodies.
@@ -259,7 +255,7 @@ pub(crate) trait VarianceInferable<'db>: Sized {
     }
 }
 
-pub(crate) struct WithPolarity<T> {
+pub struct WithPolarity<T> {
     variance_inferable: T,
     polarity: TypeVarVariance,
 }

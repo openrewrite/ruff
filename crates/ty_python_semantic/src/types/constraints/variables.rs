@@ -29,7 +29,7 @@ use crate::{Db, ProgramEnvironment};
 /// A bound derived only from validity remains validity. Any derivation that also depends on
 /// evidence is itself evidence.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum ConstraintProvenance {
+pub enum ConstraintProvenance {
     Validity,
     Evidence,
 }
@@ -40,7 +40,7 @@ impl ConstraintProvenance {
     /// Derived constraints must retain any call-site evidence that contributed to them. Otherwise,
     /// a derivation could downgrade evidence to a background validity restriction, causing the
     /// solver to ignore a specialization justified by the call site.
-    pub(super) const fn derived(left: Self, right: Self) -> Self {
+    pub const fn derived(left: Self, right: Self) -> Self {
         match (left, right) {
             (Self::Validity, Self::Validity) => Self::Validity,
             _ => Self::Evidence,
@@ -54,7 +54,7 @@ impl ConstraintProvenance {
     /// bound to evidence could make the solver choose a specialization that the call site does not
     /// actually support. When neither input alone
     /// determines the combined bound, its provenance must reflect both inputs.
-    pub(super) fn simplified<'db>(
+    pub fn simplified<'db>(
         left_provenance: Self,
         left_bound: Type<'db>,
         right_provenance: Self,
@@ -69,11 +69,11 @@ impl ConstraintProvenance {
     }
 }
 
-pub(super) struct UnsatisfiableBound;
+pub struct UnsatisfiableBound;
 
 /// One condition that can be checked by an interior node in a constraint set BDD
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum Constraint<'db> {
+pub enum Constraint<'db> {
     ConcreteLower(ConcreteLowerBound<'db>),
     ConcreteUpper(ConcreteUpperBound<'db>),
     ConcreteEquivalence(ConcreteEquivalenceBound<'db>),
@@ -82,7 +82,7 @@ pub(crate) enum Constraint<'db> {
 }
 
 impl<'db> Constraint<'db> {
-    pub(super) fn new_node(
+    pub fn new_node(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -92,7 +92,7 @@ impl<'db> Constraint<'db> {
         Node::new_constraint(storage, constraint_id)
     }
 
-    pub(super) fn new_nodes(
+    pub fn new_nodes(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         storage: &mut ConstraintSetStorage<'db>,
@@ -113,7 +113,7 @@ impl<'db> Constraint<'db> {
     /// Returns the constraints that model the requirement that `bound` must be assignable to
     /// `typevar`. Union lower bounds are broken apart into separate constraints. Returns no
     /// constraints when the relationship always holds (e.g. when comparing a typevar with itself).
-    pub(super) fn new_lower_bound(
+    pub fn new_lower_bound(
         db: &'db dyn Db,
         provenance: ConstraintProvenance,
         typevar: BoundTypeVarInstance<'db>,
@@ -201,7 +201,7 @@ impl<'db> Constraint<'db> {
     /// return whether each constraint should hold (for positive intersection elements) or not hold
     /// (for negative). Returns no constraints when the relationship always holds (e.g. when
     /// comparing a typevar with itself).
-    pub(super) fn new_upper_bound(
+    pub fn new_upper_bound(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         provenance: ConstraintProvenance,
@@ -279,7 +279,7 @@ impl<'db> Constraint<'db> {
     /// constraint apart into separate lower- and upper-bound constraints when a top-level union or
     /// intersection refers to `typevar` itself, so that the tautological half of the equality can
     /// be removed without discarding the other half.
-    pub(super) fn new_equivalence_bound(
+    pub fn new_equivalence_bound(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         provenance: ConstraintProvenance,
@@ -367,7 +367,7 @@ impl<'db> Constraint<'db> {
         }
     }
 
-    pub(super) fn is_reflexive_typevar_relation(self, db: &'db dyn Db) -> bool {
+    pub fn is_reflexive_typevar_relation(self, db: &'db dyn Db) -> bool {
         match self {
             Constraint::TypeVarRange(this) => this.left.is_same_typevar_as(db, this.right),
             Constraint::TypeVarEquivalence(this) => this.left.is_same_typevar_as(db, this.right),
@@ -377,7 +377,7 @@ impl<'db> Constraint<'db> {
         }
     }
 
-    pub(super) fn provides_lower(self) -> bool {
+    pub fn provides_lower(self) -> bool {
         matches!(
             self,
             Constraint::ConcreteLower(_)
@@ -387,7 +387,7 @@ impl<'db> Constraint<'db> {
         )
     }
 
-    pub(super) fn provides_upper(self) -> bool {
+    pub fn provides_upper(self) -> bool {
         matches!(
             self,
             Constraint::ConcreteUpper(_)
@@ -397,7 +397,7 @@ impl<'db> Constraint<'db> {
         )
     }
 
-    pub(super) fn as_concrete(
+    pub fn as_concrete(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -421,7 +421,7 @@ impl<'db> Constraint<'db> {
         }
     }
 
-    pub(crate) fn bound_depth(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> (u16, u16) {
+    pub fn bound_depth(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> (u16, u16) {
         match self {
             Constraint::ConcreteLower(this) => {
                 max_constructor_and_typevar_depth(db, env, this.bound)
@@ -436,7 +436,7 @@ impl<'db> Constraint<'db> {
         }
     }
 
-    pub(super) fn directly_constrains_inferable_typevar(
+    pub fn directly_constrains_inferable_typevar(
         self,
         db: &'db dyn Db,
         inferable: TypeVarSet<'db>,
@@ -454,7 +454,7 @@ impl<'db> Constraint<'db> {
         }
     }
 
-    pub(super) fn apply_type_mapping_impl(
+    pub fn apply_type_mapping_impl(
         self,
         db: &'db dyn Db,
         builder: &ConstraintSetBuilder<'db>,
@@ -481,7 +481,7 @@ impl<'db> Constraint<'db> {
         }
     }
 
-    pub(super) fn types(self) -> impl Iterator<Item = Type<'db>> {
+    pub fn types(self) -> impl Iterator<Item = Type<'db>> {
         let types = match self {
             Constraint::ConcreteLower(this) => [Type::TypeVar(this.typevar), this.bound],
             Constraint::ConcreteUpper(this) => [Type::TypeVar(this.typevar), this.bound],
@@ -494,7 +494,7 @@ impl<'db> Constraint<'db> {
         types.into_iter()
     }
 
-    pub(super) fn display<'a>(
+    pub fn display<'a>(
         self,
         db: &'db dyn Db,
         env: &'a ProgramEnvironment<'db>,
@@ -510,7 +510,7 @@ impl<'db> Constraint<'db> {
     }
 }
 
-pub(super) trait ProvidesConcreteBound<'db>: Copy + Into<Constraint<'db>> {
+pub trait ProvidesConcreteBound<'db>: Copy + Into<Constraint<'db>> {
     fn provenance(self) -> ConstraintProvenance;
     fn typevar(self) -> BoundTypeVarInstance<'db>;
     fn bound(self) -> Type<'db>;
@@ -518,26 +518,23 @@ pub(super) trait ProvidesConcreteBound<'db>: Copy + Into<Constraint<'db>> {
     fn map(self, provenance: ConstraintProvenance, bound: Type<'db>) -> Self;
 }
 
-pub(super) trait ProvidesConcreteLowerBound<'db>: ProvidesConcreteBound<'db> {
+pub trait ProvidesConcreteLowerBound<'db>: ProvidesConcreteBound<'db> {
     fn into_lower_bound(self) -> ConcreteLowerBound<'db>;
 }
 
-pub(super) trait ProvidesConcreteUpperBound<'db>: ProvidesConcreteBound<'db> {
+pub trait ProvidesConcreteUpperBound<'db>: ProvidesConcreteBound<'db> {
     fn into_upper_bound(self) -> ConcreteUpperBound<'db>;
 }
 
-pub(super) trait ProvidesTypeVarBound<'db>: Copy + Into<Constraint<'db>> {
+pub trait ProvidesTypeVarBound<'db>: Copy + Into<Constraint<'db>> {
     fn provenance(self) -> ConstraintProvenance;
     fn left(self) -> BoundTypeVarInstance<'db>;
     fn right(self) -> BoundTypeVarInstance<'db>;
     fn is_equivalence(self) -> bool;
 }
 
-pub(super) trait ProvidesTypeVarRangeBound<'db>: ProvidesTypeVarBound<'db> {}
-pub(super) trait ProvidesTypeVarEquivalenceBound<'db>:
-    ProvidesTypeVarRangeBound<'db>
-{
-}
+pub trait ProvidesTypeVarRangeBound<'db>: ProvidesTypeVarBound<'db> {}
+pub trait ProvidesTypeVarEquivalenceBound<'db>: ProvidesTypeVarRangeBound<'db> {}
 
 /// Restricts a single typevar so that a concrete lower bound is assignable to it. (A concrete type
 /// is not a bare typevar. [`TypeVarRangeBound`] is used to model an assignability relationship
@@ -546,16 +543,16 @@ pub(super) trait ProvidesTypeVarEquivalenceBound<'db>:
 /// The bound will never be a union type, since union lower bounds can be broken apart into
 /// separate constraints for each union element.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct ConcreteLowerBound<'db> {
-    pub(super) provenance: ConstraintProvenance,
-    pub(super) typevar: BoundTypeVarInstance<'db>,
-    pub(super) bound: Type<'db>,
+pub struct ConcreteLowerBound<'db> {
+    pub provenance: ConstraintProvenance,
+    pub typevar: BoundTypeVarInstance<'db>,
+    pub bound: Type<'db>,
     // Always construct via the `new` method
     _phantom: PhantomData<()>,
 }
 
 impl<'db> ConcreteLowerBound<'db> {
-    pub(super) fn new(
+    pub fn new(
         provenance: ConstraintProvenance,
         typevar: BoundTypeVarInstance<'db>,
         bound: Type<'db>,
@@ -664,16 +661,16 @@ impl<'db> ProvidesConcreteLowerBound<'db> for ConcreteLowerBound<'db> {
 /// The bound will never be an intersection type, since intersection upper bounds can be broken
 /// apart into separate constraints for each intersection element.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct ConcreteUpperBound<'db> {
-    pub(super) provenance: ConstraintProvenance,
-    pub(super) typevar: BoundTypeVarInstance<'db>,
-    pub(super) bound: Type<'db>,
+pub struct ConcreteUpperBound<'db> {
+    pub provenance: ConstraintProvenance,
+    pub typevar: BoundTypeVarInstance<'db>,
+    pub bound: Type<'db>,
     // Always construct via the `new` method
     _phantom: PhantomData<()>,
 }
 
 impl<'db> ConcreteUpperBound<'db> {
-    pub(super) fn new(
+    pub fn new(
         provenance: ConstraintProvenance,
         typevar: BoundTypeVarInstance<'db>,
         bound: Type<'db>,
@@ -779,16 +776,16 @@ impl<'db> ProvidesConcreteUpperBound<'db> for ConcreteUpperBound<'db> {
 /// not a bare typevar. [`TypeVarEquivalenceBound`] is used to model an equivalence relationship
 /// between two typevars.)
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct ConcreteEquivalenceBound<'db> {
-    pub(super) provenance: ConstraintProvenance,
-    pub(super) typevar: BoundTypeVarInstance<'db>,
-    pub(super) bound: Type<'db>,
+pub struct ConcreteEquivalenceBound<'db> {
+    pub provenance: ConstraintProvenance,
+    pub typevar: BoundTypeVarInstance<'db>,
+    pub bound: Type<'db>,
     // Always construct via the `new` method
     _phantom: PhantomData<()>,
 }
 
 impl<'db> ConcreteEquivalenceBound<'db> {
-    pub(super) fn new(
+    pub fn new(
         provenance: ConstraintProvenance,
         typevar: BoundTypeVarInstance<'db>,
         bound: Type<'db>,
@@ -910,16 +907,16 @@ impl<'db> ProvidesConcreteUpperBound<'db> for ConcreteEquivalenceBound<'db> {
 /// Restricts two typevars so that `left` must be assignable to `right`. Both typevars must have
 /// the same domain.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct TypeVarRangeBound<'db> {
-    pub(super) provenance: ConstraintProvenance,
-    pub(super) left: BoundTypeVarInstance<'db>,
-    pub(super) right: BoundTypeVarInstance<'db>,
+pub struct TypeVarRangeBound<'db> {
+    pub provenance: ConstraintProvenance,
+    pub left: BoundTypeVarInstance<'db>,
+    pub right: BoundTypeVarInstance<'db>,
     // Always construct via the `new` method
     _phantom: PhantomData<()>,
 }
 
 impl<'db> TypeVarRangeBound<'db> {
-    pub(super) fn new(
+    pub fn new(
         db: &'db dyn Db,
         provenance: ConstraintProvenance,
         left: BoundTypeVarInstance<'db>,
@@ -1015,16 +1012,16 @@ impl<'db> ProvidesTypeVarRangeBound<'db> for TypeVarRangeBound<'db> {}
 /// with a consistent typevar ordering across the process. This does _not_ affect the BDD variable
 /// ordering assigned to this constraint in a particular builder.)
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct TypeVarEquivalenceBound<'db> {
-    pub(super) provenance: ConstraintProvenance,
-    pub(super) left: BoundTypeVarInstance<'db>,
-    pub(super) right: BoundTypeVarInstance<'db>,
+pub struct TypeVarEquivalenceBound<'db> {
+    pub provenance: ConstraintProvenance,
+    pub left: BoundTypeVarInstance<'db>,
+    pub right: BoundTypeVarInstance<'db>,
     // Always construct via the `new` method
     _phantom: PhantomData<()>,
 }
 
 impl<'db> TypeVarEquivalenceBound<'db> {
-    pub(super) fn new(
+    pub fn new(
         db: &'db dyn Db,
         provenance: ConstraintProvenance,
         left: BoundTypeVarInstance<'db>,
@@ -1047,7 +1044,7 @@ impl<'db> TypeVarEquivalenceBound<'db> {
     }
 
     /// Returns the builder-specific order that the typevars in this bound should be added in.
-    pub(super) fn in_builder(
+    pub fn in_builder(
         self,
         db: &'db dyn Db,
         storage: &mut ConstraintSetStorage<'db>,
@@ -1059,11 +1056,11 @@ impl<'db> TypeVarEquivalenceBound<'db> {
         }
     }
 
-    pub(super) fn forwards(self) -> TypeVarEquivalenceDirectedView<'db> {
+    pub fn forwards(self) -> TypeVarEquivalenceDirectedView<'db> {
         TypeVarEquivalenceDirectedView(self, false)
     }
 
-    pub(super) fn backwards(self) -> TypeVarEquivalenceDirectedView<'db> {
+    pub fn backwards(self) -> TypeVarEquivalenceDirectedView<'db> {
         TypeVarEquivalenceDirectedView(self, true)
     }
 
@@ -1133,7 +1130,7 @@ impl<'db> From<TypeVarEquivalenceBound<'db>> for Constraint<'db> {
 }
 
 #[derive(Clone, Copy)]
-pub(super) struct TypeVarEquivalenceDirectedView<'db>(TypeVarEquivalenceBound<'db>, bool);
+pub struct TypeVarEquivalenceDirectedView<'db>(TypeVarEquivalenceBound<'db>, bool);
 
 impl<'db> From<TypeVarEquivalenceDirectedView<'db>> for Constraint<'db> {
     fn from(bound: TypeVarEquivalenceDirectedView<'db>) -> Constraint<'db> {
@@ -1142,7 +1139,7 @@ impl<'db> From<TypeVarEquivalenceDirectedView<'db>> for Constraint<'db> {
 }
 
 impl TypeVarEquivalenceDirectedView<'_> {
-    pub(super) fn reverse(self) -> Self {
+    pub fn reverse(self) -> Self {
         let Self(bound, reversed) = self;
         Self(bound, !reversed)
     }

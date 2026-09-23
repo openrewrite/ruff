@@ -74,7 +74,7 @@ impl<'a> Importer<'a> {
     }
 
     /// The file's indentation unit, shared with inserted imports and diagnostic fixes.
-    pub(crate) fn indentation(&self) -> &str {
+    pub fn indentation(&self) -> &str {
         self.stylist.indentation().as_str()
     }
 
@@ -322,7 +322,7 @@ impl<'a> Importer<'a> {
     /// method calls it for each candidate style and then validates the returned name. The extra
     /// work here is deciding whether a diagnostic can use that action, not constructing a second
     /// kind of import edit.
-    pub(crate) fn import_for_diagnostic(
+    pub fn import_for_diagnostic(
         &self,
         request: ImportRequest<'_>,
         scope: FileScopeId,
@@ -539,7 +539,7 @@ pub struct MembersInScope<'ast> {
 impl<'ast> MembersInScope<'ast> {
     /// An empty scope for importing a name that is already known to be unbound.
     /// This avoids querying inferred types while constructing a diagnostic fix.
-    pub(crate) fn empty(at: TextSize) -> Self {
+    pub fn empty(at: TextSize) -> Self {
         Self {
             at,
             map: FxHashMap::default(),

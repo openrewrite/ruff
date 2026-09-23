@@ -74,45 +74,45 @@ use ty_python_core::{
 pub struct StaticClassLiteral<'db> {
     /// Name of the class at definition
     #[returns(ref)]
-    pub(crate) name: Name,
+    pub name: Name,
 
     #[returns(copy)]
-    pub(crate) body_scope: ScopeId<'db>,
+    pub body_scope: ScopeId<'db>,
 
     #[returns(copy)]
-    pub(crate) known: Option<KnownClass>,
+    pub known: Option<KnownClass>,
 
     /// If this class is deprecated, this holds the deprecation message.
     #[returns(copy)]
-    pub(crate) deprecated: Option<DeprecatedInstance<'db>>,
+    pub deprecated: Option<DeprecatedInstance<'db>>,
 
     #[returns(copy)]
-    pub(crate) type_check_only: bool,
+    pub type_check_only: bool,
 
     #[returns(copy)]
-    pub(crate) dataclass_params: Option<DataclassParams<'db>>,
+    pub dataclass_params: Option<DataclassParams<'db>>,
     #[returns(copy)]
-    pub(crate) dataclass_transformer_params: Option<DataclassTransformerParams<'db>>,
+    pub dataclass_transformer_params: Option<DataclassTransformerParams<'db>>,
 
     /// Whether this class is decorated with `@functools.total_ordering`
     #[returns(copy)]
-    pub(crate) total_ordering: bool,
+    pub total_ordering: bool,
 
     /// Whether this class has any decorators.
     #[returns(copy)]
-    pub(crate) has_decorators: bool,
+    pub has_decorators: bool,
 
     /// Whether this class has PEP 695 type parameters.
     #[returns(copy)]
-    pub(crate) has_type_params: bool,
+    pub has_type_params: bool,
 
     /// Whether this class has any explicit base classes.
     #[returns(copy)]
-    pub(crate) has_explicit_bases: bool,
+    pub has_explicit_bases: bool,
 
     /// Whether this class has an explicit `metaclass` keyword argument.
     #[returns(copy)]
-    pub(crate) has_explicit_metaclass: bool,
+    pub has_explicit_metaclass: bool,
 }
 
 // The Salsa heap is tracked separately.
@@ -123,7 +123,7 @@ impl get_size2::GetSize for StaticClassLiteral<'_> {}
 /// See that method for details on how generated frozen-dataclass methods handle fields and
 /// non-fields on subclass instances.
 #[derive(Clone, Copy)]
-pub(crate) enum FrozenDataclassDispatch<'db> {
+pub enum FrozenDataclassDispatch<'db> {
     /// A reachable frozen dataclass rejects assignment to or deletion of one of its fields.
     FrozenField,
     /// Every reachable frozen method delegates, with lookup resuming after this base.
@@ -138,7 +138,7 @@ impl<'db> FrozenDataclassDispatch<'db> {
     /// lookup must resume after the last frozen base. For example, assigning `Child().y` for
     /// `class Child(Frozen, Later)` uses `super(Frozen, child)` when `y` is not a field of `Frozen`;
     /// this preserves a later `__setattr__` or a descriptor for `y`.
-    pub(crate) fn receiver(
+    pub fn receiver(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -213,11 +213,11 @@ struct OwnClassFields<'db> {
 #[salsa::tracked]
 impl<'db> StaticClassLiteral<'db> {
     /// Return `true` if this class represents `known_class`
-    pub(crate) fn is_known(self, db: &'db dyn Db, known_class: KnownClass) -> bool {
+    pub fn is_known(self, db: &'db dyn Db, known_class: KnownClass) -> bool {
         self.known(db) == Some(known_class)
     }
 
-    pub(crate) fn is_tuple(self, db: &'db dyn Db) -> bool {
+    pub fn is_tuple(self, db: &'db dyn Db) -> bool {
         self.is_known(db, KnownClass::Tuple)
     }
 
@@ -241,13 +241,13 @@ impl<'db> StaticClassLiteral<'db> {
     /// `dataclass_transform` (function-based, metaclass-based, and base-class-based).
     /// This specifically excludes Pydantic models, even though their metaclass also uses
     /// `dataclass_transform`.
-    pub(crate) fn is_dataclass_like(self, db: &'db dyn Db) -> bool {
+    pub fn is_dataclass_like(self, db: &'db dyn Db) -> bool {
         CodeGeneratorKind::from_class(db, ClassLiteral::Static(self))
             .is_some_and(CodeGeneratorKind::is_dataclass_like)
     }
 
     /// Returns `true` if this class is decorated with `@dataclass(order=True)`.
-    pub(crate) fn is_ordered_dataclass(self, db: &'db dyn Db) -> bool {
+    pub fn is_ordered_dataclass(self, db: &'db dyn Db) -> bool {
         self.find_dataclass_decorator_position(db).is_some()
             && self
                 .dataclass_params(db)
@@ -255,7 +255,7 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Returns a new [`StaticClassLiteral`] with the given dataclass params, preserving all other fields.
-    pub(crate) fn with_dataclass_params(
+    pub fn with_dataclass_params(
         self,
         db: &'db dyn Db,
         dataclass_params: Option<DataclassParams<'db>>,
@@ -281,7 +281,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// `__ge__`) in its own body (not inherited). Used by `@total_ordering` to determine if
     /// synthesis is valid.
     #[salsa::tracked(returns(copy))]
-    pub(crate) fn has_own_ordering_method(self, db: &'db dyn Db) -> bool {
+    pub fn has_own_ordering_method(self, db: &'db dyn Db) -> bool {
         let body_scope = self.body_scope(db);
         ["__lt__", "__le__", "__gt__", "__ge__"]
             .iter()
@@ -289,7 +289,7 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     #[salsa::tracked(returns(copy))]
-    pub(crate) fn has_own_comparison_methods(self, db: &'db dyn Db) -> bool {
+    pub fn has_own_comparison_methods(self, db: &'db dyn Db) -> bool {
         let body_scope = self.body_scope(db);
         ["__lt__", "__le__", "__gt__", "__ge__"]
             .iter()
@@ -298,7 +298,7 @@ impl<'db> StaticClassLiteral<'db> {
 
     /// Returns `true` if any class in this class's MRO (excluding `object`) defines an ordering
     /// method (`__lt__`, `__le__`, `__gt__`, `__ge__`). Used by `@total_ordering` validation.
-    pub(crate) fn has_ordering_method_in_mro(
+    pub fn has_ordering_method_in_mro(
         self,
         db: &'db dyn Db,
         specialization: Option<Specialization<'db>>,
@@ -362,7 +362,7 @@ impl<'db> StaticClassLiteral<'db> {
         cycle_initial=|_, _, _| None,
         heap_size=ruff_memory_usage::heap_size,
     )]
-    pub(crate) fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
+    pub fn generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
         // Several typeshed definitions examine `sys.version_info`. To break cycles, we hard-code
         // the knowledge that this class is not generic.
         if self.is_known(db, KnownClass::VersionInfo) {
@@ -380,11 +380,11 @@ impl<'db> StaticClassLiteral<'db> {
             .or_else(|| self.inherited_legacy_generic_context(db))
     }
 
-    pub(crate) fn has_pep_695_type_params(self, db: &'db dyn Db) -> bool {
+    pub fn has_pep_695_type_params(self, db: &'db dyn Db) -> bool {
         self.pep695_generic_context(db).is_some()
     }
 
-    pub(crate) fn pep695_generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
+    pub fn pep695_generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
         if !self.has_type_params(db) {
             return None;
         }
@@ -409,7 +409,7 @@ impl<'db> StaticClassLiteral<'db> {
         })
     }
 
-    pub(crate) fn legacy_generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
+    pub fn legacy_generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
         self.explicit_bases(db).iter().find_map(|base| match base {
             Type::KnownInstance(
                 KnownInstanceType::SubscriptedGeneric(generic_context)
@@ -419,10 +419,7 @@ impl<'db> StaticClassLiteral<'db> {
         })
     }
 
-    pub(crate) fn inherited_legacy_generic_context(
-        self,
-        db: &'db dyn Db,
-    ) -> Option<GenericContext<'db>> {
+    pub fn inherited_legacy_generic_context(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
         #[salsa::tracked(
             returns(copy),
             cycle_initial=|_, _, _| None,
@@ -476,11 +473,7 @@ impl<'db> StaticClassLiteral<'db> {
 
     /// Iterate through the decorators on this class, returning the span of the first one
     /// that matches the given [`KnownFunction`].
-    pub(crate) fn find_known_decorator_span(
-        self,
-        db: &'db dyn Db,
-        needle: KnownFunction,
-    ) -> Option<Span> {
+    pub fn find_known_decorator_span(self, db: &'db dyn Db, needle: KnownFunction) -> Option<Span> {
         self.find_decorator_span(db, |ty| {
             ty.as_function_literal()
                 .is_some_and(|f| f.is_known(db, needle))
@@ -490,7 +483,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// Returns all of the typevars that are referenced in this class's base class list.
     /// (This is used to ensure that classes do not reference typevars from enclosing
     /// generic contexts.)
-    pub(crate) fn typevars_referenced_in_bases(
+    pub fn typevars_referenced_in_bases(
         self,
         db: &'db dyn Db,
     ) -> FxIndexSet<BoundTypeVarInstance<'db>> {
@@ -547,15 +540,15 @@ impl<'db> StaticClassLiteral<'db> {
         self.generic_context(db)
     }
 
-    pub(crate) fn file(self, db: &dyn Db) -> File {
+    pub fn file(self, db: &dyn Db) -> File {
         self.body_scope(db).file(db)
     }
 
-    pub(crate) fn python_file(self, db: &'db dyn Db) -> PythonFile<'db> {
+    pub fn python_file(self, db: &'db dyn Db) -> PythonFile<'db> {
         self.body_scope(db).python_file(db)
     }
 
-    pub(crate) fn program_file(self, db: &'db dyn Db) -> ProgramFile<'db> {
+    pub fn program_file(self, db: &'db dyn Db) -> ProgramFile<'db> {
         self.body_scope(db).program_file(db)
     }
 
@@ -568,13 +561,13 @@ impl<'db> StaticClassLiteral<'db> {
         self.body_scope(db).node(db).expect_class().node(module)
     }
 
-    pub(crate) fn definition(self, db: &'db dyn Db) -> Definition<'db> {
+    pub fn definition(self, db: &'db dyn Db) -> Definition<'db> {
         let body_scope = self.body_scope(db);
         let index = semantic_index(db, body_scope.program_file(db));
         index.expect_single_definition(body_scope.node(db).expect_class())
     }
 
-    pub(crate) fn apply_specialization(
+    pub fn apply_specialization(
         self,
         db: &'db dyn Db,
         f: impl FnOnce(GenericContext<'db>) -> Specialization<'db>,
@@ -589,7 +582,7 @@ impl<'db> StaticClassLiteral<'db> {
         }
     }
 
-    pub(crate) fn apply_optional_specialization(
+    pub fn apply_optional_specialization(
         self,
         db: &'db dyn Db,
         specialization: Option<Specialization<'db>>,
@@ -600,7 +593,7 @@ impl<'db> StaticClassLiteral<'db> {
         })
     }
 
-    pub(crate) fn top_materialization(self, db: &'db dyn Db) -> ClassType<'db> {
+    pub fn top_materialization(self, db: &'db dyn Db) -> ClassType<'db> {
         self.apply_specialization(db, |generic_context| {
             let env = ProgramEnvironment::from_program(generic_context.program(db));
             generic_context
@@ -616,7 +609,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// Returns the default specialization of this class. For non-generic classes, the class is
     /// returned unchanged. For a non-specialized generic class, we return a generic alias that
     /// applies the default specialization to the class's typevars.
-    pub(crate) fn default_specialization(self, db: &'db dyn Db) -> ClassType<'db> {
+    pub fn default_specialization(self, db: &'db dyn Db) -> ClassType<'db> {
         self.apply_specialization(db, |generic_context| {
             generic_context.default_specialization(db, self.known(db))
         })
@@ -625,14 +618,14 @@ impl<'db> StaticClassLiteral<'db> {
     /// Returns the unknown specialization of this class. For non-generic classes, the class is
     /// returned unchanged. For a non-specialized generic class, we return a generic alias that
     /// maps each of the class's typevars to `Unknown`.
-    pub(crate) fn unknown_specialization(self, db: &'db dyn Db) -> ClassType<'db> {
+    pub fn unknown_specialization(self, db: &'db dyn Db) -> ClassType<'db> {
         self.apply_specialization(db, |generic_context| {
             generic_context.unknown_specialization(db, self.known(db))
         })
     }
 
     /// Returns a specialization of this class where each typevar is mapped to itself.
-    pub(crate) fn identity_specialization(self, db: &'db dyn Db) -> ClassType<'db> {
+    pub fn identity_specialization(self, db: &'db dyn Db) -> ClassType<'db> {
         self.apply_specialization(db, |generic_context| {
             generic_context.identity_specialization(db)
         })
@@ -651,7 +644,7 @@ impl<'db> StaticClassLiteral<'db> {
     ///
     /// Were this not a salsa query, then the calling query
     /// would depend on the class's AST and rerun for every change in that file.
-    pub(crate) fn explicit_bases(self, db: &'db dyn Db) -> &'db [Type<'db>] {
+    pub fn explicit_bases(self, db: &'db dyn Db) -> &'db [Type<'db>] {
         #[salsa::tracked(returns(deref), cycle_initial=explicit_bases_cycle_initial, cycle_fn=explicit_bases_cycle_fn, heap_size=ruff_memory_usage::heap_size)]
         fn explicit_bases_inner<'db>(
             db: &'db dyn Db,
@@ -682,7 +675,7 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Return `Some()` if this class is known to be a [`DisjointBase`], or `None` if it is not.
-    pub(super) fn as_disjoint_base(self, db: &'db dyn Db) -> Option<DisjointBase<'db>> {
+    pub fn as_disjoint_base(self, db: &'db dyn Db) -> Option<DisjointBase<'db>> {
         if self
             .known_function_decorators(db)
             .contains(&KnownFunction::DisjointBase)
@@ -718,7 +711,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// that method for why we do this rather than relying on generalised logic for all
     /// classes, including the special-cased ones that are included in the [`KnownClass`]
     /// enum.
-    pub(crate) fn is_protocol(self, db: &'db dyn Db) -> bool {
+    pub fn is_protocol(self, db: &'db dyn Db) -> bool {
         self.known(db)
             .map(KnownClass::is_protocol)
             .unwrap_or_else(|| {
@@ -774,7 +767,7 @@ impl<'db> StaticClassLiteral<'db> {
             .collect()
     }
 
-    pub(crate) fn known_function_decorators(
+    pub fn known_function_decorators(
         self,
         db: &'db dyn Db,
     ) -> impl Iterator<Item = KnownFunction> + 'db {
@@ -786,7 +779,7 @@ impl<'db> StaticClassLiteral<'db> {
 
     /// Iterate through the decorators on this class, returning the index of the first one
     /// that is either `@dataclass` or `@dataclass(...)`.
-    pub(crate) fn find_dataclass_decorator_position(self, db: &'db dyn Db) -> Option<usize> {
+    pub fn find_dataclass_decorator_position(self, db: &'db dyn Db) -> Option<usize> {
         let program_file = self.program_file(db);
         let python_file = program_file.python_file(db);
         let module = parsed_module(db, python_file).load(db);
@@ -807,7 +800,7 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Is this class final?
-    pub(crate) fn is_final(self, db: &'db dyn Db) -> bool {
+    pub fn is_final(self, db: &'db dyn Db) -> bool {
         self.known_function_decorators(db)
             .contains(&KnownFunction::Final)
             || enum_metadata(db, ClassLiteral::Static(self)).is_some()
@@ -822,7 +815,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// attribute on a class at runtime.
     ///
     /// [method resolution order]: https://docs.python.org/3/glossary.html#term-method-resolution-order
-    pub(in crate::types) fn try_mro(
+    pub fn try_mro(
         self,
         db: &'db dyn Db,
         specialization: Option<Specialization<'db>>,
@@ -858,7 +851,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// cases rather than simply iterating over the inferred resolution order for the class.
     ///
     /// [method resolution order]: https://docs.python.org/3/glossary.html#term-method-resolution-order
-    pub(crate) fn iter_mro(
+    pub fn iter_mro(
         self,
         db: &'db dyn Db,
         specialization: Option<Specialization<'db>>,
@@ -867,7 +860,7 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Return `true` if `other` is present in this class's MRO.
-    pub(super) fn is_subclass_of(
+    pub fn is_subclass_of(
         self,
         db: &'db dyn Db,
         specialization: Option<Specialization<'db>>,
@@ -924,7 +917,7 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Return the properties shared by all instances of this class.
-    pub(super) fn instance_flags(self, db: &'db dyn Db) -> ClassInstanceFlags {
+    pub fn instance_flags(self, db: &'db dyn Db) -> ClassInstanceFlags {
         #[salsa::tracked(
             returns(copy),
             cycle_initial=|_, _, _| ClassInstanceFlags::empty(),
@@ -979,7 +972,7 @@ impl<'db> StaticClassLiteral<'db> {
 
     /// Return the module defining the `TypedDict` base of this class.
     #[salsa::tracked(returns(copy), cycle_initial=|_, _, _| None, heap_size=ruff_memory_usage::heap_size)]
-    pub(crate) fn typed_dict_module(self, db: &'db dyn Db) -> Option<TypingModule> {
+    pub fn typed_dict_module(self, db: &'db dyn Db) -> Option<TypingModule> {
         self.iter_mro(db, None)
             .find_map(ClassBase::typed_dict_module)
     }
@@ -1000,7 +993,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// Return `true` if this class is, or inherits from, a `NamedTuple` (inherits from
     /// `typing.NamedTuple`, either directly or indirectly, including functional forms like
     /// `NamedTuple("X", ...)`).
-    pub(crate) fn has_named_tuple_class_in_mro(self, db: &'db dyn Db) -> bool {
+    pub fn has_named_tuple_class_in_mro(self, db: &'db dyn Db) -> bool {
         self.iter_mro(db, None)
             .filter_map(ClassBase::into_class)
             .any(|base| match base.class_literal(db) {
@@ -1075,7 +1068,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// Returns `Some(true)` for a frozen dataclass-like class, `Some(false)` for a non-frozen one,
     /// and `None` if the class is not a dataclass-like class, or if the dataclass is neither frozen
     /// nor non-frozen.
-    pub(crate) fn is_frozen_dataclass(self, db: &'db dyn Db) -> Option<bool> {
+    pub fn is_frozen_dataclass(self, db: &'db dyn Db) -> Option<bool> {
         // Check if this is a base-class-based transformer that has dataclass_transformer_params directly
         // attached to it (because it is itself decorated with `@dataclass_transform`), or if this class
         // has an explicit metaclass that is decorated with `@dataclass_transform`.
@@ -1104,7 +1097,7 @@ impl<'db> StaticClassLiteral<'db> {
 
     /// Checks if the given dataclass parameter flag is set for this class.
     /// This checks both the `dataclass_params` and `transformer_params`.
-    pub(crate) fn has_dataclass_param(
+    pub fn has_dataclass_param(
         self,
         db: &'db dyn Db,
         field_policy: CodeGeneratorKind<'db>,
@@ -1159,12 +1152,12 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Return the metaclass of this class, or `type[Unknown]` if the metaclass cannot be inferred.
-    pub(crate) fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn metaclass(self, db: &'db dyn Db) -> Type<'db> {
         let env = ProgramEnvironment::from_scope(self.body_scope(db));
         self.inferred_metaclass(db).to_type(db, &env)
     }
 
-    pub(in crate::types) fn inferred_metaclass(self, db: &'db dyn Db) -> ClassMetaclass<'db> {
+    pub fn inferred_metaclass(self, db: &'db dyn Db) -> ClassMetaclass<'db> {
         self.try_metaclass(db)
             .map(|(metaclass, _)| metaclass)
             .unwrap_or_else(|error| match error.kind {
@@ -1177,7 +1170,7 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Return the selected metaclass or protocol fallback, or an error if it cannot be inferred.
-    pub(in crate::types) fn try_metaclass(
+    pub fn try_metaclass(
         self,
         db: &'db dyn Db,
     ) -> Result<(ClassMetaclass<'db>, Option<MetaclassTransformInfo<'db>>), MetaclassError<'db>>
@@ -1368,7 +1361,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// The member resolves to a member on the class itself or any of its proper superclasses.
     ///
     /// TODO: Should this be made private...?
-    pub(super) fn class_member(
+    pub fn class_member(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1378,7 +1371,7 @@ impl<'db> StaticClassLiteral<'db> {
         self.class_member_inner(db, env, None, name, policy)
     }
 
-    pub(super) fn class_member_inner(
+    pub fn class_member_inner(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1422,7 +1415,7 @@ impl<'db> StaticClassLiteral<'db> {
         }
     }
 
-    pub(crate) fn class_member_from_mro(
+    pub fn class_member_from_mro(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1486,7 +1479,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// Returns [`Place::Undefined`] if `name` cannot be found in this class's scope
     /// directly. Use [`StaticClassLiteral::class_member`] if you require a method that will
     /// traverse through the MRO until it finds the member.
-    pub(super) fn own_class_member(
+    pub fn own_class_member(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1654,7 +1647,7 @@ impl<'db> StaticClassLiteral<'db> {
 
     /// Returns the type of a synthesized dataclass member like `__init__` or `__lt__`, or
     /// a synthesized `__new__` method for a `NamedTuple`.
-    pub(crate) fn own_synthesized_member(
+    pub fn own_synthesized_member(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -2248,7 +2241,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// `method`, a non-field delegates past each generated method.
     /// [`FrozenDataclassDispatch::Delegate`] stores the last frozen base so the caller can perform
     /// the equivalent lookup once, after all of them.
-    pub(crate) fn inherited_frozen_dataclass_dispatch(
+    pub fn inherited_frozen_dataclass_dispatch(
         self,
         db: &'db dyn Db,
         specialization: Option<Specialization<'db>>,
@@ -2359,7 +2352,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// This is implemented as a separate method because the item definitions on a `TypedDict`-based
     /// class are *not* accessible as class members. Instead, this mostly defers to `TypedDictFallback`,
     /// unless `name` corresponds to one of the specialized synthetic members like `__getitem__`.
-    pub(crate) fn typed_dict_member(
+    pub fn typed_dict_member(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -2381,7 +2374,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// Returns a list of all annotated attributes defined in this class, or any of its superclasses.
     ///
     /// See [`StaticClassLiteral::own_fields`] for more details.
-    pub(crate) fn fields(
+    pub fn fields(
         self,
         db: &'db dyn Db,
         specialization: Option<Specialization<'db>>,
@@ -2493,7 +2486,7 @@ impl<'db> StaticClassLiteral<'db> {
         map
     }
 
-    pub(crate) fn validate_members(self, context: &InferContext<'db, '_>) {
+    pub fn validate_members(self, context: &InferContext<'db, '_>) {
         let db = context.db();
         let env = context.program_environment();
         let Some(field_policy) = CodeGeneratorKind::from_static_class(db, self) else {
@@ -2573,7 +2566,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// including properties inherited from class-level dataclass parameters (like `kw_only=True`)
     /// and dataclass-transform parameters (like `kw_only_default=True`). They do not represent
     /// only what is explicitly specified in each field definition.
-    pub(crate) fn own_fields(
+    pub fn own_fields(
         self,
         db: &'db dyn Db,
         specialization: Option<Specialization<'db>>,
@@ -2825,7 +2818,7 @@ impl<'db> StaticClassLiteral<'db> {
     ///
     /// Each qualifier remains paired with its own definition so diagnostics can point to the
     /// annotation that introduced it, including when declarations occur in different branches.
-    pub(crate) fn own_annotated_qualifiers(
+    pub fn own_annotated_qualifiers(
         self,
         db: &'db dyn Db,
     ) -> Vec<(Name, TypeQualifiers, Definition<'db>)> {
@@ -2877,7 +2870,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// Look up an instance attribute (available in `__dict__`) of the given name.
     ///
     /// See [`Type::instance_member`] for more details.
-    pub(super) fn instance_member(
+    pub fn instance_member(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -2912,7 +2905,7 @@ impl<'db> StaticClassLiteral<'db> {
 
     /// A helper function for `instance_member` that looks up the `name` attribute only on
     /// this class, not on its superclasses.
-    pub(super) fn own_instance_member(
+    pub fn own_instance_member(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -3147,11 +3140,7 @@ impl<'db> StaticClassLiteral<'db> {
 
     /// Returns the converter's input type (i.e., the type of its first positional parameter) for a
     /// dataclass field, if the field has a converter function specified.
-    pub(super) fn converter_input_type_for_field(
-        self,
-        db: &'db dyn Db,
-        name: &str,
-    ) -> Option<Type<'db>> {
+    pub fn converter_input_type_for_field(self, db: &'db dyn Db, name: &str) -> Option<Type<'db>> {
         let field_policy @ CodeGeneratorKind::DataclassLike(_) =
             CodeGeneratorKind::from_static_class(db, self)?
         else {
@@ -3166,7 +3155,7 @@ impl<'db> StaticClassLiteral<'db> {
         }
     }
 
-    pub(super) fn to_non_generic_instance(self, db: &'db dyn Db) -> Type<'db> {
+    pub fn to_non_generic_instance(self, db: &'db dyn Db) -> Type<'db> {
         let env = ProgramEnvironment::from_scope(self.body_scope(db));
         Type::instance(db, &env, ClassType::NonGeneric(self.into()))
     }
@@ -3175,7 +3164,7 @@ impl<'db> StaticClassLiteral<'db> {
     ///
     /// A class definition like this will fail at runtime,
     /// but we must be resilient to it or we could panic.
-    pub(crate) fn inheritance_cycle(self, db: &'db dyn Db) -> Option<InheritanceCycle> {
+    pub fn inheritance_cycle(self, db: &'db dyn Db) -> Option<InheritanceCycle> {
         if !self.has_explicit_bases(db) {
             return None;
         }
@@ -3245,7 +3234,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// Returns a [`Span`] with the range of the class's header.
     ///
     /// See [`Self::header_range`] for more details.
-    pub(crate) fn header_span(self, db: &'db dyn Db) -> Span {
+    pub fn header_span(self, db: &'db dyn Db) -> Span {
         Span::from(self.file(db)).with_range(self.header_range(db))
     }
 
@@ -3256,7 +3245,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// class Foo(Bar, metaclass=Baz): ...
     ///       ^^^^^^^^^^^^^^^^^^^^^^^
     /// ```
-    pub(crate) fn header_range(self, db: &'db dyn Db) -> TextRange {
+    pub fn header_range(self, db: &'db dyn Db) -> TextRange {
         let class_scope = self.body_scope(db);
         let module = parsed_module(db, class_scope.python_file(db)).load(db);
         let class_node = self.node(db, &module);
@@ -3272,7 +3261,7 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Returns the range of the class's name
-    pub(crate) fn focus_range(self, db: &'db dyn Db) -> TextRange {
+    pub fn focus_range(self, db: &'db dyn Db) -> TextRange {
         let class_scope = self.body_scope(db);
         let module = parsed_module(db, class_scope.python_file(db)).load(db);
         let class_node = self.node(db, &module);
@@ -3282,25 +3271,25 @@ impl<'db> StaticClassLiteral<'db> {
 
 /// A single semantic class-base entry after expanding starred tuple bases.
 #[derive(Clone, Copy)]
-pub(crate) struct ExpandedClassBaseEntry<'a, 'db> {
+pub struct ExpandedClassBaseEntry<'a, 'db> {
     source_node: &'a ast::Expr,
     ty: Type<'db>,
 }
 
 impl<'a, 'db> ExpandedClassBaseEntry<'a, 'db> {
     /// Returns the source expression for this base entry.
-    pub(crate) const fn source_node(self) -> &'a ast::Expr {
+    pub const fn source_node(self) -> &'a ast::Expr {
         self.source_node
     }
 
     /// Returns the semantic type of this base entry.
-    pub(crate) const fn ty(self) -> Type<'db> {
+    pub const fn ty(self) -> Type<'db> {
         self.ty
     }
 }
 
 /// Expands a class's bases into the semantic entries used by [`StaticClassLiteral::explicit_bases`].
-pub(crate) fn expanded_class_base_entries<'a, 'db>(
+pub fn expanded_class_base_entries<'a, 'db>(
     db: &'db dyn Db,
     known_class: Option<KnownClass>,
     class_stmt: &'a ast::StmtClassDef,
@@ -3397,7 +3386,7 @@ impl<'db> StaticClassLiteral<'db> {
     /// use their structural interface; `TypedDict` classes use their fields. Other classes retain the
     /// ordinary attribute and base-class variance rules.
     #[salsa::tracked(returns(copy), cycle_initial=|_, _, _, _| VarianceTerm::BIVARIANT, heap_size=ruff_memory_usage::heap_size)]
-    pub(in crate::types) fn variance_equation(
+    pub fn variance_equation(
         self,
         db: &'db dyn Db,
         typevar: BoundTypeVarIdentity<'db>,
@@ -3579,7 +3568,7 @@ impl<'db> StaticClassLiteral<'db> {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, get_size2::GetSize)]
-pub(crate) enum InheritanceCycle {
+pub enum InheritanceCycle {
     /// The class is cyclically defined and is a participant in the cycle.
     /// i.e., it inherits either directly or indirectly from itself.
     Participant,
@@ -3589,7 +3578,7 @@ pub(crate) enum InheritanceCycle {
 }
 
 impl InheritanceCycle {
-    pub(crate) const fn is_participant(self) -> bool {
+    pub const fn is_participant(self) -> bool {
         matches!(self, InheritanceCycle::Participant)
     }
 }

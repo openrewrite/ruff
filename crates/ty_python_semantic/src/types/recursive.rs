@@ -94,7 +94,7 @@ impl get_size2::GetSize for RecursiveVar<'_> {}
 
 impl<'db> RecursiveVar<'db> {
     /// Unfold references to the target cycle, retaining variables bound by other cycles.
-    pub(super) fn apply_type_mapping_impl(
+    pub fn apply_type_mapping_impl(
         self,
         db: &'db dyn Db,
         mapping: &TypeMapping<'_, 'db>,
@@ -156,7 +156,7 @@ impl get_size2::GetSize for RecursiveCycle {}
 pub struct RecursiveType<'db> {
     /// The defining symbol of the implicit alias, including for qualified references.
     #[returns(copy)]
-    pub(super) definition: Definition<'db>,
+    pub definition: Definition<'db>,
     /// Names the binder and distinguishes provisional types of different alias queries.
     #[returns(copy)]
     cycle: RecursiveCycle,
@@ -165,10 +165,10 @@ pub struct RecursiveType<'db> {
     /// The actual arguments for this application, which may themselves contain type variables.
     /// They are applied when unfolding; the stored body remains unspecialized.
     #[returns(copy)]
-    pub(super) arguments: Option<Specialization<'db>>,
+    pub arguments: Option<Specialization<'db>>,
     /// The lazy materialization applied to this recursive alias, if any.
     #[returns(copy)]
-    pub(super) materialization_kind: Option<MaterializationKind>,
+    pub materialization_kind: Option<MaterializationKind>,
 }
 
 impl get_size2::GetSize for RecursiveType<'_> {}
@@ -176,7 +176,7 @@ impl get_size2::GetSize for RecursiveType<'_> {}
 #[salsa::tracked]
 impl<'db> RecursiveType<'db> {
     /// Summarize the open constructor body without applying semantic substitutions.
-    pub(super) fn cycle_summary(self, db: &'db dyn Db) -> &'db AliasCycleSummary<'db> {
+    pub fn cycle_summary(self, db: &'db dyn Db) -> &'db AliasCycleSummary<'db> {
         #[salsa::tracked(
             returns(ref),
             cycle_initial=|db, id, _, ()| AliasCycleSummary::from_type(db, Type::divergent_alias(id)),
@@ -200,7 +200,7 @@ impl<'db> RecursiveType<'db> {
     }
 
     /// Seed a query cycle with `μa. a`, using the same identity for binder and variable.
-    pub(super) fn initial(
+    pub fn initial(
         db: &'db dyn Db,
         definition: Definition<'db>,
         cycle: salsa::Id,
@@ -219,7 +219,7 @@ impl<'db> RecursiveType<'db> {
     }
 
     /// Close recursive occurrences after inferring an alias's constructor expression.
-    pub(super) fn recover(
+    pub fn recover(
         db: &'db dyn Db,
         definition: Definition<'db>,
         cycle: salsa::Id,
@@ -297,13 +297,13 @@ impl<'db> RecursiveType<'db> {
     }
 
     /// Parameters bound by this recursive type constructor.
-    pub(super) fn parameters(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
+    pub fn parameters(self, db: &'db dyn Db) -> Option<GenericContext<'db>> {
         self.arguments(db)
             .map(|arguments| arguments.generic_context(db))
     }
 
     /// The declared alias name, shared by all specializations of this constructor.
-    pub(super) fn name(self, db: &'db dyn Db) -> &'db str {
+    pub fn name(self, db: &'db dyn Db) -> &'db str {
         let definition = self.definition(db);
         // Qualified uses retain the original declaration's symbol, not the access expression.
         place_table(db, definition.scope(db))
@@ -316,13 +316,13 @@ impl<'db> RecursiveType<'db> {
         clippy::unnecessary_wraps,
         reason = "Keep alias metadata optional for inferred recursive types"
     )]
-    pub(super) fn alias(self, db: &'db dyn Db) -> Option<(Definition<'db>, &'db str)> {
+    pub fn alias(self, db: &'db dyn Db) -> Option<(Definition<'db>, &'db str)> {
         // Only implicit alias inference constructs recursive types at present.
         Some((self.definition(db), self.name(db)))
     }
 
     /// Restore the formal arguments and remove materialization for constructor analysis.
-    pub(super) fn constructor(self, db: &'db dyn Db) -> Self {
+    pub fn constructor(self, db: &'db dyn Db) -> Self {
         // Like an unspecialized PEP 695 alias, parameter-flow analysis must not
         // re-enter materialization while deriving the constructor's identity.
         self.with_materialization(db, None).with_arguments(
@@ -395,7 +395,7 @@ impl<'db> RecursiveType<'db> {
     }
 
     /// Substitute by cycle identity, respecting the scope of nested recursive binders.
-    pub(super) fn apply_type_mapping_impl(
+    pub fn apply_type_mapping_impl(
         self,
         db: &'db dyn Db,
         mapping: &TypeMapping<'_, 'db>,
@@ -503,7 +503,7 @@ impl<'db> RecursiveType<'db> {
         }
     }
 
-    pub(in crate::types) fn variance_equation(
+    pub fn variance_equation(
         self,
         db: &'db dyn Db,
         typevar: BoundTypeVarIdentity<'db>,
@@ -545,7 +545,7 @@ impl<'db> UnfoldResult<'db, Type<'db>> {
 impl<'db, T> UnfoldResult<'db, T> {
     /// Return the contained value if unfolding made progress.
     #[inline]
-    pub(crate) fn into_unfolded(self) -> Option<T> {
+    pub fn into_unfolded(self) -> Option<T> {
         match self {
             Self::Unfolded(value) => Some(value),
             Self::Unchanged(_) => None,
@@ -558,7 +558,7 @@ impl<'db, T> UnfoldResult<'db, T> {
         clippy::wrong_self_convention,
         reason = "Like Option::is_some_and, the predicate consumes the contained value."
     )]
-    pub(crate) fn is_unfolded_and(self, predicate: impl FnOnce(T) -> bool) -> bool {
+    pub fn is_unfolded_and(self, predicate: impl FnOnce(T) -> bool) -> bool {
         match self {
             Self::Unfolded(value) => predicate(value),
             Self::Unchanged(_) => false,
@@ -571,7 +571,7 @@ impl<'db, T> UnfoldResult<'db, T> {
         clippy::wrong_self_convention,
         reason = "Like Option::is_none_or, the predicate consumes the contained value."
     )]
-    pub(crate) fn is_unchanged_or(self, predicate: impl FnOnce(T) -> bool) -> bool {
+    pub fn is_unchanged_or(self, predicate: impl FnOnce(T) -> bool) -> bool {
         match self {
             Self::Unfolded(value) => predicate(value),
             Self::Unchanged(_) => true,
@@ -580,7 +580,7 @@ impl<'db, T> UnfoldResult<'db, T> {
 
     /// Transform the contained value, preserving the original recursive type if unfolding made no progress.
     #[inline]
-    pub(crate) fn map<U>(self, operation: impl FnOnce(T) -> U) -> UnfoldResult<'db, U> {
+    pub fn map<U>(self, operation: impl FnOnce(T) -> U) -> UnfoldResult<'db, U> {
         match self {
             Self::Unfolded(value) => UnfoldResult::Unfolded(operation(value)),
             Self::Unchanged(recursive) => UnfoldResult::Unchanged(recursive),
@@ -589,7 +589,7 @@ impl<'db, T> UnfoldResult<'db, T> {
 
     /// Return the contained value, or call `fallback` if unfolding made no progress.
     #[inline]
-    pub(crate) fn unwrap_or_else(self, fallback: impl FnOnce() -> T) -> T {
+    pub fn unwrap_or_else(self, fallback: impl FnOnce() -> T) -> T {
         match self {
             Self::Unfolded(value) => value,
             Self::Unchanged(_) => fallback(),
@@ -598,7 +598,7 @@ impl<'db, T> UnfoldResult<'db, T> {
 
     /// Return the contained value, or return `fallback` if unfolding made no progress.
     #[inline]
-    pub(crate) fn unwrap_or(self, fallback: T) -> T {
+    pub fn unwrap_or(self, fallback: T) -> T {
         match self {
             Self::Unfolded(value) => value,
             Self::Unchanged(_) => fallback,
@@ -620,7 +620,7 @@ impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
     /// Argument comparison is sufficient but not necessary to establish the relation:
     /// different arguments can produce equivalent alias types. If this check cannot
     /// establish the relation, the caller can still unfold and compare the bodies.
-    pub(super) fn when_recursive_types_relate_by_arguments(
+    pub fn when_recursive_types_relate_by_arguments(
         &self,
         db: &'db dyn Db,
         source: RecursiveType<'db>,
@@ -741,7 +741,7 @@ impl<'db> VarianceInferable<'db> for RecursiveType<'db> {
 
 impl Type<'_> {
     /// Reject a bare recursive variable at a semantic-operation boundary.
-    pub(super) const fn assert_not_recursive_var(self) {
+    pub const fn assert_not_recursive_var(self) {
         debug_assert!(
             !matches!(self, Self::RecursiveVar(_)),
             "semantic operation on an unbound recursive variable"

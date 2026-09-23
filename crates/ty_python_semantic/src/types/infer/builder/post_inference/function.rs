@@ -30,7 +30,7 @@ use ruff_text_size::{Ranged, TextRange};
 use rustc_hash::FxHashSet;
 use ty_python_core::definition::Definition;
 
-pub(crate) fn check_function_definition<'db>(
+pub fn check_function_definition<'db>(
     context: &InferContext<'db, '_>,
     definition: Definition<'db>,
     file_expression_type: &impl Fn(&ast::Expr) -> Type<'db>,
@@ -58,7 +58,7 @@ pub(crate) fn check_function_definition<'db>(
 /// Check that a nominal class's exposed methods respect its declared type-parameter variance.
 /// Constructors are excluded because their parameters establish the class specialization.
 /// Recursively checks type variables nested in containers, unions, and callables as well as bare uses.
-pub(super) fn check_class_method_typevar_variance<'db>(
+pub fn check_class_method_typevar_variance<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
 ) {

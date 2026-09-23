@@ -180,7 +180,7 @@ impl<'db> NewType<'db> {
         Some(self)
     }
 
-    pub(crate) fn map_base_class_type(
+    pub fn map_base_class_type(
         self,
         db: &'db dyn Db,
         f: impl FnOnce(ClassType<'db>) -> ClassType<'db>,
@@ -189,7 +189,7 @@ impl<'db> NewType<'db> {
             .unwrap()
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -211,7 +211,7 @@ impl<'db> NewType<'db> {
 }
 
 impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
-    pub(super) fn check_newtype_pair(
+    pub fn check_newtype_pair(
         &self,
         db: &'db dyn Db,
         source: NewType<'db>,
@@ -235,7 +235,7 @@ impl<'c, 'db> TypeRelationChecker<'_, 'c, 'db> {
 }
 
 impl<'c, 'db> DisjointnessChecker<'_, 'c, 'db> {
-    pub(super) fn check_newtype_pair(
+    pub fn check_newtype_pair(
         &self,
         db: &'db dyn Db,
         left: NewType<'db>,
@@ -255,7 +255,7 @@ impl<'c, 'db> DisjointnessChecker<'_, 'c, 'db> {
     }
 }
 
-pub(crate) fn walk_newtype_instance_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_newtype_instance_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     newtype: NewType<'db>,
     visitor: &V,
