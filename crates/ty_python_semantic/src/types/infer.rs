@@ -51,7 +51,7 @@ use ruff_text_size::{Ranged, TextRange};
 use rustc_hash::FxHashMap;
 use salsa;
 use salsa::plumbing::AsId;
-pub(super) use ty_python_core::frozen::{FrozenMap, FrozenSet, FrozenValueMap};
+pub use ty_python_core::frozen::{FrozenMap, FrozenSet, FrozenValueMap};
 
 use crate::types::context::InferContextResult;
 use crate::types::diagnostic::TypeCheckDiagnostics;
@@ -63,7 +63,7 @@ use crate::types::{
 use crate::{Db, FxIndexSet};
 
 use builder::TypeInferenceBuilder;
-pub(super) use comparisons::UnsupportedComparisonError;
+pub use comparisons::UnsupportedComparisonError;
 use ty_python_core::definition::{Definition, DefinitionKind};
 use ty_python_core::expression::{Expression, ExpressionKind};
 use ty_python_core::scope::ScopeId;
@@ -74,22 +74,22 @@ use ty_python_core::{ExpressionNodeKey, SemanticIndex, Statement, Truthiness, se
 mod builder;
 mod legacy_type_alias;
 use legacy_type_alias::legacy_type_alias_definition;
-pub(super) use legacy_type_alias::legacy_type_alias_parameters;
+pub use legacy_type_alias::legacy_type_alias_parameters;
 mod comparisons;
 mod expression_truthiness;
-pub(crate) use expression_truthiness::TruthinessAnalyzer;
+pub use expression_truthiness::TruthinessAnalyzer;
 #[cfg(test)]
 mod tests;
 mod type_context;
-pub(crate) use type_context::TypeContext;
-pub(super) use type_context::TypeContextKind;
+pub use type_context::TypeContext;
+pub use type_context::TypeContextKind;
 
 /// The inferred alias type, or a cycle error retaining a type for recovery.
-pub(super) type LegacyTypeAliasResult<'db> = Result<Type<'db>, CyclicTypeAliasError<'db>>;
+pub type LegacyTypeAliasResult<'db> = Result<Type<'db>, CyclicTypeAliasError<'db>>;
 
 /// An alias that reaches itself through aliases and unions without a containing type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct CyclicTypeAliasError<'db> {
+pub struct CyclicTypeAliasError<'db> {
     /// The type available for recovery. Normalizing this type does not make the alias valid.
     fallback_type: Type<'db>,
 }
@@ -129,7 +129,7 @@ pub(super) struct CyclicTypeAliasError<'db> {
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(super) fn infer_legacy_type_alias<'db>(
+pub fn infer_legacy_type_alias<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
     _parameters: Option<crate::types::GenericContext<'db>>,
@@ -155,10 +155,10 @@ pub(super) fn infer_legacy_type_alias<'db>(
 /// checking collects each referenced alias once, so recursive aliases cannot accumulate each
 /// other's diagnostics during fixed-point iteration.
 #[derive(Debug, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct LegacyTypeAliasInference<'db> {
-    pub(super) ty: LegacyTypeAliasResult<'db>,
-    pub(super) context: InferContextResult,
-    pub(super) legacy_aliases: Box<[Definition<'db>]>,
+pub struct LegacyTypeAliasInference<'db> {
+    pub ty: LegacyTypeAliasResult<'db>,
+    pub context: InferContextResult,
+    pub legacy_aliases: Box<[Definition<'db>]>,
 }
 
 /// Explain why an ordinary assignment's right-hand side is not a valid type expression.
@@ -170,7 +170,7 @@ pub(super) struct LegacyTypeAliasInference<'db> {
     cycle_initial=|_, _, _| TypeCheckDiagnostics::default(),
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(super) fn non_alias_type_expression_diagnostics<'db>(
+pub fn non_alias_type_expression_diagnostics<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> TypeCheckDiagnostics {
@@ -188,7 +188,7 @@ pub(super) fn non_alias_type_expression_diagnostics<'db>(
 bitflags::bitflags! {
     /// Metadata for expressions inferred as type expressions.
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-    pub(crate) struct TypeExpressionFlags: u8 {
+    pub struct TypeExpressionFlags: u8 {
         /// The expression syntactically unpacks a type using either `Unpack[...]` or `*...`.
         const UNPACK = 1 << 0;
 
@@ -264,7 +264,7 @@ fn normalize_collection_use_constraints<'db>(
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(crate) fn infer_definition_types<'db>(
+pub fn infer_definition_types<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> DefinitionInference<'db> {
@@ -292,10 +292,7 @@ pub(crate) fn infer_definition_types<'db>(
 /// ```
 /// Since the enclosing assignment was rejected, place resolution must ignore that binding and fall
 /// back to the declared value type of `x`.
-pub(crate) fn is_discarded_dict_key_assignment<'db>(
-    db: &'db dyn Db,
-    definition: Definition<'db>,
-) -> bool {
+pub fn is_discarded_dict_key_assignment<'db>(db: &'db dyn Db, definition: Definition<'db>) -> bool {
     let DefinitionKind::DictKeyAssignment(dict_key_assignment) = definition.kind(db) else {
         return false;
     };
@@ -318,7 +315,7 @@ pub(crate) fn is_discarded_dict_key_assignment<'db>(
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(crate) fn function_known_decorators<'db>(
+pub fn function_known_decorators<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> FunctionDecoratorInference<'db> {
@@ -341,7 +338,7 @@ pub(crate) fn function_known_decorators<'db>(
     .finish_function_decorator_inference()
 }
 
-pub(crate) fn function_known_decorator_flags<'db>(
+pub fn function_known_decorator_flags<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> FunctionDecorators {
@@ -354,7 +351,7 @@ pub(crate) fn function_known_decorator_flags<'db>(
 /// diagnostics, plus the expression-side state that needs to be merged back into
 /// function-definition inference.
 #[derive(Debug, Eq, PartialEq, Default, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct FunctionDecoratorInference<'db> {
+pub struct FunctionDecoratorInference<'db> {
     expression_types: FrozenMap<ExpressionNodeKey, Type<'db>>,
     deferred_name_loads: FrozenSet<ExpressionNodeKey>,
     bindings: Box<[(Definition<'db>, Type<'db>)]>,
@@ -368,10 +365,7 @@ pub(crate) struct FunctionDecoratorInference<'db> {
 }
 
 impl<'db> FunctionDecoratorInference<'db> {
-    pub(crate) fn expression_type(
-        &self,
-        expression: impl Into<ExpressionNodeKey>,
-    ) -> Option<Type<'db>> {
+    pub fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Option<Type<'db>> {
         self.expression_types.get(&expression.into()).copied()
     }
 
@@ -397,7 +391,7 @@ impl<'db> FunctionDecoratorInference<'db> {
         self.known_decorators
     }
 
-    pub(super) fn may_produce_abstract_method(&self) -> bool {
+    pub fn may_produce_abstract_method(&self) -> bool {
         self.may_produce_abstract_method
     }
 
@@ -421,7 +415,7 @@ impl<'db> FunctionDecoratorInference<'db> {
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(crate) fn infer_deferred_types<'db>(
+pub fn infer_deferred_types<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> DefinitionInference<'db> {
@@ -467,7 +461,7 @@ pub(crate) fn infer_deferred_types<'db>(
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(crate) fn infer_function_default_types<'db>(
+pub fn infer_function_default_types<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> DefinitionInference<'db> {
@@ -495,7 +489,7 @@ pub(crate) fn infer_function_default_types<'db>(
 ///
 /// Unlike [`infer_scope_types`], this function does not take a type context, as it may infer
 /// the parent scope to obtain the necessary type context by which to infer the inner scope.
-pub(crate) fn infer_complete_scope_types<'db>(
+pub fn infer_complete_scope_types<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
 ) -> &'db ScopeInference<'db> {
@@ -523,7 +517,7 @@ pub(crate) fn infer_complete_scope_types<'db>(
 /// unless you have already obtained the necessary type context while inferring the parent scope.
 /// Inferring a nested scope independently without type context can lead to incorrect inferred
 /// types or diagnostics.
-pub(crate) fn infer_scope_types<'db>(
+pub fn infer_scope_types<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
     tcx: TypeContext<'db>,
@@ -541,10 +535,7 @@ pub(crate) fn infer_scope_types<'db>(
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(crate) fn infer_scope_types_impl<'db>(
-    db: &'db dyn Db,
-    input: InferScope<'db>,
-) -> ScopeInference<'db> {
+pub fn infer_scope_types_impl<'db>(db: &'db dyn Db, input: InferScope<'db>) -> ScopeInference<'db> {
     let (scope, tcx) = input.into_inner(db);
     let program_file = scope.program_file(db);
     let python_file = program_file.python_file(db);
@@ -575,7 +566,7 @@ pub(crate) fn infer_scope_types_impl<'db>(
 /// Use rarely; only for cases where we'd otherwise risk double-inferring an expression: RHS of an
 /// assignment, which might be unpacking/multi-target and thus part of multiple definitions, or a
 /// type narrowing guard expression (e.g. if statement test node).
-pub(crate) fn infer_expression_types<'db>(
+pub fn infer_expression_types<'db>(
     db: &'db dyn Db,
     expression: Expression<'db>,
     tcx: TypeContext<'db>,
@@ -585,10 +576,7 @@ pub(crate) fn infer_expression_types<'db>(
 
 /// A loop predicate can depend on bindings it guards in the previous iteration.
 /// Evaluate it in the caller's query to keep an extra query out of that cycle.
-pub(crate) fn infer_predicate_truthiness<'db>(
-    db: &'db dyn Db,
-    expression: Expression<'db>,
-) -> Truthiness {
+pub fn infer_predicate_truthiness<'db>(db: &'db dyn Db, expression: Expression<'db>) -> Truthiness {
     if matches!(
         expression.kind(db),
         ExpressionKind::Predicate { in_loop: true, .. }
@@ -646,7 +634,7 @@ fn evaluate_predicate_truthiness<'db>(db: &'db dyn Db, expression: Expression<'d
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(super) fn infer_expression_types_impl<'db>(
+pub fn infer_expression_types_impl<'db>(
     db: &'db dyn Db,
     input: InferExpression<'db>,
 ) -> ExpressionInference<'db> {
@@ -694,7 +682,7 @@ fn expression_cycle_initial<'db>(
 /// This is a small helper around [`infer_expression_types()`] to reduce the boilerplate.
 /// Use [`infer_expression_type()`] if it isn't guaranteed that `expression` is in the same file to
 /// avoid cross-file query dependencies.
-pub(crate) fn infer_same_file_expression_type<'db>(
+pub fn infer_same_file_expression_type<'db>(
     db: &'db dyn Db,
     expression: Expression<'db>,
     tcx: TypeContext<'db>,
@@ -710,7 +698,7 @@ pub(crate) fn infer_same_file_expression_type<'db>(
 ///
 /// Use [`infer_same_file_expression_type`] if it is guaranteed that  `expression` is in the same
 /// to avoid unnecessary salsa ingredients. This is normally the case inside the `TypeInferenceBuilder`.
-pub(crate) fn infer_expression_type<'db>(
+pub fn infer_expression_type<'db>(
     db: &'db dyn Db,
     expression: Expression<'db>,
     tcx: TypeContext<'db>,
@@ -741,7 +729,7 @@ fn infer_expression_type_impl<'db>(db: &'db dyn Db, input: InferExpression<'db>)
 ///
 /// This is useful when you want to infer a sub-expression with its natural type context, as
 /// statements are the minimal unit of code that can be inferred without external type context.
-pub(super) fn infer_statement_types<'db>(
+pub fn infer_statement_types<'db>(
     db: &'db dyn Db,
     statement: Statement<'db>,
 ) -> StatementInference<'db> {
@@ -805,13 +793,13 @@ fn infer_statement_types_impl<'db>(
 /// This is a Salsa supertype used as the input to `infer_expression_types` to avoid
 /// interning an `ExpressionWithContext` unnecessarily when no type context is provided.
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq, salsa::Supertype)]
-pub(super) enum InferExpression<'db> {
+pub enum InferExpression<'db> {
     Bare(Expression<'db>),
     WithContext(ExpressionWithContext<'db>),
 }
 
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(super) struct ExpressionWithContext<'db> {
+pub struct ExpressionWithContext<'db> {
     #[returns(copy)]
     expression: Expression<'db>,
     #[returns(copy)]
@@ -844,13 +832,13 @@ impl<'db> InferExpression<'db> {
 
 /// A `ScopeId` with an optional `TypeContext`.
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq, salsa::Supertype)]
-pub(super) enum InferScope<'db> {
+pub enum InferScope<'db> {
     Bare(ScopeId<'db>),
     WithContext(ScopeWithContext<'db>),
 }
 
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(super) struct ScopeWithContext<'db> {
+pub struct ScopeWithContext<'db> {
     #[returns(copy)]
     scope: ScopeId<'db>,
     #[returns(copy)]
@@ -891,7 +879,7 @@ impl<'db> InferScope<'db> {
     },
     heap_size=ruff_memory_usage::heap_size
 )]
-pub(super) fn infer_unpack_types<'db>(db: &'db dyn Db, unpack: Unpack<'db>) -> UnpackResult<'db> {
+pub fn infer_unpack_types<'db>(db: &'db dyn Db, unpack: Unpack<'db>) -> UnpackResult<'db> {
     let program_file = unpack.program_file(db);
     let python_file = program_file.python_file(db);
     let module = parsed_module(db, python_file).load(db);
@@ -917,7 +905,7 @@ pub(super) fn infer_unpack_types<'db>(db: &'db dyn Db, unpack: Unpack<'db>) -> U
 /// scope is a type-parameters scope and the grandparent scope is a class.
 ///
 /// Returns `None` if no enclosing class is found.
-pub(crate) fn nearest_enclosing_class<'db>(
+pub fn nearest_enclosing_class<'db>(
     db: &'db dyn Db,
     semantic: &SemanticIndex<'db>,
     scope: ScopeId,
@@ -947,7 +935,7 @@ pub(crate) fn nearest_enclosing_class<'db>(
 /// class C:
 ///     def method(self) -> None: ...
 /// ```
-pub(crate) fn original_class_type<'db>(
+pub fn original_class_type<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> Option<ClassLiteral<'db>> {
@@ -964,7 +952,7 @@ pub(crate) fn original_class_type<'db>(
 /// and finds the closest (non-lambda) function definition.
 ///
 /// Returns `None` if no enclosing function is found.
-pub(crate) fn nearest_enclosing_function<'db>(
+pub fn nearest_enclosing_function<'db>(
     db: &'db dyn Db,
     semantic: &SemanticIndex<'db>,
     scope: ScopeId,
@@ -980,7 +968,7 @@ pub(crate) fn nearest_enclosing_function<'db>(
 
 /// A region within which we can infer types.
 #[derive(Copy, Clone, Debug)]
-pub(crate) enum InferenceRegion<'db> {
+pub enum InferenceRegion<'db> {
     // infer types for a [`Statement`].
     Statement(StatementInner<'db>),
     /// infer types for a standalone [`Expression`]
@@ -1013,7 +1001,7 @@ impl<'db> InferenceRegion<'db> {
 
 /// The inferred types for a scope region.
 #[derive(Debug, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct ScopeInference<'db> {
+pub struct ScopeInference<'db> {
     /// The types of every expression in this region.
     expressions: FrozenValueMap<ExpressionNodeKey, Type<'db>>,
 
@@ -1057,7 +1045,7 @@ struct ScopeInferenceExtra<'db> {
 }
 
 impl<'db> ScopeInference<'db> {
-    pub(crate) fn is_deferred_name_load(&self, name: &ast::ExprName) -> bool {
+    pub fn is_deferred_name_load(&self, name: &ast::ExprName) -> bool {
         self.extra.as_deref().is_some_and(|extra| {
             extra
                 .deferred_name_loads
@@ -1114,31 +1102,31 @@ impl<'db> ScopeInference<'db> {
         self
     }
 
-    pub(super) fn return_type(&self) -> Type<'db> {
+    pub fn return_type(&self) -> Type<'db> {
         self.extra
             .as_deref()
             .and_then(|extra| extra.return_type)
             .unwrap_or_else(Type::unknown)
     }
 
-    pub(crate) fn diagnostics(&self) -> Option<&TypeCheckDiagnostics> {
+    pub fn diagnostics(&self) -> Option<&TypeCheckDiagnostics> {
         self.extra
             .as_deref()
             .map(|extra| &extra.context.diagnostics)
     }
 
-    pub(crate) fn legacy_aliases(&self) -> &[Definition<'db>] {
+    pub fn legacy_aliases(&self) -> &[Definition<'db>] {
         self.extra
             .as_deref()
             .map_or(&[], |extra| &extra.legacy_aliases)
     }
 
-    pub(crate) fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
+    pub fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
         self.try_expression_type(expression)
             .unwrap_or_else(Type::unknown)
     }
 
-    pub(crate) fn try_expression_type(
+    pub fn try_expression_type(
         &self,
         expression: impl Into<ExpressionNodeKey>,
     ) -> Option<Type<'db>> {
@@ -1149,17 +1137,14 @@ impl<'db> ScopeInference<'db> {
     }
 
     /// Get qualifiers for an annotation expression.
-    pub(crate) fn qualifiers(&self, expression: impl Into<ExpressionNodeKey>) -> TypeQualifiers {
+    pub fn qualifiers(&self, expression: impl Into<ExpressionNodeKey>) -> TypeQualifiers {
         self.extra
             .as_deref()
             .and_then(|extra| extra.qualifiers.get(&expression.into()).copied())
             .unwrap_or_default()
     }
 
-    pub(crate) fn try_expected_type(
-        &self,
-        expression: impl Into<ExpressionNodeKey>,
-    ) -> Option<Type<'db>> {
+    pub fn try_expected_type(&self, expression: impl Into<ExpressionNodeKey>) -> Option<Type<'db>> {
         self.extra
             .as_deref()
             .and_then(|extra| extra.expected_types.get(&expression.into()).copied())
@@ -1171,7 +1156,7 @@ impl<'db> ScopeInference<'db> {
 
     /// Returns whether the given expression is a string annotation
     /// (the string in `x: "int | None"`).
-    pub(crate) fn is_string_annotation(&self, expression: impl Into<ExpressionNodeKey>) -> bool {
+    pub fn is_string_annotation(&self, expression: impl Into<ExpressionNodeKey>) -> bool {
         let Some(extra) = &self.extra else {
             return false;
         };
@@ -1180,7 +1165,7 @@ impl<'db> ScopeInference<'db> {
     }
 
     /// Get metadata for a type expression.
-    pub(crate) fn type_expression_flags(
+    pub fn type_expression_flags(
         &self,
         expression: impl Into<ExpressionNodeKey>,
     ) -> TypeExpressionFlags {
@@ -1193,7 +1178,7 @@ impl<'db> ScopeInference<'db> {
 
 /// The result of inferring a declaration recorded by the semantic index.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, get_size2::GetSize)]
-pub(crate) enum InferredDeclaration<'db> {
+pub enum InferredDeclaration<'db> {
     /// A declaration accepted for this target. Its annotation may supply only qualifiers
     /// or a recovery type.
     Declared(DeclaredType<'db>),
@@ -1205,7 +1190,7 @@ pub(crate) enum InferredDeclaration<'db> {
 }
 
 impl<'db> InferredDeclaration<'db> {
-    pub(crate) fn declared(self) -> Option<DeclaredType<'db>> {
+    pub fn declared(self) -> Option<DeclaredType<'db>> {
         match self {
             InferredDeclaration::Declared(declared) => Some(declared),
             InferredDeclaration::Rejected => None,
@@ -1215,7 +1200,7 @@ impl<'db> InferredDeclaration<'db> {
 
 /// The inferred types for a definition region.
 #[derive(Debug, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct DefinitionInference<'db> {
+pub struct DefinitionInference<'db> {
     /// The types of every expression in this region.
     expressions: FrozenMap<ExpressionNodeKey, Type<'db>>,
 
@@ -1770,12 +1755,12 @@ impl<'db> DefinitionInference<'db> {
         }
     }
 
-    pub(crate) fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
+    pub fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
         self.try_expression_type(expression)
             .unwrap_or_else(Type::unknown)
     }
 
-    pub(crate) fn try_expression_type(
+    pub fn try_expression_type(
         &self,
         expression: impl Into<ExpressionNodeKey>,
     ) -> Option<Type<'db>> {
@@ -1786,7 +1771,7 @@ impl<'db> DefinitionInference<'db> {
     }
 
     /// Returns whether inference parsed this expression as a string annotation.
-    pub(super) fn is_string_annotation(&self, expression: impl Into<ExpressionNodeKey>) -> bool {
+    pub fn is_string_annotation(&self, expression: impl Into<ExpressionNodeKey>) -> bool {
         let annotations = match self.extra.as_deref() {
             Some(DefinitionInferenceExtra::StringAnnotations(annotations)) => annotations,
             Some(DefinitionInferenceExtra::Other(extra)) => &extra.string_annotations,
@@ -1806,7 +1791,7 @@ impl<'db> DefinitionInference<'db> {
     }
 
     /// Get qualifiers for an annotation expression
-    pub(crate) fn qualifiers(&self, expression: impl Into<ExpressionNodeKey>) -> TypeQualifiers {
+    pub fn qualifiers(&self, expression: impl Into<ExpressionNodeKey>) -> TypeQualifiers {
         let expression = expression.into();
         match self.extra.as_deref() {
             Some(DefinitionInferenceExtra::Qualifiers(qualifiers)) => {
@@ -1822,7 +1807,7 @@ impl<'db> DefinitionInference<'db> {
     }
 
     /// Get metadata for a type expression.
-    pub(crate) fn type_expression_flags(
+    pub fn type_expression_flags(
         &self,
         expression: impl Into<ExpressionNodeKey>,
     ) -> TypeExpressionFlags {
@@ -1837,7 +1822,7 @@ impl<'db> DefinitionInference<'db> {
     }
 
     #[track_caller]
-    pub(crate) fn binding_type(&self, definition: Definition<'db>) -> Type<'db> {
+    pub fn binding_type(&self, definition: Definition<'db>) -> Type<'db> {
         self.types
             .bindings(definition)
             .find_map(|(def, ty)| if def == definition { Some(ty) } else { None })
@@ -1855,10 +1840,7 @@ impl<'db> DefinitionInference<'db> {
         self.types.bindings(owner)
     }
 
-    pub(crate) fn inferred_declaration(
-        &self,
-        definition: Definition<'db>,
-    ) -> InferredDeclaration<'db> {
+    pub fn inferred_declaration(&self, definition: Definition<'db>) -> InferredDeclaration<'db> {
         self.types
             .declarations(definition)
             .find_map(|(def, declaration)| {
@@ -1890,7 +1872,7 @@ impl<'db> DefinitionInference<'db> {
         }
     }
 
-    pub(crate) fn discards_dict_key_assignments(&self) -> bool {
+    pub fn discards_dict_key_assignments(&self) -> bool {
         match self.extra.as_deref() {
             Some(DefinitionInferenceExtra::DiscardsDictKeyAssignments) => true,
             Some(DefinitionInferenceExtra::Other(extra)) => extra.discards_dict_key_assignments,
@@ -1898,7 +1880,7 @@ impl<'db> DefinitionInference<'db> {
         }
     }
 
-    pub(crate) fn undecorated_type(&self) -> Option<Type<'db>> {
+    pub fn undecorated_type(&self) -> Option<Type<'db>> {
         match self.extra.as_deref() {
             Some(DefinitionInferenceExtra::Undecorated(undecorated_type)) => {
                 Some(**undecorated_type)
@@ -1924,7 +1906,7 @@ impl<'db> DefinitionInference<'db> {
         }
     }
 
-    pub(crate) fn function_type(&self, definition: Definition<'db>) -> Option<FunctionType<'db>> {
+    pub fn function_type(&self, definition: Definition<'db>) -> Option<FunctionType<'db>> {
         let ty = if let Some(undecorated) = self.undecorated_type() {
             undecorated
         } else {
@@ -1969,7 +1951,7 @@ fn widen_comparison_truthiness(
 
 /// The inferred types for an expression region.
 #[derive(Debug, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct ExpressionInference<'db> {
+pub struct ExpressionInference<'db> {
     /// The types of every expression in this region.
     expressions: FrozenMap<ExpressionNodeKey, Type<'db>>,
 
@@ -2140,7 +2122,7 @@ impl<'db> ExpressionInference<'db> {
             .or_else(|| self.fallback_type())
     }
 
-    pub(crate) fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
+    pub fn expression_type(&self, expression: impl Into<ExpressionNodeKey>) -> Type<'db> {
         self.try_expression_type(expression)
             .unwrap_or_else(Type::unknown)
     }
@@ -2167,7 +2149,7 @@ impl<'db> ExpressionInference<'db> {
     }
 
     /// Whether this result depends on provisional types from cycle recovery.
-    pub(super) fn is_provisional(&self) -> bool {
+    pub fn is_provisional(&self) -> bool {
         self.fallback_type().is_some()
     }
 
@@ -2181,7 +2163,7 @@ impl<'db> ExpressionInference<'db> {
 /// Many statements can be treated directly as definitions or expressions,
 /// and so simply wrapped the inference result of those regions.
 #[derive(Debug, Eq, PartialEq, get_size2::GetSize)]
-pub(crate) enum StatementInference<'db> {
+pub enum StatementInference<'db> {
     Expression(&'db ExpressionInference<'db>),
     Definition(Definition<'db>, &'db DefinitionInference<'db>),
     Other(&'db StatementInferenceInner<'db>),
@@ -2216,7 +2198,7 @@ impl<'db> StatementInference<'db> {
 
 /// The inferred types for a statement region.
 #[derive(Debug, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct StatementInferenceInner<'db> {
+pub struct StatementInferenceInner<'db> {
     /// The types of every expression in this region.
     expressions: FrozenMap<ExpressionNodeKey, Type<'db>>,
 
@@ -2418,7 +2400,7 @@ impl<'db> StatementInferenceInner<'db> {
 
 bitflags::bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-    pub(crate) struct InferenceFlags: u16 {
+    pub struct InferenceFlags: u16 {
         /// Whether to allow `ParamSpec` in type expressions.
         ///
         /// In most contexts inside type expressions, bare `ParamSpec`s are not allowed.
@@ -2486,7 +2468,7 @@ impl InferenceFlags {
         previously_contained_flag
     }
 
-    pub(super) const fn type_expression_context(self) -> &'static str {
+    pub const fn type_expression_context(self) -> &'static str {
         if self.contains(InferenceFlags::IN_RETURN_TYPE) {
             "return type annotation"
         } else if self.contains(InferenceFlags::IN_PARAMETER_ANNOTATION) {

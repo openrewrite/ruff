@@ -17,7 +17,7 @@ use crate::types::{
 use crate::{Db, ProgramEnvironment};
 
 /// Returns whether `class` is a subclass of Django's `Model`.
-pub(in crate::types) fn is_model<'db>(db: &'db dyn Db, class: StaticClassLiteral<'db>) -> bool {
+pub fn is_model<'db>(db: &'db dyn Db, class: StaticClassLiteral<'db>) -> bool {
     class
         .iter_mro(db, None)
         .skip(1)
@@ -216,7 +216,7 @@ fn own_meta<'db>(
 }
 
 /// Provides synthesized attributes and methods for Django models.
-pub(in crate::types) fn synthesized_member<'db>(
+pub fn synthesized_member<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     class: StaticClassLiteral<'db>,

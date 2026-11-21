@@ -27,7 +27,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// This method *does not* call `infer_expression` on the object being called;
     /// it is assumed that the type for this AST node has already been inferred before this method is called.
-    pub(super) fn infer_namedtuple_call_expression(
+    pub fn infer_namedtuple_call_expression(
         &mut self,
         call_expr: &ast::ExprCall,
         definition: Option<Definition<'db>>,
@@ -556,7 +556,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         NamedTupleSpec::known(db, fields)
     }
 
-    pub(super) fn infer_typing_namedtuple_fields(
+    pub fn infer_typing_namedtuple_fields(
         &mut self,
         fields_arg: &ast::Expr,
     ) -> NamedTupleSpec<'db> {
@@ -769,7 +769,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(super) enum NamedTupleKind {
+pub enum NamedTupleKind {
     Collections,
     Typing,
 }
@@ -783,7 +783,7 @@ impl NamedTupleKind {
         matches!(self, Self::Typing)
     }
 
-    pub(super) fn from_type<'db>(db: &'db dyn Db, ty: Type<'db>) -> Option<Self> {
+    pub fn from_type<'db>(db: &'db dyn Db, ty: Type<'db>) -> Option<Self> {
         match ty {
             Type::SpecialForm(SpecialFormType::NamedTuple) => Some(NamedTupleKind::Typing),
             Type::FunctionLiteral(function) => function

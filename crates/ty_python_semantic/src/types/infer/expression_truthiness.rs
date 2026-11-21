@@ -35,7 +35,7 @@ use crate::{Db, ProgramEnvironment, types::Type};
 /// ```
 ///
 /// The callbacks read existing inference results; this analyzer does not infer or cache types.
-pub(crate) struct TruthinessAnalyzer<'a, 'db, T, C> {
+pub struct TruthinessAnalyzer<'a, 'db, T, C> {
     db: &'db dyn Db,
     env: &'a ProgramEnvironment<'db>,
     expression_type: T,
@@ -48,7 +48,7 @@ where
     C: Fn(&ast::Expr) -> Option<Truthiness>,
 {
     /// Read value types and comparison-chain outcomes from the same inference region.
-    pub(crate) fn new(
+    pub fn new(
         db: &'db dyn Db,
         env: &'a ProgramEnvironment<'db>,
         expression_type: T,
@@ -63,11 +63,7 @@ where
     }
 
     /// Return `Uninhabited` when evaluation cannot produce either boolean outcome.
-    pub(crate) fn truthiness(
-        &self,
-        expression: &ast::Expr,
-        context: ExpressionContext,
-    ) -> Truthiness {
+    pub fn truthiness(&self, expression: &ast::Expr, context: ExpressionContext) -> Truthiness {
         self.evaluate(expression, context)
             .map_or(Truthiness::Uninhabited, |outcome| {
                 outcome.truthiness(self.db, self.env)

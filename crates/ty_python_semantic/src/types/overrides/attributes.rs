@@ -573,7 +573,7 @@ fn attribute_violation<'db>(
 }
 
 /// Select the checker from the members' access semantics before applying diagnostic settings.
-pub(super) enum OverrideCheck<'db> {
+pub enum OverrideCheck<'db> {
     /// Compare an overriding method with an inherited callable's signature.
     Callable,
     /// Attribute checking is complete. `None` includes compatible pairs and conflicts
@@ -583,17 +583,17 @@ pub(super) enum OverrideCheck<'db> {
     Unavailable,
 }
 
-pub(super) struct AttributeOverrideViolation<'db> {
+pub struct AttributeOverrideViolation<'db> {
     violation: AttributeViolation<'db>,
     involves_property: bool,
 }
 
 impl<'db> AttributeOverrideViolation<'db> {
-    pub(super) fn rule(&self) -> &'static LintMetadata {
+    pub fn rule(&self) -> &'static LintMetadata {
         self.violation.rule(self.involves_property)
     }
 
-    pub(super) fn report(
+    pub fn report(
         &self,
         context: &InferContext<'db, '_>,
         superclass: ClassType<'db>,
@@ -662,7 +662,7 @@ impl<'db> AttributeOverrideViolation<'db> {
 /// method must still preserve its call signature. Methods replacing final callable
 /// attributes also retain signature checking, independently of finality diagnostics.
 /// Diagnostic settings do not affect which check applies.
-pub(super) fn check_override<'db>(
+pub fn check_override<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     class: ClassType<'db>,
@@ -802,7 +802,7 @@ pub(super) fn check_override<'db>(
 ///     def __init__(self) -> None:
 ///         self.value: str = ""  # Declares an incompatible override of Base.value.
 /// ```
-pub(super) fn check_instance_overrides<'db>(
+pub fn check_instance_overrides<'db>(
     context: &InferContext<'db, '_>,
     class: ClassType<'db>,
     bases: &[ClassBase<'db>],
@@ -995,7 +995,7 @@ fn conflicting_parent_member<'db>(
 ///
 /// class Combined(Integer, String): ...  # Integer.value cannot satisfy String.value.
 /// ```
-pub(super) fn check_inherited_conflict<'db>(
+pub fn check_inherited_conflict<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     class_type: ClassType<'db>,

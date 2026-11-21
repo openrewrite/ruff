@@ -437,7 +437,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// always false.
     ///
     /// Tests in a different scope, such as a lambda body, are checked when that scope is inferred.
-    pub(super) fn check_condition_redundancy(&self, test: &ast::Expr, test_type: Type<'db>) {
+    pub fn check_condition_redundancy(&self, test: &ast::Expr, test_type: Type<'db>) {
         if !self.should_check_redundant_conditions() {
             return;
         }
@@ -477,7 +477,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// if not ready:  # One `redundant-condition` diagnostic on `ready`.
     ///     print("unreachable")
     /// ```
-    pub(super) fn check_negation_redundancy(&self, unary: &ast::ExprUnaryOp) {
+    pub fn check_negation_redundancy(&self, unary: &ast::ExprUnaryOp) {
         if !self.should_check_redundant_conditions() {
             return;
         }
@@ -535,7 +535,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// when `value: None`, although a literal `assert None` is exempt. Tests classified as
     /// [`ConditionKind::ContainsWalrus`], such as `assert (value := "foo")`, remain eligible for
     /// `redundant-condition-strict`.
-    pub(super) fn check_suite_for_redundant_conditions(&self, suite: &[ast::Stmt]) {
+    pub fn check_suite_for_redundant_conditions(&self, suite: &[ast::Stmt]) {
         if !self.should_check_redundant_conditions() {
             return;
         }

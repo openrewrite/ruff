@@ -28,7 +28,7 @@ use crate::types::{Parameter, Type, TypeContext, UnionType, expand_type};
 const MAX_TOTAL_EXPANSION: usize = 256;
 
 #[derive(Clone, Copy, Debug)]
-pub(crate) enum Argument<'a> {
+pub enum Argument<'a> {
     /// The synthetic `self` or `cls` argument, which doesn't appear explicitly at the call site.
     Synthetic,
     /// A positional argument.
@@ -43,7 +43,7 @@ pub(crate) enum Argument<'a> {
 
 /// Arguments for a single call, in source order, along with inferred types for each argument.
 #[derive(Clone, Debug, Default)]
-pub(crate) struct CallArguments<'a, 'db> {
+pub struct CallArguments<'a, 'db> {
     items: Vec<CallArgument<'a, 'db>>,
 }
 
@@ -65,7 +65,7 @@ pub(crate) struct CallArguments<'a, 'db> {
 /// `tuple[Literal[1], Literal["two"]]`. Matching supplies `Literal[1]` to `x` and
 /// `Literal["two"]` to `y`. Both parameter matches refer to the same source argument index.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum CallArgument<'a, 'db> {
+pub enum CallArgument<'a, 'db> {
     /// A receiver passed as `self` or `cls` without an explicit argument at the call site.
     Synthetic(CallArgumentTypes<'db>),
     /// A positional argument, such as `value` in `f(value)`.
@@ -93,7 +93,7 @@ impl<'a, 'db> CallArgument<'a, 'db> {
         }
     }
 
-    pub(crate) fn kind(&self) -> Argument<'a> {
+    pub fn kind(&self) -> Argument<'a> {
         match self {
             Self::Synthetic(_) => Argument::Synthetic,
             Self::Positional(_) => Argument::Positional,
@@ -104,7 +104,7 @@ impl<'a, 'db> CallArgument<'a, 'db> {
     }
 
     /// The inferred type of the source expression, before unpacking its elements.
-    pub(crate) fn source_types(&self) -> &CallArgumentTypes<'db> {
+    pub fn source_types(&self) -> &CallArgumentTypes<'db> {
         match self {
             Self::Synthetic(types) | Self::Positional(types) | Self::Keyword { types, .. } => types,
             Self::Variadic(argument) => argument.source_types(),
@@ -124,13 +124,13 @@ impl<'a, 'db> CallArgument<'a, 'db> {
         }
     }
 
-    pub(crate) fn source_type(&self) -> Option<Type<'db>> {
+    pub fn source_type(&self) -> Option<Type<'db>> {
         self.source_types().get_default()
     }
 
     /// The type supplied to a matched parameter. Splats supply their matched element type,
     /// while ordinary arguments may be inferred using the parameter's type as context.
-    pub(crate) fn matched_type(
+    pub fn matched_type(
         &self,
         declared: impl Into<Option<Type<'db>>>,
         matched: Option<Type<'db>>,
@@ -144,7 +144,7 @@ impl<'a, 'db> CallArgument<'a, 'db> {
     /// A splatted argument supplies the type of its matched element. For an ordinary argument,
     /// if inference with one or more expected types gave the same result each time, use that
     /// result. Otherwise, use the type inferred without an expected type, if available.
-    pub(super) fn default_matched_type(&self, matched: Option<Type<'db>>) -> Option<Type<'db>> {
+    pub fn default_matched_type(&self, matched: Option<Type<'db>>) -> Option<Type<'db>> {
         matched.or_else(|| self.ordinary_types()?.get_default())
     }
 
@@ -184,7 +184,7 @@ impl<'a, 'db> CallArgument<'a, 'db> {
 
 /// A starred argument, whose source type and unpacked positional values serve different purposes.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum VariadicArgument<'db> {
+pub enum VariadicArgument<'db> {
     Type(CallArgumentTypes<'db>),
     Sequence {
         types: CallArgumentTypes<'db>,
@@ -193,10 +193,10 @@ pub(crate) enum VariadicArgument<'db> {
 }
 
 /// Positional information used when matching a starred argument to a signature.
-pub(crate) struct VariadicArgumentMatch<'db> {
-    pub(crate) types: Vec<Type<'db>>,
-    pub(crate) length: TupleLength,
-    pub(crate) variable_element: Option<Type<'db>>,
+pub struct VariadicArgumentMatch<'db> {
+    pub types: Vec<Type<'db>>,
+    pub length: TupleLength,
+    pub variable_element: Option<Type<'db>>,
 }
 
 impl<'db> VariadicArgument<'db> {
@@ -210,7 +210,7 @@ impl<'db> VariadicArgument<'db> {
         self.source_types().get_default()
     }
 
-    pub(crate) fn sequence(
+    pub fn sequence(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -229,7 +229,7 @@ impl<'db> VariadicArgument<'db> {
     ///
     /// Slice union members independently so overload resolution can distinguish their suffixes.
     /// Returns `None` if any member has fewer than `consumed` fixed leading elements.
-    pub(super) fn without_prefix(
+    pub fn without_prefix(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -286,7 +286,7 @@ impl<'db> VariadicArgument<'db> {
         })
     }
 
-    pub(crate) fn matching(
+    pub fn matching(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -380,7 +380,7 @@ impl<'db> VariadicArgument<'db> {
 
 /// A double-starred argument, with operations shared by all consumers of its keyword values.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum KeywordArgument<'db> {
+pub enum KeywordArgument<'db> {
     Type(CallArgumentTypes<'db>),
     Known {
         types: CallArgumentTypes<'db>,
@@ -390,9 +390,9 @@ pub(crate) enum KeywordArgument<'db> {
 
 /// Known keyword values and possible undeclared keys.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) struct UnpackedKeywords<'db> {
-    pub(crate) keys: Box<[(Name, UnpackedTypedDictKey<'db>)]>,
-    pub(crate) openness: TypedDictOpenness<'db>,
+pub struct UnpackedKeywords<'db> {
+    pub keys: Box<[(Name, UnpackedTypedDictKey<'db>)]>,
+    pub openness: TypedDictOpenness<'db>,
 }
 
 impl<'db> KeywordArgument<'db> {
@@ -402,18 +402,18 @@ impl<'db> KeywordArgument<'db> {
         }
     }
 
-    pub(crate) fn source_type(&self) -> Option<Type<'db>> {
+    pub fn source_type(&self) -> Option<Type<'db>> {
         self.source_types().get_default()
     }
 
     /// Whether all keyword values were captured at the call site, rather than described by a type.
-    pub(crate) fn is_complete(&self) -> bool {
+    pub fn is_complete(&self) -> bool {
         matches!(self, Self::Known { keywords, .. }
             if matches!(keywords.openness, TypedDictOpenness::Closed)
                 && keywords.keys.iter().all(|(_, key)| key.is_required))
     }
 
-    pub(crate) fn explicit_keyword_names(&self) -> impl Iterator<Item = &Name> {
+    pub fn explicit_keyword_names(&self) -> impl Iterator<Item = &Name> {
         let keys = match self {
             Self::Type(_) => [].as_slice(),
             Self::Known { keywords, .. } => keywords.keys.as_ref(),
@@ -450,7 +450,7 @@ impl<'db> KeywordArgument<'db> {
         })
     }
 
-    pub(crate) fn unpack(
+    pub fn unpack(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -465,7 +465,7 @@ impl<'db> KeywordArgument<'db> {
         })
     }
 
-    pub(crate) fn value_type(
+    pub fn value_type(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -491,7 +491,7 @@ impl<'db> KeywordArgument<'db> {
 /// Note that a single argument may produce multiple distinct inferred types when inferred
 /// with type context across multiple bindings.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub(crate) struct CallArgumentTypes<'db> {
+pub struct CallArgumentTypes<'db> {
     fallback_type: Option<Type<'db>>,
     types: FxHashMap<Type<'db>, Type<'db>>,
 }
@@ -505,7 +505,7 @@ impl<'db> CallArgumentTypes<'db> {
     }
 
     /// Returns the most appropriate type of this argument when there is no specific declared type.
-    pub(crate) fn get_default(&self) -> Option<Type<'db>> {
+    pub fn get_default(&self) -> Option<Type<'db>> {
         // If this type was inferred against exactly one declared type, or was inferred against
         // multiple, but resulted in a single inferred type, we have an exact type to return.
         if let Ok(exact_ty) = self
@@ -534,7 +534,7 @@ impl<'db> CallArgumentTypes<'db> {
 
     /// Returns the argument type inferred for this parameter, falling back to
     /// [`Self::get_default`] or `Unknown` if that inference is unavailable.
-    pub(super) fn get_for_parameter(&self, parameter: &Parameter<'db>) -> Type<'db> {
+    pub fn get_for_parameter(&self, parameter: &Parameter<'db>) -> Type<'db> {
         self.try_get_for_declared_type(parameter.argument_context_type())
             .unwrap_or(Type::unknown())
     }
@@ -561,7 +561,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
     /// Create `CallArguments` from AST arguments. We will use the provided callback to obtain the
     /// type of each splatted argument, so that we can determine its length. All other arguments
     /// will remain uninitialized.
-    pub(crate) fn from_arguments(
+    pub fn from_arguments(
         arguments: &'a ast::Arguments,
         mut infer_argument_type: impl FnMut(&ast::ArgOrKeyword, &ast::Expr) -> Type<'db>,
     ) -> Self {
@@ -597,7 +597,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
     ///
     /// This currently only exists for the LSP usecase, and shouldn't be used in normal
     /// typechecking.
-    pub(crate) fn from_arguments_typed(
+    pub fn from_arguments_typed(
         arguments: &'a ast::Arguments,
         mut infer_argument_type: impl FnMut(&ast::Expr) -> Option<Type<'db>>,
     ) -> Self {
@@ -643,7 +643,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
     /// Ordinary tuple types already describe their elements. List and dictionary types do not
     /// retain the contents needed for call binding, even when those contents are known here.
     /// The callback reads types inferred while checking the enclosing collection expression.
-    pub(crate) fn with_known_unpacking(
+    pub fn with_known_unpacking(
         mut self,
         arguments: &ast::Arguments,
         mut expression_type: impl FnMut(&ast::Expr) -> Option<Type<'db>>,
@@ -725,31 +725,31 @@ impl<'a, 'db> CallArguments<'a, 'db> {
     }
 
     /// Create a [`CallArguments`] with no arguments.
-    pub(crate) fn none() -> Self {
+    pub fn none() -> Self {
         Self::default()
     }
 
     /// Create a [`CallArguments`] from an iterator over non-variadic positional argument types.
-    pub(crate) fn positional(positional_tys: impl IntoIterator<Item = Type<'db>>) -> Self {
+    pub fn positional(positional_tys: impl IntoIterator<Item = Type<'db>>) -> Self {
         positional_tys
             .into_iter()
             .map(|ty| (Argument::Positional, Some(ty)))
             .collect()
     }
 
-    pub(super) fn push(&mut self, argument: CallArgument<'a, 'db>) {
+    pub fn push(&mut self, argument: CallArgument<'a, 'db>) {
         self.items.push(argument);
     }
 
-    pub(crate) fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.items.len()
     }
 
-    pub(super) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.items.is_empty()
     }
 
-    pub(crate) fn is_variadic(&self, index: usize) -> bool {
+    pub fn is_variadic(&self, index: usize) -> bool {
         self.items.get(index).is_some_and(|argument| {
             matches!(
                 argument,
@@ -758,21 +758,16 @@ impl<'a, 'db> CallArguments<'a, 'db> {
         })
     }
 
-    pub(crate) fn get(&self, index: usize) -> Option<&CallArgument<'a, 'db>> {
+    pub fn get(&self, index: usize) -> Option<&CallArgument<'a, 'db>> {
         self.items.get(index)
     }
 
     /// The inferred source expression types, before any argument unpacking.
-    pub(crate) fn source_types(&self, index: usize) -> Option<&CallArgumentTypes<'db>> {
+    pub fn source_types(&self, index: usize) -> Option<&CallArgumentTypes<'db>> {
         self.items.get(index).map(CallArgument::source_types)
     }
 
-    pub(crate) fn insert_type(
-        &mut self,
-        index: usize,
-        tcx: impl Into<TypeContext<'db>>,
-        ty: Type<'db>,
-    ) {
+    pub fn insert_type(&mut self, index: usize, tcx: impl Into<TypeContext<'db>>, ty: Type<'db>) {
         self.items
             .get_mut(index)
             .expect("argument index should be valid")
@@ -780,7 +775,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
             .insert(tcx, ty);
     }
 
-    pub(crate) fn clear_types(&mut self, index: usize) {
+    pub fn clear_types(&mut self, index: usize) {
         *self
             .items
             .get_mut(index)
@@ -789,7 +784,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
     }
 
     /// Returns `true` if the inferred types are equal for the given set of argument indices.
-    pub(crate) fn inferred_types_equal_at(&self, other: &Self, argument_indices: &[usize]) -> bool {
+    pub fn inferred_types_equal_at(&self, other: &Self, argument_indices: &[usize]) -> bool {
         argument_indices
             .iter()
             .all(|&index| self.items.get(index) == other.items.get(index))
@@ -798,7 +793,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
     /// Prepend an optional extra synthetic argument (for a `self` or `cls` parameter) to the front
     /// of this argument list. (If `bound_self` is none, we return the argument list
     /// unmodified.)
-    pub(crate) fn with_self(&self, bound_self: Option<Type<'db>>) -> Cow<'_, Self> {
+    pub fn with_self(&self, bound_self: Option<Type<'db>>) -> Cow<'_, Self> {
         if bound_self.is_some() {
             let mut items = Vec::with_capacity(self.items.len() + 1);
             items.push(CallArgument::new(Argument::Synthetic, bound_self));
@@ -809,7 +804,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
         }
     }
 
-    pub(crate) fn iter(&self) -> impl Iterator<Item = &CallArgument<'a, 'db>> + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = &CallArgument<'a, 'db>> + '_ {
         self.items.iter()
     }
 
@@ -822,7 +817,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
 
     /// Returns the `functools.partial(...)` bound-argument slice and whether it is concrete enough
     /// to synthesize a precise partial signature.
-    pub(crate) fn functools_partial_bound_arguments(
+    pub fn functools_partial_bound_arguments(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -854,7 +849,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
     }
 
     /// Prepares lazy argument type expansions for overload resolution.
-    pub(super) fn expansions<'s>(
+    pub fn expansions<'s>(
         &'s self,
         db: &'db dyn Db,
         env: &'s ProgramEnvironment<'db>,
@@ -867,7 +862,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
         }
     }
 
-    pub(super) fn display<'env>(
+    pub fn display<'env>(
         &'env self,
         db: &'db dyn Db,
         env: &'env ProgramEnvironment<'db>,
@@ -930,7 +925,7 @@ impl<'a, 'db> CallArguments<'a, 'db> {
 type ArgumentExpansion<'a, 'db> = Option<Vec<CallArgument<'a, 'db>>>;
 
 /// Shares each argument's type expansion between overload checks and argument list expansion.
-pub(super) struct CallArgumentExpansions<'s, 'a, 'db> {
+pub struct CallArgumentExpansions<'s, 'a, 'db> {
     arguments: &'s CallArguments<'a, 'db>,
     db: &'db dyn Db,
     env: &'s ProgramEnvironment<'db>,
@@ -939,7 +934,7 @@ pub(super) struct CallArgumentExpansions<'s, 'a, 'db> {
 
 impl<'a, 'db> CallArgumentExpansions<'_, 'a, 'db> {
     /// Returns the expanded alternatives of an argument, computing them at most once.
-    pub(super) fn argument_alternatives(&self, index: usize) -> Option<&[CallArgument<'a, 'db>]> {
+    pub fn argument_alternatives(&self, index: usize) -> Option<&[CallArgument<'a, 'db>]> {
         // TODO: For types inferred multiple times with distinct type context, we currently only
         // expand the default inference. Note that direct expansion of a type inferred against a
         // given declared type would not likely be assignable to other declared types without
@@ -960,7 +955,7 @@ impl<'a, 'db> CallArgumentExpansions<'_, 'a, 'db> {
     }
 
     /// Whether a starred positional argument can expand into alternative types.
-    pub(super) fn has_expandable_variadic(&self) -> bool {
+    pub fn has_expandable_variadic(&self) -> bool {
         self.arguments.iter().enumerate().any(|(index, argument)| {
             matches!(argument, CallArgument::Variadic(_))
                 && self.argument_alternatives(index).is_some()
@@ -970,7 +965,7 @@ impl<'a, 'db> CallArgumentExpansions<'_, 'a, 'db> {
     /// Iterates over argument lists with successively more argument types expanded.
     ///
     /// See [argument type expansion](https://typing.python.org/en/latest/spec/overload.html#argument-type-expansion).
-    pub(super) fn iter(&self) -> impl Iterator<Item = Expansion<'a, 'db>> + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = Expansion<'a, 'db>> + '_ {
         /// Represents the state of the expansion process.
         enum State<'a, 'db> {
             LimitReached(usize),
@@ -1063,7 +1058,7 @@ impl<'a, 'db> CallArgumentExpansions<'_, 'a, 'db> {
 }
 
 /// Represents a single element of the expansion process for argument types for [`CallArgumentExpansions::iter`].
-pub(super) enum Expansion<'a, 'db> {
+pub enum Expansion<'a, 'db> {
     /// Indicates that the expansion process has reached the maximum number of argument lists
     /// that can be generated in a single step.
     ///

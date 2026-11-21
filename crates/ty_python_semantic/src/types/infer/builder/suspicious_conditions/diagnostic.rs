@@ -58,7 +58,7 @@ use crate::{
 use super::{ConditionKind, RedundantCondition, exemptions::condition_definition_info};
 
 impl<'db> TypeInferenceBuilder<'db, '_> {
-    pub(super) fn report_redundant_condition<'ctx>(
+    pub fn report_redundant_condition<'ctx>(
         &'ctx self,
         condition: &RedundantCondition<'_, 'db>,
     ) -> Option<LintDiagnosticGuard<'ctx, 'ctx>> {
@@ -1146,7 +1146,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         )
     }
 
-    pub(super) fn add_secondary_annotations_for_redundant_while(
+    pub fn add_secondary_annotations_for_redundant_while(
         &self,
         diagnostic: &mut Diagnostic,
         full_condition_truthiness: Truthiness,
@@ -1233,7 +1233,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         }
     }
 
-    pub(super) fn add_secondary_annotations_for_redundant_assert(
+    pub fn add_secondary_annotations_for_redundant_assert(
         &self,
         diagnostic: &mut Diagnostic,
         full_condition_truthiness: Truthiness,
@@ -1251,7 +1251,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         }
     }
 
-    pub(super) fn add_secondary_annotations_for_redundant_match(
+    pub fn add_secondary_annotations_for_redundant_match(
         &self,
         diagnostic: &mut Diagnostic,
         full_condition_truthiness: Truthiness,
@@ -1301,7 +1301,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
         }
     }
 
-    pub(super) fn add_secondary_annotations_for_redundant_if_or_elif(
+    pub fn add_secondary_annotations_for_redundant_if_or_elif(
         &self,
         condition: &RedundantCondition<'_, 'db>,
         diagnostic: &mut Diagnostic,

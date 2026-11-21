@@ -36,7 +36,7 @@ use crate::types::{ProgramEnvironment, Type, original_class_type};
 ///
 /// The value may come from bindings in the load's own scope, an enclosing scope,
 /// or an implicit value such as a builtin.
-pub(crate) struct PlaceLoadResolver<'db, 'a> {
+pub struct PlaceLoadResolver<'db, 'a> {
     procedure: PlaceLoadResolutionProcedure<'db, 'a>,
     env: &'a ProgramEnvironment<'db>,
     reachability_cache: Option<&'a ReachabilityEvaluationCache<'db>>,
@@ -44,7 +44,7 @@ pub(crate) struct PlaceLoadResolver<'db, 'a> {
 
 impl<'db, 'a> PlaceLoadResolver<'db, 'a> {
     /// Starts resolution using the given mode.
-    pub(crate) fn new(
+    pub fn new(
         db: &'db dyn Db,
         env: &'a ProgramEnvironment<'db>,
         index: &'db SemanticIndex<'db>,
@@ -62,7 +62,7 @@ impl<'db, 'a> PlaceLoadResolver<'db, 'a> {
 
     /// Starts resolution using the lexical place and use IDs when they are available.
     #[expect(clippy::too_many_arguments)]
-    pub(crate) fn from_source(
+    pub fn from_source(
         db: &'db dyn Db,
         env: &'a ProgramEnvironment<'db>,
         index: &'db SemanticIndex<'db>,
@@ -91,7 +91,7 @@ impl<'db, 'a> PlaceLoadResolver<'db, 'a> {
     ///
     /// The visitor can inspect or narrow the source before the resolver merges it into the
     /// result. A definitely bound result ends the traversal.
-    pub(crate) fn resolve(
+    pub fn resolve(
         mut self,
         mut visit: impl FnMut(&mut ResolvedPlaceLoadSource<'_, 'db>),
     ) -> ResolvedPlaceLoad<'db> {
@@ -223,7 +223,7 @@ impl<'db, 'a> PlaceLoadResolver<'db, 'a> {
 }
 
 /// An evaluated source of a place load's value, available for type narrowing.
-pub(crate) struct ResolvedPlaceLoadSource<'a, 'db> {
+pub struct ResolvedPlaceLoadSource<'a, 'db> {
     kind: PlaceLoadSourceKind<'db>,
     place: PlaceAndQualifiers<'db>,
     constraint_keys: &'a [(FileScopeId, ConstraintKey)],
@@ -231,42 +231,42 @@ pub(crate) struct ResolvedPlaceLoadSource<'a, 'db> {
 
 impl<'db> ResolvedPlaceLoadSource<'_, 'db> {
     /// Returns how the place load obtains its value.
-    pub(crate) fn kind(&self) -> &PlaceLoadSourceKind<'db> {
+    pub fn kind(&self) -> &PlaceLoadSourceKind<'db> {
         &self.kind
     }
 
     /// Returns the type, boundness, and qualifiers of the resolved place.
-    pub(crate) fn place(&self) -> &PlaceAndQualifiers<'db> {
+    pub fn place(&self) -> &PlaceAndQualifiers<'db> {
         &self.place
     }
 
     /// Returns the keys identifying narrowing constraints applicable to the resolved place.
-    pub(crate) fn constraint_keys(&self) -> &[(FileScopeId, ConstraintKey)] {
+    pub fn constraint_keys(&self) -> &[(FileScopeId, ConstraintKey)] {
         self.constraint_keys
     }
 
     /// Installs inference's narrowing result, preserving boundness and qualifiers.
-    pub(crate) fn set_narrowed_type(&mut self, ty: Type<'db>) {
+    pub fn set_narrowed_type(&mut self, ty: Type<'db>) {
         self.place = self.place.map_type(|_| ty);
     }
 }
 
 /// The combined result of resolving a place load.
-pub(crate) struct ResolvedPlaceLoad<'db> {
+pub struct ResolvedPlaceLoad<'db> {
     /// The combined place after resolution.
-    pub(crate) place: PlaceAndQualifiers<'db>,
+    pub place: PlaceAndQualifiers<'db>,
     /// The result checked for deprecation, before adding implicit module globals, builtins,
     /// or the `reveal_type` fallback.
-    pub(crate) deprecation_target: PlaceAndQualifiers<'db>,
+    pub deprecation_target: PlaceAndQualifiers<'db>,
     /// Constraint keys accumulated for expression-level narrowing.
-    pub(crate) constraint_keys: Vec<(FileScopeId, ConstraintKey)>,
+    pub constraint_keys: Vec<(FileScopeId, ConstraintKey)>,
     /// Whether resolution followed a `global` or `nonlocal` declaration.
-    pub(crate) crosses_scope_declaration: bool,
+    pub crosses_scope_declaration: bool,
 }
 
 /// Selects the binding state used for a place load's own scope.
 #[derive(Clone, Copy)]
-pub(crate) enum PlaceLoadMode<'ast> {
+pub enum PlaceLoadMode<'ast> {
     /// Resolve bindings live at an expression occurrence.
     ///
     /// For example, a caller resolving `value` in `print(value)` uses this mode so that only
@@ -367,7 +367,7 @@ pub(crate) enum PlaceLoadMode<'ast> {
 /// instead of yielding module globals or builtins as later sources. In this
 /// example, type inference establishes that the branches in `make_counter`
 /// always define `value`, so the `Exhausted` step is unreachable.
-pub(crate) struct PlaceLoadResolutionProcedure<'db, 'ast> {
+pub struct PlaceLoadResolutionProcedure<'db, 'ast> {
     /// The place expression whose loaded value is being resolved.
     place_expr: PlaceExprRef<'ast>,
     /// Read-only context shared by every source-selection phase.
@@ -542,7 +542,7 @@ impl<'db> Iterator for PlaceLoadResolutionProcedure<'db, '_> {
 
 impl<'db, 'ast> PlaceLoadResolutionProcedure<'db, 'ast> {
     /// Creates the procedure that selects sources for a place load.
-    pub(crate) fn new(
+    pub fn new(
         db: &'db dyn Db,
         index: &'db SemanticIndex<'db>,
         scope: ScopeId<'db>,
@@ -865,7 +865,7 @@ impl<'db, 'ast> PlaceLoadResolutionProcedure<'db, 'ast> {
     }
 }
 
-pub(crate) enum PlaceLoadResolutionStep<'db> {
+pub enum PlaceLoadResolutionStep<'db> {
     // A source that can supply the value for a load.
     Source(PlaceLoadSource<'db>),
     // A condition that the caller must evaluate to determine whether resolution should continue
@@ -934,9 +934,9 @@ pub(crate) enum PlaceLoadResolutionStep<'db> {
 /// that source is undefined and the consumer requests the next source, the
 /// `UseId` key narrows the enclosing `int | None` place to `int`. If both
 /// sources are exhausted, the key remains active for expression-level narrowing.
-pub(crate) struct PlaceLoadSource<'db> {
+pub struct PlaceLoadSource<'db> {
     /// How this source supplies the loaded value.
-    pub(crate) kind: PlaceLoadSourceKind<'db>,
+    pub kind: PlaceLoadSourceKind<'db>,
     /// Selects the constraints used to narrow this source.
     entry_checkpoint: usize,
     /// The role this source plays in the load.
@@ -963,7 +963,7 @@ impl PlaceLoadSource<'_> {
 }
 
 /// Describes how a source can supply a place's value.
-pub(crate) enum PlaceLoadSourceKind<'db> {
+pub enum PlaceLoadSourceKind<'db> {
     /// Bindings already selected for this load state.
     ///
     /// For an ordinary expression, these are the bindings that reach that point:
@@ -1006,7 +1006,7 @@ pub(crate) enum PlaceLoadSourceKind<'db> {
 }
 
 /// A source that consumers evaluate using a specialized query or rule.
-pub(crate) enum ImplicitPlaceLoad<'db> {
+pub enum ImplicitPlaceLoad<'db> {
     /// The implicit `__class__` cell for a method, lambda, or generator expression defined directly
     /// in a class body, e.g.:
     ///
@@ -1051,7 +1051,7 @@ enum PlaceLoadSourceRole {
 
 /// The reason resolution stops if the preceding sources do not supply a value.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum PlaceLoadFailure {
+pub enum PlaceLoadFailure {
     /// No additional place-load source applies.
     ///
     /// For a symbol load, this means runtime lookup raises `NameError`.
@@ -1092,7 +1092,7 @@ pub(crate) enum PlaceLoadFailure {
 ///
 /// The nested scope binds `obj` to a different object, so normal member lookup on the local
 /// `obj` must handle the load instead.
-pub(crate) struct PlaceExprPrefixLoads<'db> {
+pub struct PlaceExprPrefixLoads<'db> {
     scope: ScopeId<'db>,
     loads: SmallVec<[PlaceExprPrefixLoad; 2]>,
 }
@@ -1108,7 +1108,7 @@ impl<'db> PlaceExprPrefixLoads<'db> {
     }
 
     /// Returns whether any tracked prefix is at least possibly bound.
-    pub(crate) fn has_bound_prefix(
+    pub fn has_bound_prefix(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

@@ -10,7 +10,7 @@ use crate::types::diagnostic::{
 /// Check that all type guard function definitions have at least one positional parameter
 /// (in addition to `self`/`cls` for methods), and for `TypeIs`, that the narrowed type is
 /// assignable to the declared type of that parameter.
-pub(crate) fn check_type_guard_definition<'db>(
+pub fn check_type_guard_definition<'db>(
     context: &InferContext<'db, '_>,
     ty: Type<'db>,
     node: &ast::StmtFunctionDef,

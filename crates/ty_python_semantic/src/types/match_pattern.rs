@@ -29,13 +29,13 @@ use crate::types::{
 
 /// Identifies a pattern by its address and subject type without hashing the pattern subtree.
 #[derive(Clone, Copy)]
-pub(super) struct PatternCacheKey<'pattern, 'db> {
-    pub(super) pattern: &'pattern PatternPredicateKind<'db>,
-    pub(super) subject_ty: Type<'db>,
+pub struct PatternCacheKey<'pattern, 'db> {
+    pub pattern: &'pattern PatternPredicateKind<'db>,
+    pub subject_ty: Type<'db>,
 }
 
 impl PatternCacheKey<'_, '_> {
-    pub(super) fn is_structural(self) -> bool {
+    pub fn is_structural(self) -> bool {
         matches!(
             self.pattern,
             PatternPredicateKind::Class(_)
@@ -63,7 +63,7 @@ impl Hash for PatternCacheKey<'_, '_> {
 
 type PatternTypeCache<'pattern, 'db> = FxHashMap<PatternCacheKey<'pattern, 'db>, Type<'db>>;
 
-pub(crate) fn singleton_pattern_type<'db>(
+pub fn singleton_pattern_type<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     singleton: ast::Singleton,
@@ -77,17 +77,14 @@ pub(crate) fn singleton_pattern_type<'db>(
     ty
 }
 
-pub(crate) fn mapping_pattern_type<'db>(
-    db: &'db dyn Db,
-    env: &ProgramEnvironment<'db>,
-) -> Type<'db> {
+pub fn mapping_pattern_type<'db>(db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
     KnownClass::Mapping
         .to_instance(db, env)
         .top_materialization(db, env)
 }
 
 /// Return the class expression type for coverage analysis.
-pub(crate) fn class_pattern_coverage_target<'db>(
+pub fn class_pattern_coverage_target<'db>(
     db: &'db dyn Db,
     pattern: &ClassPatternPredicateKind<'db>,
 ) -> Type<'db> {
@@ -110,7 +107,7 @@ pub(crate) fn class_pattern_coverage_target<'db>(
 /// `TypedDict` is not a nominal subtype of `dict` in the static type system, but every runtime
 /// value is a dictionary. A `TypedDict` therefore matches class patterns such as `dict()`,
 /// `Mapping()`, and `MutableMapping()`.
-pub(crate) fn typed_dict_matches_class_pattern<'db>(
+pub fn typed_dict_matches_class_pattern<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     class: ClassLiteral<'db>,
@@ -161,7 +158,7 @@ fn typed_dict_pattern_domain_satisfies<'db>(
 }
 
 /// Return whether every value in `ty` is represented by a `TypedDict` schema at runtime.
-pub(super) fn is_typed_dict_runtime_domain(
+pub fn is_typed_dict_runtime_domain(
     db: &dyn Db,
     env: &ProgramEnvironment<'_>,
     ty: Type<'_>,
@@ -169,7 +166,7 @@ pub(super) fn is_typed_dict_runtime_domain(
     typed_dict_pattern_domain_satisfies(db, env, ty, &mut |_| true)
 }
 
-pub(crate) fn sequence_pattern_type_builder<'db>(
+pub fn sequence_pattern_type_builder<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
 ) -> IntersectionBuilder<'db> {
@@ -237,7 +234,7 @@ fn sequence_pattern_getitem_method<'db>(
 /// this returns the sequence-pattern runtime type plus a synthesized protocol
 /// whose `__len__` and indexed `__getitem__` methods encode the fixed length
 /// and element types.
-pub(crate) fn exact_sequence_pattern_type<'db>(
+pub fn exact_sequence_pattern_type<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     element_types: impl ExactSizeIterator<Item = Type<'db>>,
@@ -280,7 +277,7 @@ pub(crate) fn exact_sequence_pattern_type<'db>(
 ///
 /// Fixed prefix elements use non-negative indices and fixed suffix elements use
 /// negative indices. Other integer indices retain the sequence's element type.
-pub(crate) fn starred_sequence_pattern_type<'db>(
+pub fn starred_sequence_pattern_type<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     prefix_element_types: impl ExactSizeIterator<Item = Type<'db>>,
@@ -388,7 +385,7 @@ enum ClassMatchArgs<'db> {
 
 /// The value supplied to one positional subpattern in a class pattern.
 #[derive(Clone)]
-pub(crate) enum ClassPatternPositionalSource {
+pub enum ClassPatternPositionalSource {
     /// The complete subject, as used by Python's special built-in class patterns.
     MatchSelf,
     /// The named attribute extracted from the subject according to `__match_args__`.
@@ -464,7 +461,7 @@ fn class_has_match_self_flag(db: &dyn Db, class: ClassLiteral<'_>) -> bool {
 }
 
 /// The statically known result of validating positional subpatterns for a class pattern.
-pub(crate) enum ClassPatternPositionalResult<'db> {
+pub enum ClassPatternPositionalResult<'db> {
     /// The maximum number of positional subpatterns accepted by the class.
     Limit(usize),
     /// A statically known non-tuple value used for `__match_args__`.
@@ -472,7 +469,7 @@ pub(crate) enum ClassPatternPositionalResult<'db> {
 }
 
 /// Validate positional subpatterns against a statically known `__match_args__` type.
-pub(crate) fn class_pattern_positional_result<'db>(
+pub fn class_pattern_positional_result<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     class: ClassLiteral<'db>,
@@ -527,7 +524,7 @@ pub(crate) fn class_pattern_positional_result<'db>(
 ///     case int(_):  # The positional subpattern receives `number` itself.
 ///         pass
 /// ```
-pub(crate) fn class_pattern_positional_sources(
+pub fn class_pattern_positional_sources(
     db: &dyn Db,
     env: &ProgramEnvironment<'_>,
     class: ClassLiteral<'_>,
@@ -709,7 +706,7 @@ fn sequence_pattern_is_exhaustive_for_subject<'pattern, 'db>(
 /// # For a `tuple[Child]` subject, this checks `x` on `Child`, not only on `Base`.
 /// case [Base(x=_)]: ...
 /// ```
-pub(crate) fn definite_match_pattern_type_for_subject<'db>(
+pub fn definite_match_pattern_type_for_subject<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     kind: &PatternPredicateKind<'db>,
@@ -959,7 +956,7 @@ fn pattern_fallthrough_type<'db>(
 }
 
 /// Return the exact set of values matched within the subject's enum by an OR of member patterns.
-pub(crate) fn same_enum_or_pattern_type<'db>(
+pub fn same_enum_or_pattern_type<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     patterns: &[PatternPredicateKind<'db>],
@@ -1021,7 +1018,7 @@ pub(crate) fn same_enum_or_pattern_type<'db>(
 ///             # tuple[str, int | str] | tuple[int | str, int]
 ///             reveal_type(value)
 /// ```
-pub(crate) fn pattern_binding_fallthrough_type<'db>(
+pub fn pattern_binding_fallthrough_type<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     kind: &PatternPredicateKind<'db>,
@@ -1347,7 +1344,7 @@ fn subject_independent_definite_match_pattern_type<'db>(
 /// Return the values that are guaranteed to match `kind`.
 ///
 /// Reachability and negative narrowing can only subtract this under-approximation.
-pub(crate) fn definite_match_pattern_type<'db>(
+pub fn definite_match_pattern_type<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     kind: &PatternPredicateKind<'db>,

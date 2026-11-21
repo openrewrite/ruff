@@ -77,7 +77,7 @@ impl<'db> Type<'db> {
     /// [object identity]: https://docs.python.org/3/reference/datamodel.html#objects-values-and-types
     /// [literal identity]: https://docs.python.org/3/reference/expressions.html#literals-and-object-identity
     /// [instance methods]: https://docs.python.org/3/reference/datamodel.html#instance-methods
-    pub(crate) fn identity_comparison_type(
+    pub fn identity_comparison_type(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -550,7 +550,7 @@ impl<'db> Type<'db> {
     }
 
     /// Return whether values of these types always, never, or possibly identify the same object.
-    pub(crate) fn identity_comparison_truthiness(
+    pub fn identity_comparison_truthiness(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -740,15 +740,15 @@ impl From<NonIdentityOperator> for ast::CmpOp {
 /// this struct. In this case, those would be `Literal["foo"]`
 /// and `Literal[3]`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) struct UnsupportedComparisonError<'db> {
-    pub(crate) op: ast::CmpOp,
-    pub(crate) left_ty: Type<'db>,
-    pub(crate) right_ty: Type<'db>,
+pub struct UnsupportedComparisonError<'db> {
+    pub op: ast::CmpOp,
+    pub left_ty: Type<'db>,
+    pub right_ty: Type<'db>,
 }
 
 /// Refine membership using the contents of an immediately consumed container display.
 /// For sets, assume equality is an equivalence relation and equal objects have equal hashes.
-pub(super) fn infer_literal_membership_comparison<'db>(
+pub fn infer_literal_membership_comparison<'db>(
     context: &InferContext<'db, '_>,
     left: Type<'db>,
     op: ast::CmpOp,
@@ -800,7 +800,7 @@ fn fixed_membership_truthiness<'db>(
 ///
 /// If the operation is not supported, return an error (we need upstream context to emit a
 /// diagnostic).
-pub(super) fn infer_binary_type_comparison<'db>(
+pub fn infer_binary_type_comparison<'db>(
     context: &InferContext<'db, '_>,
     left: Type<'db>,
     op: ast::CmpOp,

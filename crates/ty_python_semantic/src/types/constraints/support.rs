@@ -16,10 +16,10 @@ use smallvec::SmallVec;
 
 #[newtype_index]
 #[derive(get_size2::GetSize)]
-pub(super) struct SupportId;
+pub struct SupportId;
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct Support {
+pub struct Support {
     chunks: SmallVec<[usize; 2]>,
     has_skipped_lazy_attributes: bool,
 }
@@ -27,7 +27,7 @@ pub(super) struct Support {
 const CHUNK_SIZE: usize = usize::BITS as usize;
 
 impl Support {
-    pub(super) fn from_typevar_set<'db>(
+    pub fn from_typevar_set<'db>(
         db: &'db dyn Db,
         storage: &mut ConstraintSetStorage<'db>,
         typevars: TypeVarSet<'db>,
@@ -41,7 +41,7 @@ impl Support {
     }
 
     /// Adds a typevar to this support.
-    pub(super) fn insert(&mut self, typevar: TypeVarId) {
+    pub fn insert(&mut self, typevar: TypeVarId) {
         let index = typevar.index();
         let chunks_needed = (index + 1).div_ceil(CHUNK_SIZE);
         if self.chunks.len() < chunks_needed {
@@ -55,7 +55,7 @@ impl Support {
     }
 
     /// Removes and returns an arbitrary typevar from this support.
-    pub(super) fn pop(&mut self) -> Option<TypeVarId> {
+    pub fn pop(&mut self) -> Option<TypeVarId> {
         let (idx, first_nonempty_chunk) = self
             .chunks
             .iter_mut()
@@ -75,7 +75,7 @@ impl Support {
     }
 
     /// Returns an iterator of all of the typevars in this support.
-    pub(super) fn iter(&self) -> impl Iterator<Item = TypeVarId> + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = TypeVarId> + '_ {
         // Iterate through all of the chunks
         let mut next_chunk_start = 0;
         self.iter_chunks().flat_map(move |mut chunk| {
@@ -105,19 +105,19 @@ impl Support {
     }
 
     /// Returns whether this support contains any type variables in common with `other`.
-    pub(super) fn overlaps_with(&self, other: &Self) -> bool {
+    pub fn overlaps_with(&self, other: &Self) -> bool {
         let lhs = self.iter_chunks();
         let rhs = other.iter_chunks();
         std::iter::zip(lhs, rhs).any(|(lhs, rhs)| (lhs & rhs) != 0)
     }
 
     /// Records that lazy type attributes may contain additional type variables.
-    pub(super) fn mark_incomplete(&mut self) {
+    pub fn mark_incomplete(&mut self) {
         self.has_skipped_lazy_attributes = true;
     }
 
     /// Returns whether all type attributes were inspected while collecting this support.
-    pub(super) fn is_complete(&self) -> bool {
+    pub fn is_complete(&self) -> bool {
         !self.has_skipped_lazy_attributes
     }
 
@@ -128,7 +128,7 @@ impl Support {
     /// typevars in the support, and add any _other_ typevars they mention. (That might add
     /// additional typevars that cause more constraints to become eligible, and so on.)
     #[expect(clippy::needless_pass_by_value)]
-    pub(super) fn close_over_constraints(
+    pub fn close_over_constraints(
         &mut self,
         storage: &ConstraintSetStorage<'_>,
         constraints: impl Iterator<Item = ConstraintId> + Clone,

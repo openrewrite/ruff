@@ -22,7 +22,7 @@ use crate::{Db, FxOrderMap, ProgramEnvironment};
 ///
 /// This does not describe budget completeness or apply defaults to variables without evidence.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum SolutionType<'db> {
+pub enum SolutionType<'db> {
     Resolved(Type<'db>),
     /// The original selected type, retained when dependencies are missing, cyclic, or cannot be
     /// substituted through a type form that preserves captured references.
@@ -31,7 +31,7 @@ pub(crate) enum SolutionType<'db> {
 
 /// Resolves only dependencies with selected, acyclic solutions. The result has the same order as
 /// `solution`; references outside `inferable` retain their original bound-variable identity.
-pub(crate) fn resolve_solution<'db>(
+pub fn resolve_solution<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     inferable: TypeVarSet<'db>,

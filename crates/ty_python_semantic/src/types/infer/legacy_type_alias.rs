@@ -32,15 +32,15 @@ use super::builder::TypeInferenceBuilder;
 
 /// An eligible alias definition and its declaration style, independent of the defining AST.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct LegacyTypeAliasDefinition<'db> {
-    pub(super) definition: Definition<'db>,
+pub struct LegacyTypeAliasDefinition<'db> {
+    pub definition: Definition<'db>,
     /// True for an implicit alias and false for a PEP 613 declaration. If the right-hand side
     /// is invalid, we may treat an unannotated assignment as a variable. A PEP 613 declaration
     /// still declares an alias.
     ///
     /// This describes the resolved `definition`. For `B = A`, the flag is false when `A` is declared
     /// with `TypeAlias`. PEP 695 `type` statements are handled separately.
-    pub(super) is_implicit: bool,
+    pub is_implicit: bool,
 }
 
 /// Resolve a definition as a possible legacy type alias.
@@ -61,7 +61,7 @@ pub(super) struct LegacyTypeAliasDefinition<'db> {
 ///
 /// This query keeps callers independent of the defining file's AST.
 #[salsa::tracked(returns(copy), cycle_initial=|_, _, _| None, heap_size=ruff_memory_usage::heap_size)]
-pub(super) fn legacy_type_alias_definition<'db>(
+pub fn legacy_type_alias_definition<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> Option<LegacyTypeAliasDefinition<'db>> {
@@ -171,7 +171,7 @@ pub(super) fn legacy_type_alias_definition<'db>(
 /// creates a class whose definition is the assignment itself. Unknown source definitions
 /// remain eligible for the usual fallback, including unresolved and ambiguous imports.
 #[salsa::tracked(returns(copy), cycle_initial=|_, _, _, _| None, heap_size=ruff_memory_usage::heap_size)]
-pub(super) fn non_alias_assignment<'db>(
+pub fn non_alias_assignment<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
     ty: Type<'db>,
@@ -417,7 +417,7 @@ fn unique_forwarding_target<'db>(
 /// Parameters are part of the alias query's key: discovering them later selects a generic
 /// constructor rather than reusing that provisional non-generic value.
 #[salsa::tracked(returns(copy), cycle_initial=|_, _, _| None, heap_size=ruff_memory_usage::heap_size)]
-pub(in crate::types) fn legacy_type_alias_parameters<'db>(
+pub fn legacy_type_alias_parameters<'db>(
     db: &'db dyn Db,
     definition: Definition<'db>,
 ) -> Option<GenericContext<'db>> {

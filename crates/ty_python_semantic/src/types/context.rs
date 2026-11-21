@@ -48,7 +48,7 @@ impl<'db> ProgramEnvironment<'db> {
     }
 
     /// Creates an environment that lazily obtains its program from `definition`.
-    pub(crate) fn from_definition(definition: Definition<'db>) -> Self {
+    pub fn from_definition(definition: Definition<'db>) -> Self {
         Self {
             environment: Cell::new(ProgramSource::Definition(definition.as_id())),
             lifetime: PhantomData,
@@ -56,7 +56,7 @@ impl<'db> ProgramEnvironment<'db> {
     }
 
     /// Creates an environment that lazily obtains its program from `scope`.
-    pub(crate) fn from_scope(scope: ScopeId<'db>) -> Self {
+    pub fn from_scope(scope: ScopeId<'db>) -> Self {
         Self {
             environment: Cell::new(ProgramSource::Scope(scope.as_id())),
             lifetime: PhantomData,
@@ -103,13 +103,13 @@ impl<'db> ProgramEnvironment<'db> {
 
     /// Returns the Python version used by this operation.
     #[inline]
-    pub(crate) fn python_version(&self, db: &'db dyn Db) -> PythonVersion {
+    pub fn python_version(&self, db: &'db dyn Db) -> PythonVersion {
         self.program(db).python_version(db)
     }
 
     /// Returns the resolver environment used by this operation.
     #[inline]
-    pub(crate) fn resolver_environment(&self, db: &'db dyn Db) -> ResolverEnvironment<'db> {
+    pub fn resolver_environment(&self, db: &'db dyn Db) -> ResolverEnvironment<'db> {
         self.program(db).resolver_environment(db)
     }
 }
@@ -146,7 +146,7 @@ enum DiagnosticMode {
 /// It's important that the context is explicitly consumed before dropping by calling
 /// [`InferContext::finish`] and the returned metadata must be stored
 /// on the current inference result.
-pub(crate) struct InferContext<'db, 'ast> {
+pub struct InferContext<'db, 'ast> {
     db: &'db dyn Db,
     program_environment: &'ast ProgramEnvironment<'db>,
     scope: ScopeId<'db>,
@@ -158,12 +158,12 @@ pub(crate) struct InferContext<'db, 'ast> {
     has_failed_call: Cell<bool>,
     diagnostic_mode: DiagnosticMode,
     /// This field tracks various flags that control how type inference should behave in the current context.
-    pub(crate) inference_flags: InferenceFlags,
+    pub inference_flags: InferenceFlags,
     bomb: DebugDropBomb,
 }
 
 impl<'db, 'ast> InferContext<'db, 'ast> {
-    pub(crate) fn new(
+    pub fn new(
         db: &'db dyn Db,
         program_environment: &'ast ProgramEnvironment<'db>,
         scope: ScopeId<'db>,
@@ -194,7 +194,7 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     }
 
     /// The file for which the types are inferred.
-    pub(crate) fn file(&self) -> File {
+    pub fn file(&self) -> File {
         self.file
     }
 
@@ -202,26 +202,26 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
         self.program_file.python_file(self.db())
     }
 
-    pub(crate) fn program_file(&self) -> ProgramFile<'db> {
+    pub fn program_file(&self) -> ProgramFile<'db> {
         self.program_file
     }
 
     #[inline]
-    pub(crate) fn program_environment(&self) -> &'ast ProgramEnvironment<'db> {
+    pub fn program_environment(&self) -> &'ast ProgramEnvironment<'db> {
         self.program_environment
     }
 
     /// The module for which the types are inferred.
-    pub(crate) fn module(&self) -> &'ast ParsedModuleRef {
+    pub fn module(&self) -> &'ast ParsedModuleRef {
         self.module
     }
 
     /// Constructs an importer using the file's cached imports and source style.
-    pub(crate) fn importer(&self) -> Importer<'_> {
+    pub fn importer(&self) -> Importer<'_> {
         Importer::new(self.db, self.program_file, self.module)
     }
 
-    pub(crate) fn scope(&self) -> ScopeId<'db> {
+    pub fn scope(&self) -> ScopeId<'db> {
         self.scope
     }
 
@@ -231,7 +231,7 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     /// If you're creating a diagnostic with snippets in files
     /// other than this one, you should create the span directly
     /// and not use this convenience API.
-    pub(crate) fn span<T: Ranged>(&self, ranged: T) -> Span {
+    pub fn span<T: Ranged>(&self, ranged: T) -> Span {
         Span::from(self.file()).with_range(ranged.range())
     }
 
@@ -239,16 +239,16 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     /// the file currently being type checked.
     ///
     /// The annotation returned has no message attached to it.
-    pub(crate) fn secondary<T: Ranged>(&self, ranged: T) -> Annotation {
+    pub fn secondary<T: Ranged>(&self, ranged: T) -> Annotation {
         Annotation::secondary(self.span(ranged))
     }
 
     #[inline]
-    pub(crate) fn db(&self) -> &'db dyn Db {
+    pub fn db(&self) -> &'db dyn Db {
         self.db
     }
 
-    pub(crate) fn extend(&mut self, other: &InferContextResult) {
+    pub fn extend(&mut self, other: &InferContextResult) {
         *self.has_invalid_type_form.get_mut() |= other.has_invalid_type_form;
         *self.has_failed_call.get_mut() |= other.has_failed_call;
         let diagnostics = self.diagnostics.get_mut();
@@ -266,39 +266,39 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     }
 
     /// Whether diagnostics inferred separately for a referenced alias should be collected.
-    pub(super) fn should_collect_diagnostics(&self) -> bool {
+    pub fn should_collect_diagnostics(&self) -> bool {
         self.diagnostic_mode == DiagnosticMode::Normal
             && self.db().should_check_file(self.file())
             && !self.is_in_no_type_check()
     }
 
-    pub(super) fn has_diagnostics(&self) -> bool {
+    pub fn has_diagnostics(&self) -> bool {
         !self.diagnostics.borrow().is_empty()
     }
 
     /// Records a reachable failed call even when its diagnostic is suppressed. A recovery type
     /// does not establish that speculative inference succeeded.
-    pub(super) fn mark_failed_call(&self, call: impl Ranged) {
+    pub fn mark_failed_call(&self, call: impl Ranged) {
         if self.is_range_reachable(call.range()) {
             self.has_failed_call.set(true);
         }
     }
 
-    pub(super) fn has_failed_call(&self) -> bool {
+    pub fn has_failed_call(&self) -> bool {
         self.has_failed_call.get()
     }
 
-    pub(super) fn clear_failed_call(&self) {
+    pub fn clear_failed_call(&self) {
         self.has_failed_call.set(false);
     }
 
     /// Records an invalid type form even when its diagnostic is suppressed or inferred separately.
-    pub(super) fn mark_invalid_type_form(&self) {
+    pub fn mark_invalid_type_form(&self) {
         self.has_invalid_type_form.set(true);
     }
 
     /// Prevents diagnostic construction for this inference context.
-    pub(super) fn suppress_diagnostics(&mut self) {
+    pub fn suppress_diagnostics(&mut self) {
         debug_assert_ne!(self.diagnostic_mode, DiagnosticMode::Suppressed);
         self.diagnostic_mode = DiagnosticMode::Suppressed;
     }
@@ -307,16 +307,16 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     ///
     /// These errors describe why a value cannot be used as a type, independently of whether
     /// diagnostics are enabled or suppressed in the file defining that value.
-    pub(super) fn collect_type_expression_diagnostics(&mut self) {
+    pub fn collect_type_expression_diagnostics(&mut self) {
         debug_assert_eq!(self.diagnostic_mode, DiagnosticMode::Normal);
         self.diagnostic_mode = DiagnosticMode::TypeExpressionExplanation;
     }
 
-    pub(super) fn is_type_expression_explanation(&self) -> bool {
+    pub fn is_type_expression_explanation(&self) -> bool {
         self.diagnostic_mode == DiagnosticMode::TypeExpressionExplanation
     }
 
-    pub(super) fn is_lint_enabled(&self, lint: &'static LintMetadata) -> bool {
+    pub fn is_lint_enabled(&self, lint: &'static LintMetadata) -> bool {
         LintDiagnosticGuardBuilder::severity_and_source(self, LintId::of(lint)).is_some()
     }
 
@@ -348,7 +348,7 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     ///
     /// If callers need to create a non-lint diagnostic, you'll want to use the
     /// lower level `InferContext::report_diagnostic` routine.
-    pub(super) fn report_lint<'ctx, T: Ranged>(
+    pub fn report_lint<'ctx, T: Ranged>(
         &'ctx self,
         lint: &'static LintMetadata,
         ranged: T,
@@ -374,7 +374,7 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     ///
     /// Callers should generally prefer adding a lint diagnostic via
     /// `InferContext::report_lint` whenever possible.
-    pub(super) fn report_diagnostic<'ctx>(
+    pub fn report_diagnostic<'ctx>(
         &'ctx self,
         id: DiagnosticId,
         severity: Severity,
@@ -418,7 +418,7 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     ///
     /// This checks both whether the scope itself is reachable and whether the
     /// specific statement or expression containing this range is reachable.
-    pub(super) fn is_range_reachable(&self, range: TextRange) -> bool {
+    pub fn is_range_reachable(&self, range: TextRange) -> bool {
         let db = self.db;
         let index = semantic_index(self.db(), self.program_file);
         let scope_id = self.scope.file_scope_id(self.db());
@@ -426,16 +426,16 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
     }
 
     /// Are we currently inferring types in a stub file?
-    pub(crate) fn in_stub(&self) -> bool {
+    pub fn in_stub(&self) -> bool {
         self.file.is_stub(self.db())
     }
 
-    pub(crate) fn defuse(&mut self) {
+    pub fn defuse(&mut self) {
         self.bomb.defuse();
     }
 
     #[must_use]
-    pub(crate) fn finish(self) -> InferContextResult {
+    pub fn finish(self) -> InferContextResult {
         let mut result = self.finish_uncompacted();
         result.diagnostics.shrink_to_fit();
         result
@@ -443,7 +443,7 @@ impl<'db, 'ast> InferContext<'db, 'ast> {
 
     /// Consume this context without compacting its diagnostics.
     #[must_use]
-    pub(crate) fn finish_uncompacted(mut self) -> InferContextResult {
+    pub fn finish_uncompacted(mut self) -> InferContextResult {
         self.bomb.defuse();
         InferContextResult {
             diagnostics: self.diagnostics.into_inner(),
@@ -474,16 +474,16 @@ impl fmt::Debug for InferContext<'_, '_> {
 /// General inference results keep this in their optional extra storage. Invalid type forms
 /// must retain that storage even when diagnostic reporting is disabled or suppressed.
 #[derive(Debug, Default, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct InferContextResult {
-    pub(super) diagnostics: TypeCheckDiagnostics,
+pub struct InferContextResult {
+    pub diagnostics: TypeCheckDiagnostics,
     /// Whether inference encountered an invalid type form, regardless of diagnostic emission.
-    pub(super) has_invalid_type_form: bool,
+    pub has_invalid_type_form: bool,
     /// Whether an expression used a recovery type after call binding failed.
-    pub(super) has_failed_call: bool,
+    pub has_failed_call: bool,
 }
 
 impl InferContextResult {
-    pub(super) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.diagnostics.is_empty() && !self.has_invalid_type_form && !self.has_failed_call
     }
 }
@@ -499,7 +499,7 @@ impl InferContextResult {
 /// * Some convenience methods for mutating the underlying `Diagnostic`
 ///   in lint context. For example, `LintDiagnosticGuard::set_primary_annotation_message`
 ///   will attach a message to the primary span on the diagnostic.
-pub(super) struct LintDiagnosticGuard<'db, 'ctx> {
+pub struct LintDiagnosticGuard<'db, 'ctx> {
     /// The typing context.
     ctx: &'ctx InferContext<'db, 'ctx>,
     /// The diagnostic that we want to report.
@@ -524,7 +524,7 @@ impl LintDiagnosticGuard<'_, '_> {
     ///
     /// Callers can add additional primary or secondary annotations via the
     /// `DerefMut` trait implementation to a `Diagnostic`.
-    pub(super) fn set_primary_annotation_message(&mut self, message: impl IntoDiagnosticMessage) {
+    pub fn set_primary_annotation_message(&mut self, message: impl IntoDiagnosticMessage) {
         // N.B. It is normally bad juju to define `self` methods
         // on types that implement `Deref`. Instead, it's idiomatic
         // to do `fn foo(this: &mut LintDiagnosticGuard)`, which in
@@ -557,7 +557,7 @@ impl LintDiagnosticGuard<'_, '_> {
     ///
     /// Callers can add additional primary or secondary annotations via the
     /// `DerefMut` trait implementation to a `Diagnostic`.
-    pub(super) fn add_primary_tag(&mut self, tag: DiagnosticTag) {
+    pub fn add_primary_tag(&mut self, tag: DiagnosticTag) {
         let ann = self.primary_annotation_mut().unwrap();
         ann.push_tag(tag);
     }
@@ -669,7 +669,7 @@ impl Drop for LintDiagnosticGuard<'_, '_> {
 /// When a builder is not returned by `InferContext::report_lint`, then
 /// it is known that the diagnostic should not be reported. This can happen
 /// when the diagnostic is disabled or suppressed (among other reasons).
-pub(super) struct LintDiagnosticGuardBuilder<'db, 'ctx> {
+pub struct LintDiagnosticGuardBuilder<'db, 'ctx> {
     ctx: &'ctx InferContext<'db, 'ctx>,
     id: LintId,
     severity: Severity,
@@ -764,7 +764,7 @@ impl<'db, 'ctx> LintDiagnosticGuardBuilder<'db, 'ctx> {
     /// If a message override is present, it is applied when the diagnostic is finalized. `message`
     /// is retained on the primary annotation if the annotation has no message, or as an info
     /// sub-diagnostic otherwise. Any custom concise message is discarded.
-    pub(super) fn into_diagnostic(
+    pub fn into_diagnostic(
         self,
         message: impl std::fmt::Display,
     ) -> LintDiagnosticGuard<'db, 'ctx> {
@@ -790,7 +790,7 @@ impl<'db, 'ctx> LintDiagnosticGuardBuilder<'db, 'ctx> {
     /// Replace the headline message when the diagnostic is finalized and add an info
     /// sub-diagnostic. The original message is retained on the primary annotation if it has no
     /// message, or as an info sub-diagnostic otherwise.
-    pub(super) fn with_message_override(mut self, message: String, info: &str) -> Self {
+    pub fn with_message_override(mut self, message: String, info: &str) -> Self {
         self.message_override = Some((message, info.to_string()));
         self
     }
@@ -804,7 +804,7 @@ impl<'db, 'ctx> LintDiagnosticGuardBuilder<'db, 'ctx> {
 /// this builder further requires a message (with those three things being the
 /// minimal amount of information with which to construct a diagnostic) before
 /// one can mutate the diagnostic.
-pub(super) struct DiagnosticGuardBuilder<'db, 'ctx> {
+pub struct DiagnosticGuardBuilder<'db, 'ctx> {
     ctx: &'ctx InferContext<'db, 'ctx>,
     id: DiagnosticId,
     severity: Severity,
@@ -833,7 +833,7 @@ impl<'db, 'ctx> DiagnosticGuardBuilder<'db, 'ctx> {
     ///
     /// The diagnostic can be further mutated on the guard via its `DerefMut`
     /// impl to `Diagnostic`.
-    pub(super) fn into_diagnostic(self, message: impl std::fmt::Display) -> DiagnosticGuard<'ctx> {
+    pub fn into_diagnostic(self, message: impl std::fmt::Display) -> DiagnosticGuard<'ctx> {
         let diag = Diagnostic::new(self.id, self.severity, message);
 
         DiagnosticGuard::new(self.ctx.file, &self.ctx.diagnostics, diag)

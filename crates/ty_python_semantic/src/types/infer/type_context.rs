@@ -7,7 +7,7 @@ use crate::{Db, ProgramEnvironment};
 
 /// The kind of type context constraint being provided.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum TypeContextKind {
+pub enum TypeContextKind {
     /// A concrete expected type, whether explicitly declared, or inferred through previous assignments.
     Expected {
         /// Whether the type context should provide a solver preference in the case that the
@@ -30,7 +30,7 @@ pub(crate) enum TypeContextKind {
 }
 
 impl TypeContextKind {
-    pub(crate) fn preference() -> Self {
+    pub fn preference() -> Self {
         Self::Expected { prefer: true }
     }
 }
@@ -41,7 +41,7 @@ impl TypeContextKind {
 /// Knowing the outer type context when inferring an expression can enable
 /// more precise inference results, aka "bidirectional type inference".
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct TypeContext<'db> {
+pub struct TypeContext<'db> {
     expected_type: Option<Type<'db>>,
     kind: TypeContextKind,
 }
@@ -53,7 +53,7 @@ impl Default for TypeContext<'_> {
 }
 
 impl<'db> TypeContext<'db> {
-    pub(crate) fn new(expected_type: Option<Type<'db>>, kind: TypeContextKind) -> Self {
+    pub fn new(expected_type: Option<Type<'db>>, kind: TypeContextKind) -> Self {
         // During generic call argument inference, type variables that cannot yet be specialized are
         // replaced by `UnspecializedTypeVar`. This marker intentionally carries neither type-variable
         // identity nor a concrete expected type, and so it should not be treated as a useful constraint.
@@ -70,7 +70,7 @@ impl<'db> TypeContext<'db> {
         }
     }
 
-    pub(crate) fn preference(expected_type: Option<Type<'db>>) -> Self {
+    pub fn preference(expected_type: Option<Type<'db>>) -> Self {
         Self::new(expected_type, TypeContextKind::preference())
     }
 
@@ -78,7 +78,7 @@ impl<'db> TypeContext<'db> {
         Self::new(expected_type, TypeContextKind::Expected { prefer: false })
     }
 
-    pub(super) fn from_origin(ty: Type<'db>, origin: TypeOrigin) -> Self {
+    pub fn from_origin(ty: Type<'db>, origin: TypeOrigin) -> Self {
         match origin {
             TypeOrigin::Declared => Self::preference(Some(ty)),
             // Later assignments are validated against the type of an inferred attribute, but it
@@ -88,19 +88,19 @@ impl<'db> TypeContext<'db> {
         }
     }
 
-    pub(crate) fn expected_type(self) -> Option<Type<'db>> {
+    pub fn expected_type(self) -> Option<Type<'db>> {
         self.expected_type
     }
 
-    pub(crate) fn kind(self) -> TypeContextKind {
+    pub fn kind(self) -> TypeContextKind {
         self.kind
     }
 
-    pub(super) fn is_inferred(self) -> bool {
+    pub fn is_inferred(self) -> bool {
         matches!(self.kind, TypeContextKind::Inferred)
     }
 
-    pub(crate) fn should_prefer_expected_type(self) -> bool {
+    pub fn should_prefer_expected_type(self) -> bool {
         match self.kind {
             TypeContextKind::Expected { prefer } => prefer,
             // Preserve a solution inferred from other arguments in the previous fixpoint round.
@@ -111,7 +111,7 @@ impl<'db> TypeContext<'db> {
 
     /// If the expected type is a specialized instance of the given `KnownClass`, returns the
     /// specialization.
-    pub(super) fn known_specialization(
+    pub fn known_specialization(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -121,21 +121,21 @@ impl<'db> TypeContext<'db> {
             .and_then(|ty| ty.known_specialization(db, env, known_class))
     }
 
-    pub(super) fn map(self, f: impl FnOnce(Type<'db>) -> Type<'db>) -> Self {
+    pub fn map(self, f: impl FnOnce(Type<'db>) -> Type<'db>) -> Self {
         self.with_expected_type(self.expected_type.map(f))
     }
 
-    pub(crate) fn with_expected_type(self, expected_type: Option<Type<'db>>) -> Self {
+    pub fn with_expected_type(self, expected_type: Option<Type<'db>>) -> Self {
         Self::new(expected_type, self.kind)
     }
 
-    pub(super) fn is_typealias(&self) -> bool {
+    pub fn is_typealias(&self) -> bool {
         self.expected_type
             .is_some_and(|ty| ty.is_typealias_special_form())
     }
 
     /// If the expected type is a union, returns the target elements that it can be narrowed to.
-    pub(super) fn narrow_targets(
+    pub fn narrow_targets(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

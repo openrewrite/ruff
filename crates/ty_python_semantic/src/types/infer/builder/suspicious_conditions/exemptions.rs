@@ -58,7 +58,7 @@ use super::{ConditionKind, RedundantCondition};
 /// [`ConditionKind`] determines the rule that will be applied if the condition is not exempted.
 /// This context determines whether the test serves a purpose that makes reporting it undesirable.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) enum RedundantConditionContext {
+pub enum RedundantConditionContext {
     /// A boolean test checked without the additional exemptions represented by the other variants.
     ///
     /// This includes ordinary `if` conditions. For example:
@@ -149,7 +149,7 @@ impl RedundantConditionContext {
     ///
     /// This depends on the surrounding statements, not on whether the condition itself has
     /// fixed truthiness. A redundant operand can be part of an otherwise ambiguous condition.
-    pub(super) fn for_if_statement(
+    pub fn for_if_statement(
         builder: &TypeInferenceBuilder<'_, '_>,
         body: &[ast::Stmt],
         following_clauses: &[ast::ElifElseClause],
@@ -180,7 +180,7 @@ impl RedundantConditionContext {
     /// Reasons for exemption could be that the condition serves a defensive-programming purpose,
     /// or that the condition depends on an environment/compatibility check such as `sys.version_info`
     /// or `sys.platform`.
-    pub(super) fn exempts(
+    pub fn exempts(
         self,
         builder: &TypeInferenceBuilder<'_, '_>,
         condition: &RedundantCondition<'_, '_>,
@@ -293,7 +293,7 @@ impl RedundantConditionContext {
     /// defensive-exit flag from `truthy_branch` to `falsy_branch`. This preserves the exemption:
     /// although the annotation tells us that `isinstance(value, int)` is always true, the check
     /// still protects against unexpected input at runtime.
-    pub(super) const fn negated(self) -> Self {
+    pub const fn negated(self) -> Self {
         match self {
             Self::DefensiveExit {
                 truthy_branch,
@@ -315,7 +315,7 @@ impl RedundantConditionContext {
     ///
     /// Tests within call arguments do not select the containing condition's branches, so they
     /// do not inherit its [defensive-exit exemptions](Self::DefensiveExit).
-    pub(super) const fn nested_test(self) -> Self {
+    pub const fn nested_test(self) -> Self {
         match self {
             // Assertions also exempt boolean tests embedded in calls or other value expressions.
             Self::Assertion => self,
@@ -375,7 +375,7 @@ fn is_special_cased_condition_expression<'db>(
 /// Resolves definitions that reach this read, falling back to member lookup for attributes without
 /// a definite assignment. The receiver type comes from the caller to avoid re-entering inference
 /// of the enclosing scope.
-pub(super) fn condition_definition_info<'db>(
+pub fn condition_definition_info<'db>(
     db: &'db dyn Db,
     file: ProgramFile<'db>,
     expression: &ast::Expr,
@@ -471,13 +471,13 @@ fn place_condition_definition_info<'db>(
 /// Retaining only the unique definition and the provenance result lets both uses share a lookup
 /// without caching a potentially large list of bindings.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct ConditionDefinitionInfo<'db> {
+pub struct ConditionDefinitionInfo<'db> {
     provenance: Provenance<'db>,
     contains_special_cased_condition: bool,
 }
 
 impl<'db> ConditionDefinitionInfo<'db> {
-    pub(super) fn single_definition(self) -> Option<Definition<'db>> {
+    pub fn single_definition(self) -> Option<Definition<'db>> {
         self.provenance.definition()
     }
 

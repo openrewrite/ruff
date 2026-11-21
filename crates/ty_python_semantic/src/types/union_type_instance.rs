@@ -101,11 +101,11 @@ impl<'db> UnionTypeInstance<'db> {
         Type::KnownInstance(KnownInstanceType::UnionType(self))
     }
 
-    pub(super) fn from_type_expression(db: &'db dyn Db, ty: Type<'db>) -> Self {
+    pub fn from_type_expression(db: &'db dyn Db, ty: Type<'db>) -> Self {
         Self::new_internal(db, RuntimeUnion::Evaluated { values: None, ty })
     }
 
-    pub(crate) fn from_value_expression_types(
+    pub fn from_value_expression_types(
         db: &'db dyn Db,
         values: [Type<'db>; 2],
         scope_id: ScopeId<'db>,
@@ -136,7 +136,7 @@ impl<'db> UnionTypeInstance<'db> {
 
     /// Returns the type this union denotes, or the first error from interpreting an operand
     /// as a type expression.
-    pub(super) fn union_type(
+    pub fn union_type(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -161,12 +161,7 @@ impl<'db> UnionTypeInstance<'db> {
 
     /// Returns whether ty can treat the two unions as the same value in type relations.
     /// The comparison accounts for the order of distinct operands and the types the unions denote.
-    pub(super) fn same_value(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-        other: Self,
-    ) -> bool {
+    pub fn same_value(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>, other: Self) -> bool {
         let left = self.canonical_value(db);
         let right = other.canonical_value(db);
         if left == right {
@@ -203,7 +198,7 @@ impl<'db> UnionTypeInstance<'db> {
     }
 
     /// Returns whether the operands prove that the unions must be distinct runtime objects.
-    pub(super) fn is_disjoint_from(
+    pub fn is_disjoint_from(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -317,7 +312,7 @@ impl<'db> UnionTypeInstance<'db> {
         }
     }
 
-    pub(super) fn apply_type_mapping_impl(
+    pub fn apply_type_mapping_impl(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'_, 'db>,
@@ -378,7 +373,7 @@ impl<'db> UnionTypeInstance<'db> {
     /// Recorded operands appear in first-occurrence order, counting equivalent specializations
     /// of the same class once. For `typing.Union[…]`, only the denoted type is available, so we
     /// recover class objects from its members where possible.
-    pub(crate) fn value_expression_types(
+    pub fn value_expression_types(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -432,7 +427,7 @@ impl<'db> UnionTypeInstance<'db> {
         })
     }
 
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -512,7 +507,7 @@ impl<'db> UnionTypeInstance<'db> {
     }
 }
 
-pub(super) fn walk_union_type_instance<'db, V: TypeVisitor<'db> + ?Sized>(
+pub fn walk_union_type_instance<'db, V: TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     instance: UnionTypeInstance<'db>,
     visitor: &V,

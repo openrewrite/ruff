@@ -7,7 +7,7 @@ use crate::types::{
 };
 use crate::{Db, ProgramEnvironment};
 
-pub(super) enum GenericIntersection<'db> {
+pub enum GenericIntersection<'db> {
     /// Replace both intersection elements with this equivalent type.
     /// For example, intersecting `list[int]` and `list[Any]` produces `list[int]`.
     Simplified(Type<'db>),
@@ -38,7 +38,7 @@ pub(super) enum GenericIntersection<'db> {
 /// For example, `list[int] & list[Any]` simplifies to `list[int]`, while
 /// `Sequence[int] & Sequence[Any]` simplifies to `Sequence[int & Any]`.
 /// A recursive pair is returned separately so callers can also skip relation-based reductions.
-pub(super) fn generic_gradual_intersection<'db>(
+pub fn generic_gradual_intersection<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     left: Type<'db>,

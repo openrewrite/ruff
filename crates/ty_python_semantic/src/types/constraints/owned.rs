@@ -11,7 +11,7 @@ use crate::types::constraints::{
     OwnedConstraintSetInner, SourceOrder, SourceOrderId, SupportId,
 };
 
-pub(super) struct OwnedConstraintSetBuilder {
+pub struct OwnedConstraintSetBuilder {
     used_nodes: RankBitBoxVec,
     used_constraints: RankBitBoxVec,
     used_supports: RankBitBoxVec,
@@ -20,7 +20,7 @@ pub(super) struct OwnedConstraintSetBuilder {
 }
 
 impl OwnedConstraintSetBuilder {
-    pub(super) fn build(
+    pub fn build(
         mut storage: ConstraintSetStorage<'_>,
         root: InteriorNode,
         source_order: SourceOrderId,

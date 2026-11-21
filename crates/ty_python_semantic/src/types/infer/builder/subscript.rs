@@ -65,7 +65,7 @@ fn string_literal_values<'db>(
 }
 
 impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
-    pub(super) fn typed_dict_key_expected_type(&self, ty: Type<'db>) -> Option<Type<'db>> {
+    pub fn typed_dict_key_expected_type(&self, ty: Type<'db>) -> Option<Type<'db>> {
         struct TypedDictKeyExpectedType;
         type TypedDictKeyExpectedTypeVisitor<'db> =
             CycleDetector<'db, TypedDictKeyExpectedType, Type<'db>, Option<Type<'db>>, 3>;
@@ -126,10 +126,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         }
     }
 
-    pub(super) fn infer_subscript_expression(
-        &mut self,
-        subscript: &ast::ExprSubscript,
-    ) -> Type<'db> {
+    pub fn infer_subscript_expression(&mut self, subscript: &ast::ExprSubscript) -> Type<'db> {
         let ast::ExprSubscript {
             value,
             slice,
@@ -171,7 +168,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     /// continue inference. This recovery type may be `Unknown` or, for example, the return type of
     /// `__getitem__` when its arguments are invalid. Keeping it separate from a successful result
     /// lets augmented assignments check their right-hand side without attempting a failed store.
-    pub(super) fn infer_subscript_load(
+    pub fn infer_subscript_load(
         &mut self,
         subscript: &ast::ExprSubscript,
     ) -> Result<Type<'db>, Type<'db>> {
@@ -502,7 +499,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
             })
     }
 
-    pub(super) fn infer_explicit_class_specialization(
+    pub fn infer_explicit_class_specialization(
         &mut self,
         subscript: &ast::ExprSubscript,
         value_ty: Type<'db>,
@@ -563,7 +560,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         result
     }
 
-    pub(super) fn infer_explicit_type_alias_type_specialization(
+    pub fn infer_explicit_type_alias_type_specialization(
         &mut self,
         subscript: &ast::ExprSubscript,
         value_ty: Type<'db>,
@@ -600,7 +597,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         )
     }
 
-    pub(super) fn infer_explicit_callable_specialization(
+    pub fn infer_explicit_callable_specialization(
         &mut self,
         subscript: &ast::ExprSubscript,
         value_ty: Type<'db>,
@@ -1532,7 +1529,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     }
 
     /// Infer a subscription and report failures while preserving their recovery types.
-    pub(super) fn infer_subscript_expression_types(
+    pub fn infer_subscript_expression_types(
         &self,
         subscript: &ast::ExprSubscript,
         value_ty: Type<'db>,
@@ -1684,7 +1681,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
         })
     }
 
-    pub(super) fn infer_slice_expression(&mut self, slice: &ast::ExprSlice) -> Type<'db> {
+    pub fn infer_slice_expression(&mut self, slice: &ast::ExprSlice) -> Type<'db> {
         let db = self.db();
         let env = self.program_environment();
         let ast::ExprSlice {
@@ -1711,7 +1708,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     }
 
     /// Validate a subscript assignment of the form `object[key] = rhs_value`.
-    pub(super) fn validate_subscript_assignment(
+    pub fn validate_subscript_assignment(
         &mut self,
         target: &ast::ExprSubscript,
         rhs_value: &ast::Expr,
@@ -2525,7 +2522,7 @@ impl<'db, 'ast> TypeInferenceBuilder<'db, 'ast> {
     ///
     /// Return `None` if there is no first argument, so value inference can distinguish a
     /// missing type from a type that infers to `Unknown`.
-    pub(super) fn parse_subscription_of_annotated_special_form<T>(
+    pub fn parse_subscription_of_annotated_special_form<T>(
         &mut self,
         subscript: &ast::ExprSubscript,
         infer_first_argument: impl FnOnce(&mut Self, &ast::Expr) -> T,

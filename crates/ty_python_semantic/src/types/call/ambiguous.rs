@@ -14,7 +14,7 @@ use crate::{Db, ProgramEnvironment};
 /// For example, `dict[str, list[int]]` and `dict[str, list[bytes]]` become
 /// `dict[str, list[Unknown]]`. Shared structure in generic classes, tuples, and `type[...]` can be
 /// preserved. Differing unions, intersections, and callable signatures fall back to `Unknown`.
-pub(super) fn merge_ambiguous_returns<'db>(
+pub fn merge_ambiguous_returns<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     types: &[Type<'db>],

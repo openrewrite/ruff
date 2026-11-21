@@ -19,7 +19,7 @@ use ty_python_core::SemanticIndex;
 /// - When `*args: P.args` is present, `**kwargs: P.kwargs` must also be present (same P)
 /// - `P` must already be in scope
 /// - No keyword-only parameters are allowed between `*args: P.args` and `**kwargs: P.kwargs`
-pub(super) fn validate_paramspec_components<'db>(
+pub fn validate_paramspec_components<'db>(
     context: &'db InferContext<'db, '_>,
     index: &SemanticIndex<'db>,
     parameters: &ast::Parameters,

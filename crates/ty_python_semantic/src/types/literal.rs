@@ -76,7 +76,7 @@ impl LiteralFlags {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum LiteralValueTypeKind<'db> {
+pub enum LiteralValueTypeKind<'db> {
     /// An integer literal
     Int(IntLiteralType),
     /// A boolean literal, either `True` or `False`.
@@ -93,7 +93,7 @@ pub(crate) enum LiteralValueTypeKind<'db> {
 }
 
 impl LiteralValueTypeKind<'_> {
-    pub(super) fn known_class(self) -> Option<KnownClass> {
+    pub fn known_class(self) -> Option<KnownClass> {
         match self {
             Self::Int(_) => Some(KnownClass::Int),
             Self::Bool(_) => Some(KnownClass::Bool),
@@ -105,7 +105,7 @@ impl LiteralValueTypeKind<'_> {
 }
 
 impl<'db> LiteralValueType<'db> {
-    pub(crate) fn new(
+    pub fn new(
         kind: impl Into<LiteralValueTypeKind<'db>>,
         is_promotable: bool,
     ) -> LiteralValueType<'db> {
@@ -140,16 +140,16 @@ impl<'db> LiteralValueType<'db> {
         })
     }
 
-    pub(crate) fn with_recursively_defined(self, value: RecursivelyDefined) -> Self {
+    pub fn with_recursively_defined(self, value: RecursivelyDefined) -> Self {
         self.map_flags(|f| f.with_recursively_defined(value))
     }
 
-    pub(crate) fn recursively_defined(self) -> RecursivelyDefined {
+    pub fn recursively_defined(self) -> RecursivelyDefined {
         self.flags().recursively_defined()
     }
 
     /// Creates a literal value that may be promoted.
-    pub(crate) fn promotable(kind: impl Into<LiteralValueTypeKind<'db>>) -> LiteralValueType<'db> {
+    pub fn promotable(kind: impl Into<LiteralValueTypeKind<'db>>) -> LiteralValueType<'db> {
         let flags = LiteralFlags::new(true, RecursivelyDefined::No);
         Self(match kind.into() {
             LiteralValueTypeKind::Int(v) => LiteralValueTypeInner::Int(v, flags),
@@ -162,9 +162,7 @@ impl<'db> LiteralValueType<'db> {
     }
 
     /// Creates a literal value that should not be promoted.
-    pub(crate) fn unpromotable(
-        kind: impl Into<LiteralValueTypeKind<'db>>,
-    ) -> LiteralValueType<'db> {
+    pub fn unpromotable(kind: impl Into<LiteralValueTypeKind<'db>>) -> LiteralValueType<'db> {
         let flags = LiteralFlags::new(false, RecursivelyDefined::No);
         Self(match kind.into() {
             LiteralValueTypeKind::Int(v) => LiteralValueTypeInner::Int(v, flags),
@@ -178,16 +176,16 @@ impl<'db> LiteralValueType<'db> {
 
     /// Returns the unpromotable form of this literal value.
     #[must_use]
-    pub(crate) fn to_unpromotable(self) -> Self {
+    pub fn to_unpromotable(self) -> Self {
         self.map_flags(|f| f.with_promotable(false))
     }
 
     /// Returns `true` if this literal value should be eagerly promoted to its instance type.
-    pub(crate) fn is_promotable(self) -> bool {
+    pub fn is_promotable(self) -> bool {
         self.flags().is_promotable()
     }
 
-    pub(crate) const fn kind(self) -> LiteralValueTypeKind<'db> {
+    pub const fn kind(self) -> LiteralValueTypeKind<'db> {
         match self.0 {
             LiteralValueTypeInner::Int(v, _) => LiteralValueTypeKind::Int(v),
             LiteralValueTypeInner::Bool(v, _) => LiteralValueTypeKind::Bool(v),
@@ -199,7 +197,7 @@ impl<'db> LiteralValueType<'db> {
     }
 
     /// Returns whether these literal types are known to have no value in common.
-    pub(super) fn is_disjoint_from(self, db: &'db dyn Db, other: Self) -> bool {
+    pub fn is_disjoint_from(self, db: &'db dyn Db, other: Self) -> bool {
         match (self.kind(), other.kind()) {
             (LiteralValueTypeKind::String(_), LiteralValueTypeKind::LiteralString)
             | (LiteralValueTypeKind::LiteralString, LiteralValueTypeKind::String(_)) => false,
@@ -213,7 +211,7 @@ impl<'db> LiteralValueType<'db> {
         }
     }
 
-    pub(crate) fn as_bytes(self) -> Option<BytesLiteralType<'db>> {
+    pub fn as_bytes(self) -> Option<BytesLiteralType<'db>> {
         if let LiteralValueTypeKind::Bytes(v) = self.kind() {
             Some(v)
         } else {
@@ -221,7 +219,7 @@ impl<'db> LiteralValueType<'db> {
         }
     }
 
-    pub(crate) fn as_enum(self) -> Option<EnumLiteralType<'db>> {
+    pub fn as_enum(self) -> Option<EnumLiteralType<'db>> {
         if let LiteralValueTypeKind::Enum(v) = self.kind() {
             Some(v)
         } else {
@@ -229,7 +227,7 @@ impl<'db> LiteralValueType<'db> {
         }
     }
 
-    pub(crate) fn as_string(self) -> Option<StringLiteralType<'db>> {
+    pub fn as_string(self) -> Option<StringLiteralType<'db>> {
         if let LiteralValueTypeKind::String(v) = self.kind() {
             Some(v)
         } else {
@@ -237,7 +235,7 @@ impl<'db> LiteralValueType<'db> {
         }
     }
 
-    pub(crate) const fn as_bool(self) -> Option<bool> {
+    pub const fn as_bool(self) -> Option<bool> {
         if let LiteralValueTypeKind::Bool(v) = self.kind() {
             Some(v)
         } else {
@@ -245,7 +243,7 @@ impl<'db> LiteralValueType<'db> {
         }
     }
 
-    pub(crate) fn as_int(self) -> Option<i64> {
+    pub fn as_int(self) -> Option<i64> {
         if let LiteralValueTypeKind::Int(v) = self.kind() {
             Some(v.as_i64())
         } else {
@@ -253,19 +251,19 @@ impl<'db> LiteralValueType<'db> {
         }
     }
 
-    pub(crate) fn is_int(self) -> bool {
+    pub fn is_int(self) -> bool {
         matches!(self.kind(), LiteralValueTypeKind::Int(..))
     }
 
-    pub(crate) fn is_bool(self) -> bool {
+    pub fn is_bool(self) -> bool {
         matches!(self.kind(), LiteralValueTypeKind::Bool(..))
     }
 
-    pub(crate) fn is_literal_string(self) -> bool {
+    pub fn is_literal_string(self) -> bool {
         matches!(self.kind(), LiteralValueTypeKind::LiteralString)
     }
 
-    pub(crate) fn is_string(self) -> bool {
+    pub fn is_string(self) -> bool {
         matches!(self.kind(), LiteralValueTypeKind::String(..))
     }
 
@@ -273,15 +271,11 @@ impl<'db> LiteralValueType<'db> {
         matches!(self.kind(), LiteralValueTypeKind::Enum(..))
     }
 
-    pub(crate) fn is_bytes(self) -> bool {
+    pub fn is_bytes(self) -> bool {
         matches!(self.kind(), LiteralValueTypeKind::Bytes(..))
     }
 
-    pub(crate) fn fallback_instance(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn fallback_instance(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         match self.kind() {
             LiteralValueTypeKind::String(_) | LiteralValueTypeKind::LiteralString => {
                 KnownClass::Str.to_instance(db, env)
@@ -333,18 +327,18 @@ impl<'db> From<LiteralValueType<'db>> for Type<'db> {
 // This type has the same alignment as `salsa::Id`, allowing `LiteralValueType` to use a smaller
 // discriminant.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, get_size2::GetSize)]
-pub(crate) struct IntLiteralType {
+pub struct IntLiteralType {
     high: u32,
     low: u32,
 }
 
 impl IntLiteralType {
-    pub(crate) fn as_i64(self) -> i64 {
+    pub fn as_i64(self) -> i64 {
         (i64::from(self.high) << 32) | i64::from(self.low)
     }
 
     #[expect(clippy::cast_possible_truncation)]
-    pub(crate) fn from_i64(value: i64) -> Self {
+    pub fn from_i64(value: i64) -> Self {
         let value = value.cast_unsigned();
 
         Self {
@@ -381,7 +375,7 @@ impl std::cmp::PartialOrd for IntLiteralType {
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct StringLiteralType<'db> {
     #[returns(deref)]
-    pub(crate) value: CompactString,
+    pub value: CompactString,
 }
 
 // The Salsa heap is tracked separately.
@@ -389,7 +383,7 @@ impl get_size2::GetSize for StringLiteralType<'_> {}
 
 impl<'db> StringLiteralType<'db> {
     /// The length of the string, as would be returned by Python's `len()`.
-    pub(crate) fn python_len(self, db: &'db dyn Db) -> usize {
+    pub fn python_len(self, db: &'db dyn Db) -> usize {
         self.value(db).chars().count()
     }
 }
@@ -397,14 +391,14 @@ impl<'db> StringLiteralType<'db> {
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct BytesLiteralType<'db> {
     #[returns(deref)]
-    pub(crate) value: Box<[u8]>,
+    pub value: Box<[u8]>,
 }
 
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for BytesLiteralType<'_> {}
 
 impl<'db> BytesLiteralType<'db> {
-    pub(crate) fn python_len(self, db: &'db dyn Db) -> usize {
+    pub fn python_len(self, db: &'db dyn Db) -> usize {
         self.value(db).len()
     }
 }
@@ -422,29 +416,25 @@ impl<'db> BytesLiteralType<'db> {
 pub struct EnumLiteralType<'db> {
     /// The enum class this literal belongs to.
     #[returns(copy)]
-    pub(crate) enum_class_literal: EnumClassLiteral<'db>,
+    pub enum_class_literal: EnumClassLiteral<'db>,
     /// The name of the enum member
     #[returns(ref)]
-    pub(crate) name: Name,
+    pub name: Name,
 }
 
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for EnumLiteralType<'_> {}
 
 impl<'db> EnumLiteralType<'db> {
-    pub(crate) fn enum_class(self, db: &'db dyn Db) -> ClassLiteral<'db> {
+    pub fn enum_class(self, db: &'db dyn Db) -> ClassLiteral<'db> {
         self.enum_class_literal(db).class_literal(db)
     }
 
-    pub(crate) fn enum_class_instance(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn enum_class_instance(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         self.enum_class(db).to_non_generic_instance(db, env)
     }
 
-    pub(crate) fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
+    pub fn definition(self, db: &'db dyn Db) -> Option<Definition<'db>> {
         let ClassLiteral::Static(class) = self.enum_class(db) else {
             return None;
         };
@@ -459,14 +449,14 @@ impl<'db> EnumLiteralType<'db> {
 }
 
 #[derive(Clone, Copy)]
-pub(super) enum LiteralComparisonKind {
+pub enum LiteralComparisonKind {
     Equality,
     Identity,
 }
 
 /// Two unions of builtin literal values whose Cartesian product is expensive to compare.
 #[derive(Clone, Copy)]
-pub(super) struct WideLiteralComparison<'db> {
+pub struct WideLiteralComparison<'db> {
     left: &'db [Type<'db>],
     right: &'db [Type<'db>],
 }
@@ -474,7 +464,7 @@ pub(super) struct WideLiteralComparison<'db> {
 impl<'db> WideLiteralComparison<'db> {
     const MAX_PAIRS: usize = 4096;
 
-    pub(super) fn new(
+    pub fn new(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         left: Type<'db>,
@@ -507,7 +497,7 @@ impl<'db> WideLiteralComparison<'db> {
     /// A lexicographic tuple comparison reaches later elements only if the preceding ones
     /// can compare equal. Preserving disjointness here avoids checking an unreachable
     /// comparison between later elements.
-    pub(super) fn truthiness(self, db: &'db dyn Db, kind: LiteralComparisonKind) -> Truthiness {
+    pub fn truthiness(self, db: &'db dyn Db, kind: LiteralComparisonKind) -> Truthiness {
         if self.matching_literals(db, kind).next().is_some() {
             // Even when some values match, the wide union also contains other values.
             Truthiness::Ambiguous
@@ -571,7 +561,7 @@ impl<'db> WideLiteralComparison<'db> {
 
     /// Check operator support once per pair of builtin classes. Their methods accept the same
     /// operand types for every literal value, even when the result depends on those values.
-    pub(super) fn widened_operands(
+    pub fn widened_operands(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -597,7 +587,7 @@ impl<'db> WideLiteralComparison<'db> {
     /// Disjoint operands produce `Some(Type::Never)`. Applying a nonempty constraint
     /// intersects it with the original operand. When the shared literals would form a
     /// large product, narrow to their builtin classes.
-    pub(super) fn positive_constraint(
+    pub fn positive_constraint(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

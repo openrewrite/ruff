@@ -7,7 +7,7 @@ use crate::types::diagnostic::report_invalid_runtime_checkable;
 use crate::types::function::KnownFunction;
 use crate::types::infer::infer_definition_types;
 
-pub(crate) fn check_decorator_calls<'db>(
+pub fn check_decorator_calls<'db>(
     context: &InferContext<'db, '_>,
     definition: Definition<'db>,
     decorators: &[ast::Decorator],

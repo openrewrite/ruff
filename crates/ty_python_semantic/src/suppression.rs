@@ -19,7 +19,7 @@ use rustc_hash::FxHasher;
 use crate::diagnostic::DiagnosticGuard;
 use crate::lint::{GetLintError, Level, LintMetadata, LintRegistry, LintStatus};
 pub use crate::suppression::add_ignore::suppress_single;
-pub(crate) use crate::suppression::add_ignore::{SuppressFix, suppress_all};
+pub use crate::suppression::add_ignore::{SuppressFix, suppress_all};
 use crate::suppression::parser::{
     ParseError, ParseErrorKind, SuppressionComment, SuppressionParser,
 };
@@ -29,7 +29,7 @@ use crate::{Db, declare_lint, lint::LintId};
 
 declare_lint! {
     #[doc = include_str!("../resources/lint_docs/unused-ignore-comment.md")]
-    pub(crate) static UNUSED_IGNORE_COMMENT = {
+    pub static UNUSED_IGNORE_COMMENT = {
         summary: "detects unused `ty: ignore` comments",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Warn,
@@ -38,7 +38,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../resources/lint_docs/unused-type-ignore-comment.md")]
-    pub(crate) static UNUSED_TYPE_IGNORE_COMMENT = {
+    pub static UNUSED_TYPE_IGNORE_COMMENT = {
         summary: "detects unused `type: ignore` comments",
         status: LintStatus::stable("0.0.14"),
         default_level: Level::Warn,
@@ -47,7 +47,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../resources/lint_docs/ignore-comment-unknown-rule.md")]
-    pub(crate) static IGNORE_COMMENT_UNKNOWN_RULE = {
+    pub static IGNORE_COMMENT_UNKNOWN_RULE = {
         summary: "detects `ty: ignore` comments that reference unknown rules",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Warn,
@@ -56,7 +56,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../resources/lint_docs/renamed-rule-in-ignore-comment.md")]
-    pub(crate) static RENAMED_RULE_IN_IGNORE_COMMENT = {
+    pub static RENAMED_RULE_IN_IGNORE_COMMENT = {
         summary: "detects ignore comments that use a rule's old name",
         status: LintStatus::stable("0.0.97"),
         default_level: Level::Warn,
@@ -65,7 +65,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../resources/lint_docs/invalid-ignore-comment.md")]
-    pub(crate) static INVALID_IGNORE_COMMENT = {
+    pub static INVALID_IGNORE_COMMENT = {
         summary: "detects ignore comments that use invalid syntax",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Warn,
@@ -74,19 +74,19 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../resources/lint_docs/blanket-ignore-comment.md")]
-    pub(crate) static BLANKET_IGNORE_COMMENT = {
+    pub static BLANKET_IGNORE_COMMENT = {
         summary: "detects blanket `ty: ignore` comments",
         status: LintStatus::stable("0.0.57"),
         default_level: Level::Ignore,
     }
 }
 
-pub(crate) fn is_unused_ignore_comment_lint(name: LintName) -> bool {
+pub fn is_unused_ignore_comment_lint(name: LintName) -> bool {
     name == UNUSED_IGNORE_COMMENT.name() || name == UNUSED_TYPE_IGNORE_COMMENT.name()
 }
 
 #[salsa::tracked(returns(ref), heap_size=ruff_memory_usage::heap_size)]
-pub(crate) fn suppressions(db: &dyn Db, file: PythonFile<'_>) -> Suppressions {
+pub fn suppressions(db: &dyn Db, file: PythonFile<'_>) -> Suppressions {
     let source_file = file.file(db);
     let parsed = parsed_module(db, file).load(db);
     let source = source_text(db, source_file);
@@ -148,7 +148,7 @@ pub(crate) fn suppressions(db: &dyn Db, file: PythonFile<'_>) -> Suppressions {
     builder.finish()
 }
 
-pub(crate) fn check_suppressions(
+pub fn check_suppressions(
     db: &dyn Db,
     file: PythonFile<'_>,
     diagnostics: TypeCheckDiagnostics,
@@ -364,7 +364,7 @@ impl<'ctx, 'db> SuppressionDiagnosticGuardBuilder<'ctx, 'db> {
 
 /// The suppressions of a single file.
 #[derive(Debug, Eq, PartialEq, get_size2::GetSize)]
-pub(crate) struct Suppressions {
+pub struct Suppressions {
     /// Suppressions that apply to the entire file.
     ///
     /// The suppressions are sorted by [`Suppression::comment_range`] and the [`Suppression::suppressed_range`]
@@ -402,7 +402,7 @@ impl Suppressions {
     /// Nested suppression ranges prefer the innermost candidate. If a diagnostic spans multiple
     /// physical lines and separate suppressions cover its opening and closing lines, the
     /// opening-line suppression retains precedence.
-    pub(crate) fn find_suppression(&self, range: TextRange, id: LintId) -> Option<&Suppression> {
+    pub fn find_suppression(&self, range: TextRange, id: LintId) -> Option<&Suppression> {
         select_preferred_suppression(self.lint_suppressions(range, id), range)
     }
 
@@ -485,7 +485,7 @@ fn select_preferred_suppression<'a>(
 /// create multiple suppressions: one for every code.
 /// They all share the same `comment_range`.
 #[derive(Clone, Debug, Eq, PartialEq, get_size2::GetSize)]
-pub(crate) struct Suppression {
+pub struct Suppression {
     target: SuppressionTarget,
     kind: SuppressionKind,
 
@@ -535,7 +535,7 @@ impl Suppression {
         }
     }
 
-    pub(crate) fn id(&self) -> FileSuppressionId {
+    pub fn id(&self) -> FileSuppressionId {
         FileSuppressionId(self.range)
     }
 }
@@ -583,7 +583,7 @@ impl fmt::Display for SuppressionKind {
 /// This is unique enough because it is its exact
 /// location in the source.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, get_size2::GetSize)]
-pub(crate) struct FileSuppressionId(TextRange);
+pub struct FileSuppressionId(TextRange);
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, get_size2::GetSize)]
 enum SuppressionTarget {

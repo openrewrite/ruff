@@ -30,7 +30,7 @@ use super::context::{InferContext, InferContextResult};
 use super::diagnostic::INVALID_ASSIGNMENT;
 
 /// Unpacks the value expression type to their respective targets.
-pub(crate) struct Unpacker<'db, 'ast> {
+pub struct Unpacker<'db, 'ast> {
     context: InferContext<'db, 'ast>,
     targets: FxHashMap<ExpressionNodeKey, Type<'db>>,
 }
@@ -48,7 +48,7 @@ impl<'ast> Visitor<'ast> for UnknownTargetCollector<'_, '_> {
 }
 
 impl<'db, 'ast> Unpacker<'db, 'ast> {
-    pub(crate) fn new(
+    pub fn new(
         db: &'db dyn Db,
         env: &'ast ProgramEnvironment<'db>,
         target_scope: ScopeId<'db>,
@@ -77,7 +77,7 @@ impl<'db, 'ast> Unpacker<'db, 'ast> {
     }
 
     /// Unpack the value to the target expression.
-    pub(crate) fn unpack(&mut self, target: &ast::Expr, value: UnpackValue<'db>) {
+    pub fn unpack(&mut self, target: &ast::Expr, value: UnpackValue<'db>) {
         let db = self.db();
         debug_assert_matches!(
             target,
@@ -355,7 +355,7 @@ impl<'db, 'ast> Unpacker<'db, 'ast> {
         }
     }
 
-    pub(crate) fn finish(self) -> UnpackResult<'db> {
+    pub fn finish(self) -> UnpackResult<'db> {
         UnpackResult {
             context: self.context.finish(),
             targets: FrozenMap::from(self.targets),
@@ -365,7 +365,7 @@ impl<'db, 'ast> Unpacker<'db, 'ast> {
 }
 
 #[derive(Debug, Default, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct UnpackResult<'db> {
+pub struct UnpackResult<'db> {
     targets: FrozenMap<ExpressionNodeKey, Type<'db>>,
     context: InferContextResult,
 
@@ -384,7 +384,7 @@ impl<'db> UnpackResult<'db> {
     /// May panic if a scoped expression ID is passed in that does not correspond to a sub-
     /// expression of the target.
     #[track_caller]
-    pub(crate) fn expression_type(&self, expr_id: impl Into<ExpressionNodeKey>) -> Type<'db> {
+    pub fn expression_type(&self, expr_id: impl Into<ExpressionNodeKey>) -> Type<'db> {
         self.try_expression_type(expr_id).expect(
             "expression should belong to this `UnpackResult` and \
             `Unpacker` should have inferred a type for it",
@@ -399,11 +399,11 @@ impl<'db> UnpackResult<'db> {
     }
 
     /// Returns the diagnostics and semantic validity of this unpacking assignment.
-    pub(crate) fn context_result(&self) -> &InferContextResult {
+    pub fn context_result(&self) -> &InferContextResult {
         &self.context
     }
 
-    pub(crate) fn cycle_initial(cycle_recovery: Type<'db>) -> Self {
+    pub fn cycle_initial(cycle_recovery: Type<'db>) -> Self {
         Self {
             targets: FrozenMap::default(),
             context: InferContextResult::default(),
@@ -411,7 +411,7 @@ impl<'db> UnpackResult<'db> {
         }
     }
 
-    pub(crate) fn cycle_normalized(
+    pub fn cycle_normalized(
         mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -428,7 +428,7 @@ impl<'db> UnpackResult<'db> {
 }
 
 /// Return a tuple or list's elements when they correspond exactly to a fixed-length sequence.
-pub(super) fn fixed_sequence_elements(
+pub fn fixed_sequence_elements(
     expression: &ast::Expr,
     expected_length: usize,
 ) -> Option<&[ast::Expr]> {
@@ -449,7 +449,7 @@ pub(super) fn fixed_sequence_elements(
 /// For `first, (second, third) = (0, (1, 2))`, this associates `second` with `1`.
 /// Explicit values before or after a starred element remain unambiguous. Literal expansions
 /// retain their source expressions too; values supplied by arbitrary iterables do not.
-pub(super) fn unpacked_assignment_value<'ast>(
+pub fn unpacked_assignment_value<'ast>(
     unpack_target: &ast::Expr,
     value: &'ast ast::Expr,
     requested_target: &ast::Expr,
@@ -463,7 +463,7 @@ pub(super) fn unpacked_assignment_value<'ast>(
 /// For `first, *middle, last = (0, 1, 2, 3)`, `middle` collects the expressions `1` and `2`.
 /// Literal expansions are flattened; an unknown source in the collected portion makes the
 /// correspondence ambiguous.
-pub(super) fn starred_assignment_values<'ast>(
+pub fn starred_assignment_values<'ast>(
     unpack_target: &ast::Expr,
     value: &'ast ast::Expr,
     requested_target: &ast::Expr,
@@ -590,7 +590,7 @@ fn sequence_from_type<'db, 'ast>(
 /// Infers the fresh list made by a starred assignment target or sequence-pattern capture.
 /// Both `first, *rest = values` and `case [first, *rest]:` create a new list whose inferred
 /// literal elements can widen without changing the type of the original sequence.
-pub(super) fn collected_list_type<'db, 'ast>(
+pub fn collected_list_type<'db, 'ast>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     values: impl ExactSizeIterator<Item = (Type<'db>, Option<&'ast ast::Expr>)>,
@@ -654,7 +654,7 @@ fn literal_sequence_elements(
 /// all three positions count, even though the outer tuple has only two AST elements.
 /// Other starred iterables count as one item because their elements are not recovered from
 /// literal syntax. Stop counting as soon as the limit is exceeded.
-pub(super) fn tuple_literal_needs_promotion(values: &[ast::Expr]) -> bool {
+pub fn tuple_literal_needs_promotion(values: &[ast::Expr]) -> bool {
     /// Limit literal precision in large tuple expressions to avoid pathological inference costs.
     const MAX_TUPLE_LENGTH_FOR_UNANNOTATED_LITERAL_INFERENCE: usize = 64;
 
@@ -677,7 +677,7 @@ pub(super) fn tuple_literal_needs_promotion(values: &[ast::Expr]) -> bool {
 /// In `source = (*[1, "two"],)`, expanding the list syntax preserves both tuple positions.
 /// The caller chooses the variable-segment representation and how to concatenate it: tuple
 /// inference retains symbolic `TypeVarTuple` segments, while unpacking retains source expressions.
-pub(super) fn sequence_from_literal_elements<'ast, T, V>(
+pub fn sequence_from_literal_elements<'ast, T, V>(
     values: &'ast [ast::Expr],
     promote: bool,
     element: &impl Fn(&'ast ast::Expr, bool) -> T,

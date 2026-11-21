@@ -55,13 +55,13 @@ struct AssignmentIndex;
 /// actually appears in the BDD. If either of those limits are exceeded, we ignore the derived
 /// constraint that we are currently considering.
 #[derive(Debug)]
-pub(crate) struct PathAssignments {
+pub struct PathAssignments {
     /// All of the rules that we know for inferring derived constraints on the current path.
     sequents: Vec<Sequent<AtomicConstraintId, u16>>,
     /// The sequents that can fire when a particular assignment is added to the path.
     sequent_antecedents: FxHashMap<Assignment<AtomicConstraintId>, Vec<usize>>,
     /// Each assignment's source constraint and greatest remaining per-path fuel.
-    pub(super) assignments: FxIndexMap<Assignment<AtomicConstraintId>, (AtomicConstraintId, u16)>,
+    pub assignments: FxIndexMap<Assignment<AtomicConstraintId>, (AtomicConstraintId, u16)>,
     /// Constraints that have been _replaced_ with other constraints on this path, because a
     /// sequent substituted an exact type for some typevar.
     substituted_constraints: FxIndexSet<AtomicConstraintId>,
@@ -103,7 +103,7 @@ pub(crate) struct PathAssignments {
 }
 
 /// Branch-local state restored after visiting an edge.
-pub(super) struct PathSnapshot {
+pub struct PathSnapshot {
     assignments: usize,
     substituted_constraints: usize,
     fuel_undo: usize,
@@ -222,7 +222,7 @@ impl PathAssignments {
     /// arena. Start with the original source order and visit each rule's consequences in order,
     /// including intermediate facts that are themselves projected away. This only replays cached
     /// rules; it does not derive more facts or change the walk's assignments and fuel.
-    pub(super) fn projection_source_order(
+    pub fn projection_source_order(
         &self,
         storage: &mut ConstraintSetStorage<'_>,
         original_source_order: Option<SourceOrderId>,
@@ -279,7 +279,7 @@ impl PathAssignments {
             })
     }
 
-    pub(super) fn new(
+    pub fn new(
         constraints: impl IntoIterator<Item = AtomicConstraintId>,
         independent_typevars: FxHashSet<TypeVarId>,
     ) -> Self {
@@ -307,7 +307,7 @@ impl PathAssignments {
         }
     }
 
-    pub(super) fn visit<'db, V>(
+    pub fn visit<'db, V>(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -422,7 +422,7 @@ impl PathAssignments {
 
     /// Add an assignment and propagate its consequences. On conflict, the caller
     /// must discard the path or roll back the edge before adding another assignment.
-    pub(super) fn assume<'db>(
+    pub fn assume<'db>(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -443,7 +443,7 @@ impl PathAssignments {
         .is_ok()
     }
 
-    pub(super) fn snapshot(&self) -> PathSnapshot {
+    pub fn snapshot(&self) -> PathSnapshot {
         PathSnapshot {
             assignments: self.assignments.len(),
             substituted_constraints: self.substituted_constraints.len(),
@@ -452,7 +452,7 @@ impl PathAssignments {
         }
     }
 
-    pub(super) fn truncate(&mut self, snapshot: &PathSnapshot) {
+    pub fn truncate(&mut self, snapshot: &PathSnapshot) {
         self.assignment_queue.clear();
         self.pending_substitutions.clear();
         // A branch can replenish an assignment more than once. Restore in reverse order while
@@ -499,7 +499,7 @@ impl PathAssignments {
     /// the BDD. You should make this call from inside of your callback, so that as you get further
     /// down into the BDD structure, we remember all of the information that we have learned from
     /// the path we're on.
-    pub(super) fn walk_edge<'db, R>(
+    pub fn walk_edge<'db, R>(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -549,7 +549,7 @@ impl PathAssignments {
         result
     }
 
-    pub(super) fn positive_constraints(
+    pub fn positive_constraints(
         &self,
     ) -> impl Iterator<Item = (AtomicConstraintId, AtomicConstraintId)> + '_ {
         self.assignments.iter().filter_map(
@@ -560,7 +560,7 @@ impl PathAssignments {
         )
     }
 
-    pub(super) fn constraint_is_substituted(&self, constraint: AtomicConstraintId) -> bool {
+    pub fn constraint_is_substituted(&self, constraint: AtomicConstraintId) -> bool {
         self.substituted_constraints.contains(&constraint)
     }
 

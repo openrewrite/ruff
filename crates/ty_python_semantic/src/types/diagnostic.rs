@@ -67,7 +67,7 @@ const RUNTIME_CHECKABLE_DOCS_URL: &str =
     "https://docs.python.org/3/library/typing.html#typing.runtime_checkable";
 
 /// Registers all known type check lints.
-pub(crate) fn register_lints(registry: &mut LintRegistryBuilder) {
+pub fn register_lints(registry: &mut LintRegistryBuilder) {
     registry.register_lint(&AMBIGUOUS_PROTOCOL_MEMBER);
     registry.register_lint(&CALL_TO_FUNCTION_WITH_UNKNOWN_SIGNATURE);
     registry.register_alias(
@@ -276,7 +276,7 @@ pub(crate) fn register_lints(registry: &mut LintRegistryBuilder) {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/experimental-syntax.md")]
-    pub(crate) static EXPERIMENTAL_SYNTAX = {
+    pub static EXPERIMENTAL_SYNTAX = {
         summary: "detects experimental syntax",
         status: LintStatus::stable("0.0.50"),
         default_level: Level::Warn,
@@ -285,7 +285,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/not-callable.md")]
-    pub(crate) static NOT_CALLABLE = {
+    pub static NOT_CALLABLE = {
         summary: "detects calls to non-callable objects",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -294,7 +294,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/call-to-function-with-unknown-signature.md")]
-    pub(crate) static CALL_TO_FUNCTION_WITH_UNKNOWN_SIGNATURE = {
+    pub static CALL_TO_FUNCTION_WITH_UNKNOWN_SIGNATURE = {
         summary: "detects calls to the top callable type",
         status: LintStatus::stable("0.0.7"),
         default_level: Level::Error,
@@ -303,7 +303,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/possibly-missing-implicit-call.md")]
-    pub(crate) static POSSIBLY_MISSING_IMPLICIT_CALL = {
+    pub static POSSIBLY_MISSING_IMPLICIT_CALL = {
         summary: "detects implicit calls to possibly missing methods",
         status: LintStatus::stable("0.0.1-alpha.22"),
         default_level: Level::Warn,
@@ -312,7 +312,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/conflicting-declarations.md")]
-    pub(crate) static CONFLICTING_DECLARATIONS = {
+    pub static CONFLICTING_DECLARATIONS = {
         summary: "detects conflicting declarations",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -321,7 +321,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/conflicting-metaclass.md")]
-    pub(crate) static CONFLICTING_METACLASS = {
+    pub static CONFLICTING_METACLASS = {
         summary: "detects conflicting metaclasses",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -330,7 +330,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/cyclic-class-definition.md")]
-    pub(crate) static CYCLIC_CLASS_DEFINITION = {
+    pub static CYCLIC_CLASS_DEFINITION = {
         summary: "detects cyclic class definitions",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -339,7 +339,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/cyclic-type-alias-definition.md")]
-    pub(crate) static CYCLIC_TYPE_ALIAS_DEFINITION = {
+    pub static CYCLIC_TYPE_ALIAS_DEFINITION = {
         summary: "detects cyclic type alias definitions",
         status: LintStatus::stable("0.0.1-alpha.29"),
         default_level: Level::Error,
@@ -348,7 +348,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/division-by-zero.md")]
-    pub(crate) static DIVISION_BY_ZERO = {
+    pub static DIVISION_BY_ZERO = {
         summary: "detects division by zero",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Ignore,
@@ -357,7 +357,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/deprecated.md")]
-    pub(crate) static DEPRECATED = {
+    pub static DEPRECATED = {
         summary: "detects uses of deprecated items",
         status: LintStatus::stable("0.0.1-alpha.16"),
         default_level: Level::Warn,
@@ -366,7 +366,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/duplicate-base.md")]
-    pub(crate) static DUPLICATE_BASE = {
+    pub static DUPLICATE_BASE = {
         summary: "detects class definitions with duplicate bases",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -375,7 +375,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/duplicate-kw-only.md")]
-    pub(crate) static DUPLICATE_KW_ONLY = {
+    pub static DUPLICATE_KW_ONLY = {
         summary: "detects dataclass definitions with more than one usage of `KW_ONLY`",
         status: LintStatus::stable("0.0.1-alpha.12"),
         default_level: Level::Error,
@@ -384,7 +384,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-dataclass-field-order.md")]
-    pub(crate) static INVALID_DATACLASS_FIELD_ORDER = {
+    pub static INVALID_DATACLASS_FIELD_ORDER = {
         summary: "detects dataclass definitions with required fields after fields with default values",
         status: LintStatus::stable("0.0.15"),
         default_level: Level::Error,
@@ -393,7 +393,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-dataclass-override.md")]
-    pub(crate) static INVALID_DATACLASS_OVERRIDE = {
+    pub static INVALID_DATACLASS_OVERRIDE = {
         summary: "detects dataclasses with `frozen=True` that have a custom `__setattr__` or `__delattr__` implementation",
         status: LintStatus::stable("0.0.13"),
         default_level: Level::Error,
@@ -402,7 +402,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-dataclass.md")]
-    pub(crate) static INVALID_DATACLASS = {
+    pub static INVALID_DATACLASS = {
         summary: "detects invalid `@dataclass` applications",
         status: LintStatus::stable("0.0.12"),
         default_level: Level::Error,
@@ -411,7 +411,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-dataclass-post-init.md")]
-    pub(crate) static INVALID_DATACLASS_POST_INIT = {
+    pub static INVALID_DATACLASS_POST_INIT = {
         summary: "detects incompatible dataclass `__post_init__` signatures",
         status: LintStatus::stable("0.0.105"),
         default_level: Level::Error,
@@ -420,7 +420,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/instance-layout-conflict.md")]
-    pub(crate) static INSTANCE_LAYOUT_CONFLICT = {
+    pub static INSTANCE_LAYOUT_CONFLICT = {
         summary: "detects class definitions that raise `TypeError` due to instance layout conflict",
         status: LintStatus::stable("0.0.1-alpha.12"),
         default_level: Level::Error,
@@ -429,7 +429,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-protocol.md")]
-    pub(crate) static INVALID_PROTOCOL = {
+    pub static INVALID_PROTOCOL = {
         summary: "detects invalid protocol class definitions",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -439,7 +439,7 @@ declare_lint! {
 // Added in #17750.
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/ambiguous-protocol-member.md")]
-    pub(crate) static AMBIGUOUS_PROTOCOL_MEMBER = {
+    pub static AMBIGUOUS_PROTOCOL_MEMBER = {
         summary: "detects protocol classes with ambiguous interfaces",
         status: LintStatus::stable("0.0.1-alpha.20"),
         default_level: Level::Warn,
@@ -448,7 +448,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-named-tuple.md")]
-    pub(crate) static INVALID_NAMED_TUPLE = {
+    pub static INVALID_NAMED_TUPLE = {
         summary: "detects invalid `NamedTuple` class definitions",
         status: LintStatus::stable("0.0.1-alpha.19"),
         default_level: Level::Error,
@@ -457,7 +457,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-named-tuple-override.md")]
-    pub(crate) static INVALID_NAMED_TUPLE_OVERRIDE = {
+    pub static INVALID_NAMED_TUPLE_OVERRIDE = {
         summary: "detects subclass members that override inherited `NamedTuple` fields",
         status: LintStatus::stable("0.0.31"),
         default_level: Level::Warn,
@@ -466,7 +466,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/inconsistent-mro.md")]
-    pub(crate) static INCONSISTENT_MRO = {
+    pub static INCONSISTENT_MRO = {
         summary: "detects class definitions with an inconsistent MRO",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -475,7 +475,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/index-out-of-bounds.md")]
-    pub(crate) static INDEX_OUT_OF_BOUNDS = {
+    pub static INDEX_OUT_OF_BOUNDS = {
         summary: "detects index out of bounds errors",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -484,7 +484,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-typed-dict-key.md")]
-    pub(crate) static INVALID_TYPED_DICT_KEY = {
+    pub static INVALID_TYPED_DICT_KEY = {
         summary: "detects invalid keys when accessing TypedDict items",
         status: LintStatus::stable("0.0.100"),
         default_level: Level::Error,
@@ -493,7 +493,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/isinstance-against-protocol.md")]
-    pub(crate) static ISINSTANCE_AGAINST_PROTOCOL = {
+    pub static ISINSTANCE_AGAINST_PROTOCOL = {
         summary: "reports invalid runtime checks against protocol classes",
         status: LintStatus::stable("0.0.14"),
         default_level: Level::Error,
@@ -502,7 +502,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/isinstance-against-typed-dict.md")]
-    pub(crate) static ISINSTANCE_AGAINST_TYPED_DICT = {
+    pub static ISINSTANCE_AGAINST_TYPED_DICT = {
         summary: "reports runtime checks against `TypedDict` classes",
         status: LintStatus::stable("0.0.15"),
         default_level: Level::Error,
@@ -511,7 +511,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-argument-type.md")]
-    pub(crate) static INVALID_ARGUMENT_TYPE = {
+    pub static INVALID_ARGUMENT_TYPE = {
         summary: "detects call arguments whose type is not assignable to the corresponding typed parameter",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -520,7 +520,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-generator-return-type.md")]
-    pub(crate) static INVALID_GENERATOR_RETURN_TYPE = {
+    pub static INVALID_GENERATOR_RETURN_TYPE = {
         summary: "detects generator functions with incompatible return annotations",
         status: LintStatus::stable("0.0.102"),
         default_level: Level::Error,
@@ -529,7 +529,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-explicit-return.md")]
-    pub(crate) static INVALID_EXPLICIT_RETURN = {
+    pub static INVALID_EXPLICIT_RETURN = {
         summary: "detects return statements whose value is incompatible with the expected return type",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -538,7 +538,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-implicit-return.md")]
-    pub(crate) static INVALID_IMPLICIT_RETURN = {
+    pub static INVALID_IMPLICIT_RETURN = {
         summary: "detects nonempty functions that can implicitly return an incompatible `None`",
         status: LintStatus::stable("0.0.102"),
         default_level: Level::Error,
@@ -547,7 +547,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/dynamic-function-decorator-return.md")]
-    pub(crate) static DYNAMIC_FUNCTION_DECORATOR_RETURN = {
+    pub static DYNAMIC_FUNCTION_DECORATOR_RETURN = {
         summary: "detects decorators that replace a function with a dynamic type such as `Any`",
         status: LintStatus::stable("0.0.73"),
         default_level: Level::Ignore,
@@ -556,7 +556,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unsound-return.md")]
-    pub(crate) static UNSOUND_RETURN = {
+    pub static UNSOUND_RETURN = {
         summary: "detects return statements that unsoundly return a type that is not a subtype of the function's annotated return type",
         status: LintStatus::stable("0.0.70"),
         default_level: Level::Ignore,
@@ -565,7 +565,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-yield.md")]
-    pub(crate) static INVALID_YIELD = {
+    pub static INVALID_YIELD = {
         summary: "detects yield expressions where the \"yield\" or \"send\" type is incompatible with the annotated return type",
         status: LintStatus::stable("0.0.25"),
         default_level: Level::Error,
@@ -574,7 +574,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unsound-yield.md")]
-    pub(crate) static UNSOUND_YIELD = {
+    pub static UNSOUND_YIELD = {
         summary: "detects yield expressions that unsoundly yield a type that is not a subtype of the generator's annotated yield type",
         status: LintStatus::stable("0.0.70"),
         default_level: Level::Ignore,
@@ -583,7 +583,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-implicit-return-in-function-with-stub-body.md")]
-    pub(crate) static INVALID_IMPLICIT_RETURN_IN_FUNCTION_WITH_STUB_BODY = {
+    pub static INVALID_IMPLICIT_RETURN_IN_FUNCTION_WITH_STUB_BODY = {
         summary: "detects functions with stub-like bodies whose return type excludes `None`",
         status: LintStatus::stable("0.0.14"),
         default_level: Level::Error,
@@ -592,7 +592,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-assignment.md")]
-    pub(crate) static INVALID_ASSIGNMENT = {
+    pub static INVALID_ASSIGNMENT = {
         summary: "detects invalid assignments",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -601,7 +601,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unsound-assignment.md")]
-    pub(crate) static UNSOUND_ASSIGNMENT = {
+    pub static UNSOUND_ASSIGNMENT = {
         summary: "detects assignments that unsoundly assign a type that is not a subtype of the declared type",
         status: LintStatus::stable("0.0.73"),
         default_level: Level::Ignore,
@@ -610,7 +610,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-await.md")]
-    pub(crate) static INVALID_AWAIT = {
+    pub static INVALID_AWAIT = {
         summary: "detects awaiting on types that don't support it",
         status: LintStatus::stable("0.0.1-alpha.19"),
         default_level: Level::Error,
@@ -619,7 +619,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-base.md")]
-    pub(crate) static INVALID_BASE = {
+    pub static INVALID_BASE = {
         summary: "detects class bases that will cause the class definition to raise an exception at runtime",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -628,7 +628,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unsupported-base.md")]
-    pub(crate) static UNSUPPORTED_BASE = {
+    pub static UNSUPPORTED_BASE = {
         summary: "detects class bases that are unsupported as ty could not feasibly calculate the class's MRO",
         status: LintStatus::stable("0.0.1-alpha.7"),
         default_level: Level::Warn,
@@ -637,7 +637,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unsupported-dynamic-base.md")]
-    pub(crate) static UNSUPPORTED_DYNAMIC_BASE = {
+    pub static UNSUPPORTED_DYNAMIC_BASE = {
         summary: "detects dynamic class bases that are unsupported as ty could not feasibly calculate the class's MRO",
         status: LintStatus::stable("0.0.12"),
         default_level: Level::Ignore,
@@ -646,7 +646,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-context-manager.md")]
-    pub(crate) static INVALID_CONTEXT_MANAGER = {
+    pub static INVALID_CONTEXT_MANAGER = {
         summary: "detects expressions used in with statements that don't implement the context manager protocol",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -655,7 +655,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-declaration.md")]
-    pub(crate) static INVALID_DECLARATION = {
+    pub static INVALID_DECLARATION = {
         summary: "detects invalid declarations",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -664,7 +664,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-exception-caught.md")]
-    pub(crate) static INVALID_EXCEPTION_CAUGHT = {
+    pub static INVALID_EXCEPTION_CAUGHT = {
         summary: "detects exception handlers that catch classes that do not inherit from `BaseException`",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -673,7 +673,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-enum-member-annotation.md")]
-    pub(crate) static INVALID_ENUM_MEMBER_ANNOTATION = {
+    pub static INVALID_ENUM_MEMBER_ANNOTATION = {
         summary: "detects type annotations on enum members",
         status: LintStatus::stable("0.0.20"),
         default_level: Level::Warn,
@@ -682,7 +682,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-generic-enum.md")]
-    pub(crate) static INVALID_GENERIC_ENUM = {
+    pub static INVALID_GENERIC_ENUM = {
         summary: "detects generic enum classes",
         status: LintStatus::stable("0.0.12"),
         default_level: Level::Error,
@@ -691,7 +691,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-generic-class.md")]
-    pub(crate) static INVALID_GENERIC_CLASS = {
+    pub static INVALID_GENERIC_CLASS = {
         summary: "detects invalid generic classes",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -700,7 +700,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-module-getattr-call.md")]
-    pub(crate) static INVALID_MODULE_GETATTR_CALL = {
+    pub static INVALID_MODULE_GETATTR_CALL = {
         summary: "detects imports that fail while calling module-level `__getattr__`",
         status: LintStatus::stable("0.0.72"),
         default_level: Level::Error,
@@ -709,7 +709,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/non-callable-init-subclass.md")]
-    pub(crate) static NON_CALLABLE_INIT_SUBCLASS = {
+    pub static NON_CALLABLE_INIT_SUBCLASS = {
         summary: "detects class definitions that will fail due to non-callable `__init_subclass__`",
         status: LintStatus::stable("0.0.30"),
         default_level: Level::Error,
@@ -718,7 +718,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-legacy-type-variable.md")]
-    pub(crate) static INVALID_LEGACY_TYPE_VARIABLE = {
+    pub static INVALID_LEGACY_TYPE_VARIABLE = {
         summary: "detects invalid legacy type variables",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -727,7 +727,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-paramspec.md")]
-    pub(crate) static INVALID_PARAMSPEC = {
+    pub static INVALID_PARAMSPEC = {
         summary: "detects invalid ParamSpec usage",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -736,7 +736,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-type-alias-type.md")]
-    pub(crate) static INVALID_TYPE_ALIAS_TYPE = {
+    pub static INVALID_TYPE_ALIAS_TYPE = {
         summary: "detects invalid TypeAliasType definitions",
         status: LintStatus::stable("0.0.1-alpha.6"),
         default_level: Level::Error,
@@ -745,7 +745,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-newtype.md")]
-    pub(crate) static INVALID_NEWTYPE = {
+    pub static INVALID_NEWTYPE = {
         summary: "detects invalid NewType definitions",
         status: LintStatus::stable("0.0.1-alpha.27"),
         default_level: Level::Error,
@@ -768,7 +768,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/mismatched-enum-name.md")]
-    pub(crate) static MISMATCHED_ENUM_NAME = {
+    pub static MISMATCHED_ENUM_NAME = {
         summary: "detects mismatched names in enum classes",
         status: LintStatus::stable("0.0.108"),
         default_level: Level::Ignore,
@@ -777,7 +777,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/mismatched-namedtuple-name.md")]
-    pub(crate) static MISMATCHED_NAMEDTUPLE_NAME = {
+    pub static MISMATCHED_NAMEDTUPLE_NAME = {
         summary: "detects mismatched names in named tuples",
         status: LintStatus::stable("0.0.108"),
         default_level: Level::Ignore,
@@ -786,7 +786,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/mismatched-newtype-name.md")]
-    pub(crate) static MISMATCHED_NEWTYPE_NAME = {
+    pub static MISMATCHED_NEWTYPE_NAME = {
         summary: "detects mismatched names in `NewType` definitions",
         status: LintStatus::stable("0.0.108"),
         default_level: Level::Warn,
@@ -795,7 +795,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/mismatched-paramspec-name.md")]
-    pub(crate) static MISMATCHED_PARAMSPEC_NAME = {
+    pub static MISMATCHED_PARAMSPEC_NAME = {
         summary: "detects mismatched names in `ParamSpec` definitions",
         status: LintStatus::stable("0.0.108"),
         default_level: Level::Warn,
@@ -804,7 +804,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/mismatched-type-alias-name.md")]
-    pub(crate) static MISMATCHED_TYPE_ALIAS_NAME = {
+    pub static MISMATCHED_TYPE_ALIAS_NAME = {
         summary: "detects mismatched names in `TypeAliasType` definitions",
         status: LintStatus::stable("0.0.108"),
         default_level: Level::Warn,
@@ -813,7 +813,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/mismatched-typeddict-name.md")]
-    pub(crate) static MISMATCHED_TYPEDDICT_NAME = {
+    pub static MISMATCHED_TYPEDDICT_NAME = {
         summary: "detects mismatched names in typed dictionaries",
         status: LintStatus::stable("0.0.108"),
         default_level: Level::Warn,
@@ -822,7 +822,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/mismatched-typevar-name.md")]
-    pub(crate) static MISMATCHED_TYPEVAR_NAME = {
+    pub static MISMATCHED_TYPEVAR_NAME = {
         summary: "detects mismatched names in `TypeVar` definitions",
         status: LintStatus::stable("0.0.108"),
         default_level: Level::Warn,
@@ -831,7 +831,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/mismatched-typevartuple-name.md")]
-    pub(crate) static MISMATCHED_TYPEVARTUPLE_NAME = {
+    pub static MISMATCHED_TYPEVARTUPLE_NAME = {
         summary: "detects mismatched names in `TypeVarTuple` definitions",
         status: LintStatus::stable("0.0.108"),
         default_level: Level::Warn,
@@ -840,7 +840,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/mismatched-sentinel-name.md")]
-    pub(crate) static MISMATCHED_SENTINEL_NAME = {
+    pub static MISMATCHED_SENTINEL_NAME = {
         summary: "detects sentinel definitions whose declared name does not match the assigned variable",
         status: LintStatus::stable("0.0.87"),
         default_level: Level::Ignore,
@@ -849,7 +849,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-metaclass.md")]
-    pub(crate) static INVALID_METACLASS = {
+    pub static INVALID_METACLASS = {
         summary: "detects invalid `metaclass=` arguments",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -858,7 +858,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/single-overload.md")]
-    pub(crate) static SINGLE_OVERLOAD = {
+    pub static SINGLE_OVERLOAD = {
         summary: "detects functions with only one overload declaration",
         status: LintStatus::stable("0.0.100"),
         default_level: Level::Warn,
@@ -867,7 +867,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/useless-overload-body.md")]
-    pub(crate) static USELESS_OVERLOAD_BODY = {
+    pub static USELESS_OVERLOAD_BODY = {
         summary: "detects `@overload`-decorated functions with non-stub bodies",
         status: LintStatus::stable("0.0.1-alpha.22"),
         default_level: Level::Warn,
@@ -876,7 +876,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-parameter-default.md")]
-    pub(crate) static INVALID_PARAMETER_DEFAULT = {
+    pub static INVALID_PARAMETER_DEFAULT = {
         summary: "detects default values that can't be assigned to the parameter's annotated type",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -885,7 +885,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-raise.md")]
-    pub(crate) static INVALID_RAISE = {
+    pub static INVALID_RAISE = {
         summary: "detects `raise` statements that raise invalid exceptions or use invalid causes",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -894,7 +894,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-super-argument.md")]
-    pub(crate) static INVALID_SUPER_ARGUMENT = {
+    pub static INVALID_SUPER_ARGUMENT = {
         summary: "detects invalid arguments for `super()`",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -903,7 +903,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-type-checking-constant.md")]
-    pub(crate) static INVALID_TYPE_CHECKING_CONSTANT = {
+    pub static INVALID_TYPE_CHECKING_CONSTANT = {
         summary: "detects invalid `TYPE_CHECKING` constant assignments",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -912,7 +912,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-init-type-variable.md")]
-    pub(crate) static INVALID_INIT_TYPE_VARIABLE = {
+    pub static INVALID_INIT_TYPE_VARIABLE = {
         summary: "detects type variables from outer scopes in `__init__` receiver annotations",
         status: LintStatus::stable("0.0.83"),
         default_level: Level::Error,
@@ -921,7 +921,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-type-form.md")]
-    pub(crate) static INVALID_TYPE_FORM = {
+    pub static INVALID_TYPE_FORM = {
         summary: "detects invalid type forms",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -930,7 +930,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-match-pattern.md")]
-    pub(crate) static INVALID_MATCH_PATTERN = {
+    pub static INVALID_MATCH_PATTERN = {
         summary: "detect invalid match patterns",
         status: LintStatus::stable("0.0.18"),
         default_level: Level::Error,
@@ -939,7 +939,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-type-guard-definition.md")]
-    pub(crate) static INVALID_TYPE_GUARD_DEFINITION = {
+    pub static INVALID_TYPE_GUARD_DEFINITION = {
         summary: "detects type guard functions without a positional parameter to narrow",
         status: LintStatus::stable("0.0.1-alpha.11"),
         default_level: Level::Error,
@@ -948,7 +948,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/removed_lint_docs/invalid-type-guard-call.md")]
-    pub(crate) static INVALID_TYPE_GUARD_CALL = {
+    pub static INVALID_TYPE_GUARD_CALL = {
         summary: "detects type guard function calls that have no narrowing effect",
         status: LintStatus::removed(
             "0.0.60",
@@ -960,7 +960,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/disjoint-type-is-narrowing.md")]
-    pub(crate) static DISJOINT_TYPE_IS_NARROWING = {
+    pub static DISJOINT_TYPE_IS_NARROWING = {
         summary: "detects incompatible `TypeIs` narrowings to disjoint types",
         status: LintStatus::stable("0.0.106"),
         default_level: Level::Error,
@@ -969,7 +969,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/suspicious-type-is-narrowing.md")]
-    pub(crate) static SUSPICIOUS_TYPE_IS_NARROWING = {
+    pub static SUSPICIOUS_TYPE_IS_NARROWING = {
         summary: "detects incompatible `TypeIs` narrowings to overlapping types",
         status: LintStatus::stable("0.0.106"),
         default_level: Level::Warn,
@@ -978,7 +978,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-type-variable-constraints.md")]
-    pub(crate) static INVALID_TYPE_VARIABLE_CONSTRAINTS = {
+    pub static INVALID_TYPE_VARIABLE_CONSTRAINTS = {
         summary: "detects invalid type variable constraints",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -987,7 +987,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-type-variable-bound.md")]
-    pub(crate) static INVALID_TYPE_VARIABLE_BOUND = {
+    pub static INVALID_TYPE_VARIABLE_BOUND = {
         summary: "detects invalid type variable bounds",
         status: LintStatus::stable("0.0.15"),
         default_level: Level::Error,
@@ -996,7 +996,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-type-variable-default.md")]
-    pub(crate) static INVALID_TYPE_VARIABLE_DEFAULT = {
+    pub static INVALID_TYPE_VARIABLE_DEFAULT = {
         summary: "detects invalid type variable defaults",
         status: LintStatus::stable("0.0.16"),
         default_level: Level::Error,
@@ -1005,7 +1005,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unbound-type-variable.md")]
-    pub(crate) static UNBOUND_TYPE_VARIABLE = {
+    pub static UNBOUND_TYPE_VARIABLE = {
         summary: "detects type variables used outside of their bound scope",
         status: LintStatus::stable("0.0.20"),
         default_level: Level::Error,
@@ -1014,7 +1014,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/missing-argument.md")]
-    pub(crate) static MISSING_ARGUMENT = {
+    pub static MISSING_ARGUMENT = {
         summary: "detects missing required arguments in a call",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1023,14 +1023,14 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/missing-type-argument.md")]
-    pub(crate) static MISSING_TYPE_ARGUMENT = {
+    pub static MISSING_TYPE_ARGUMENT = {
         summary: "detects generic types used without explicit type parameters in type expressions",
         status: LintStatus::stable("0.0.45"),
         default_level: Level::Ignore,
     }
 }
 
-pub(super) fn report_missing_type_arguments<'db>(
+pub fn report_missing_type_arguments<'db>(
     context: &InferContext<'db, '_>,
     ty: Type<'db>,
     annotation: &ast::Expr,
@@ -1087,7 +1087,7 @@ pub(super) fn report_missing_type_arguments<'db>(
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/no-matching-overload.md")]
-    pub(crate) static NO_MATCHING_OVERLOAD = {
+    pub static NO_MATCHING_OVERLOAD = {
         summary: "detects calls that do not match any overload",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1096,7 +1096,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/not-subscriptable.md")]
-    pub(crate) static NOT_SUBSCRIPTABLE = {
+    pub static NOT_SUBSCRIPTABLE = {
         summary: "detects subscripting objects that do not support subscripting",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1105,7 +1105,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-type-arguments.md")]
-    pub(crate) static INVALID_TYPE_ARGUMENTS = {
+    pub static INVALID_TYPE_ARGUMENTS = {
         summary: "detects invalid type arguments in generic specialization",
         status: LintStatus::stable("0.0.1-alpha.29"),
         default_level: Level::Error,
@@ -1114,7 +1114,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/not-iterable.md")]
-    pub(crate) static NOT_ITERABLE = {
+    pub static NOT_ITERABLE = {
         summary: "detects iteration over an object that is not iterable",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1123,7 +1123,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unsupported-bool-conversion.md")]
-    pub(crate) static UNSUPPORTED_BOOL_CONVERSION = {
+    pub static UNSUPPORTED_BOOL_CONVERSION = {
         summary: "detects boolean conversion where the object incorrectly implements `__bool__`",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1132,7 +1132,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/parameter-already-assigned.md")]
-    pub(crate) static PARAMETER_ALREADY_ASSIGNED = {
+    pub static PARAMETER_ALREADY_ASSIGNED = {
         summary: "detects multiple arguments for the same parameter",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1141,7 +1141,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/possibly-missing-attribute.md")]
-    pub(crate) static POSSIBLY_MISSING_ATTRIBUTE = {
+    pub static POSSIBLY_MISSING_ATTRIBUTE = {
         summary: "detects references to possibly missing attributes",
         status: LintStatus::stable("0.0.1-alpha.22"),
         default_level: Level::Ignore,
@@ -1150,7 +1150,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/possibly-missing-submodule.md")]
-    pub(crate) static POSSIBLY_MISSING_SUBMODULE = {
+    pub static POSSIBLY_MISSING_SUBMODULE = {
         summary: "detects accesses of submodules that may not be available as attributes on their parent module",
         status: LintStatus::stable("0.0.23"),
         default_level: Level::Warn,
@@ -1159,7 +1159,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/possibly-missing-import.md")]
-    pub(crate) static POSSIBLY_MISSING_IMPORT = {
+    pub static POSSIBLY_MISSING_IMPORT = {
         summary: "detects possibly missing imports",
         status: LintStatus::stable("0.0.1-alpha.22"),
         default_level: Level::Ignore,
@@ -1168,7 +1168,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/possibly-unresolved-reference.md")]
-    pub(crate) static POSSIBLY_UNRESOLVED_REFERENCE = {
+    pub static POSSIBLY_UNRESOLVED_REFERENCE = {
         summary: "detects references to possibly undefined names",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Ignore,
@@ -1177,7 +1177,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/subclass-of-final-class.md")]
-    pub(crate) static SUBCLASS_OF_FINAL_CLASS = {
+    pub static SUBCLASS_OF_FINAL_CLASS = {
         summary: "detects subclasses of final classes",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1186,7 +1186,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/subclass-of-dataclass-with-order.md")]
-    pub(crate) static SUBCLASS_OF_DATACLASS_WITH_ORDER = {
+    pub static SUBCLASS_OF_DATACLASS_WITH_ORDER = {
         summary: "detects subclasses of dataclasses with `order=True`",
         status: LintStatus::stable("0.0.39"),
         default_level: Level::Warn,
@@ -1195,7 +1195,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/override-of-final-method.md")]
-    pub(crate) static OVERRIDE_OF_FINAL_METHOD = {
+    pub static OVERRIDE_OF_FINAL_METHOD = {
         summary: "detects overrides of final methods",
         status: LintStatus::stable("0.0.1-alpha.29"),
         default_level: Level::Error,
@@ -1204,7 +1204,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/override-of-final-variable.md")]
-    pub(crate) static OVERRIDE_OF_FINAL_VARIABLE = {
+    pub static OVERRIDE_OF_FINAL_VARIABLE = {
         summary: "detects overrides of Final class variables",
         status: LintStatus::stable("0.0.16"),
         default_level: Level::Error,
@@ -1213,7 +1213,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/ineffective-final.md")]
-    pub(crate) static INEFFECTIVE_FINAL = {
+    pub static INEFFECTIVE_FINAL = {
         summary: "detects calls to `final()` that type checkers cannot interpret",
         status: LintStatus::stable("0.0.1-alpha.33"),
         default_level: Level::Warn,
@@ -1222,7 +1222,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/final-on-non-method.md")]
-    pub(crate) static FINAL_ON_NON_METHOD = {
+    pub static FINAL_ON_NON_METHOD = {
         summary: "detects `@final` applied to non-method functions",
         status: LintStatus::stable("0.0.20"),
         default_level: Level::Error,
@@ -1231,7 +1231,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/final-without-value.md")]
-    pub(crate) static FINAL_WITHOUT_VALUE = {
+    pub static FINAL_WITHOUT_VALUE = {
         summary: "detects `Final` declarations without a value",
         status: LintStatus::stable("0.0.15"),
         default_level: Level::Error,
@@ -1240,7 +1240,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/abstract-and-final-method.md")]
-    pub(crate) static ABSTRACT_AND_FINAL_METHOD = {
+    pub static ABSTRACT_AND_FINAL_METHOD = {
         summary: "detects methods that are both abstract and final",
         status: LintStatus::stable("0.0.64"),
         default_level: Level::Error,
@@ -1249,7 +1249,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/abstract-method-in-final-class.md")]
-    pub(crate) static ABSTRACT_METHOD_IN_FINAL_CLASS = {
+    pub static ABSTRACT_METHOD_IN_FINAL_CLASS = {
         summary: "detects `@final` classes with unimplemented abstract methods",
         status: LintStatus::stable("0.0.13"),
         default_level: Level::Error,
@@ -1258,7 +1258,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/abstract-method-call.md")]
-    pub(crate) static ABSTRACT_METHOD_CALL = {
+    pub static ABSTRACT_METHOD_CALL = {
         summary: "detects calls to abstract methods with trivial bodies on class objects",
         status: LintStatus::stable("0.0.16"),
         default_level: Level::Error,
@@ -1267,7 +1267,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/abstract-class-instantiation.md")]
-    pub(crate) static ABSTRACT_CLASS_INSTANTIATION = {
+    pub static ABSTRACT_CLASS_INSTANTIATION = {
         summary: "detects direct instantiation of abstract classes and protocols",
         status: LintStatus::stable("0.0.100"),
         default_level: Level::Error,
@@ -1276,7 +1276,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-explicit-override.md")]
-    pub(crate) static INVALID_EXPLICIT_OVERRIDE = {
+    pub static INVALID_EXPLICIT_OVERRIDE = {
         summary: "detects methods that are decorated with `@override` but do not override any method in a superclass",
         status: LintStatus::stable("0.0.1-alpha.28"),
         default_level: Level::Error,
@@ -1285,7 +1285,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/missing-override-decorator.md")]
-    pub(crate) static MISSING_OVERRIDE_DECORATOR = {
+    pub static MISSING_OVERRIDE_DECORATOR = {
         summary: "detects methods that override a superclass member without an `@override` annotation",
         status: LintStatus::stable("0.0.41"),
         default_level: Level::Ignore,
@@ -1294,7 +1294,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/type-assertion-failure.md")]
-    pub(crate) static TYPE_ASSERTION_FAILURE = {
+    pub static TYPE_ASSERTION_FAILURE = {
         summary: "detects failed type assertions",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1303,7 +1303,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/assert-type-unspellable-subtype.md")]
-    pub(crate) static ASSERT_TYPE_UNSPELLABLE_SUBTYPE = {
+    pub static ASSERT_TYPE_UNSPELLABLE_SUBTYPE = {
         summary: "detects failed type assertions",
         status: LintStatus::stable("0.0.14"),
         default_level: Level::Error,
@@ -1312,7 +1312,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/too-many-positional-arguments.md")]
-    pub(crate) static TOO_MANY_POSITIONAL_ARGUMENTS = {
+    pub static TOO_MANY_POSITIONAL_ARGUMENTS = {
         summary: "detects calls passing too many positional arguments",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1321,7 +1321,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unavailable-implicit-super-arguments.md")]
-    pub(crate) static UNAVAILABLE_IMPLICIT_SUPER_ARGUMENTS = {
+    pub static UNAVAILABLE_IMPLICIT_SUPER_ARGUMENTS = {
         summary: "detects invalid `super()` calls where implicit arguments are unavailable.",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1330,7 +1330,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/super-call-in-named-tuple-method.md")]
-    pub(crate) static SUPER_CALL_IN_NAMED_TUPLE_METHOD = {
+    pub static SUPER_CALL_IN_NAMED_TUPLE_METHOD = {
         summary: "detects `super()` calls in methods of `NamedTuple` classes",
         status: LintStatus::stable("0.0.1-alpha.30"),
         default_level: Level::Error,
@@ -1348,7 +1348,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unknown-argument.md")]
-    pub(crate) static UNKNOWN_ARGUMENT = {
+    pub static UNKNOWN_ARGUMENT = {
         summary: "detects unknown keyword arguments in calls",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1361,7 +1361,7 @@ declare_lint! {
         reason = "`data-mdtest` is an mdtest-specific code-block attribute"
     )]
     #[doc = include_str!("../../resources/lint_docs/pydantic-discarded-extra-argument.md")]
-    pub(crate) static PYDANTIC_DISCARDED_EXTRA_ARGUMENT = {
+    pub static PYDANTIC_DISCARDED_EXTRA_ARGUMENT = {
         summary: "detects extra constructor arguments that Pydantic silently discards",
         status: LintStatus::stable("0.0.60"),
         default_level: Level::Warn,
@@ -1370,7 +1370,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/positional-only-parameter-as-kwarg.md")]
-    pub(crate) static POSITIONAL_ONLY_PARAMETER_AS_KWARG = {
+    pub static POSITIONAL_ONLY_PARAMETER_AS_KWARG = {
         summary: "detects positional-only parameters passed as keyword arguments",
         status: LintStatus::stable("0.0.1-alpha.22"),
         default_level: Level::Error,
@@ -1379,7 +1379,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/missing-attribute.md")]
-    pub(crate) static MISSING_ATTRIBUTE = {
+    pub static MISSING_ATTRIBUTE = {
         summary: "detects references to missing attributes",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1388,7 +1388,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/missing-slot.md")]
-    pub(crate) static MISSING_SLOT = {
+    pub static MISSING_SLOT = {
         summary: "detects assignments to declared attributes without instance storage",
         status: LintStatus::stable("0.0.75"),
         default_level: Level::Error,
@@ -1397,7 +1397,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/import-not-found.md")]
-    pub(crate) static IMPORT_NOT_FOUND = {
+    pub static IMPORT_NOT_FOUND = {
         summary: "detects imports of unresolved modules",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1406,7 +1406,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/missing-module-member.md")]
-    pub(crate) static MISSING_MODULE_MEMBER = {
+    pub static MISSING_MODULE_MEMBER = {
         summary: "detects imports of missing names from resolved modules",
         status: LintStatus::stable("0.0.105"),
         default_level: Level::Error,
@@ -1419,7 +1419,7 @@ declare_lint! {
         reason = "`data-mdtest` is an mdtest-specific code-block attribute"
     )]
     #[doc = include_str!("../../resources/lint_docs/missing-direct-dependency.md")]
-    pub(crate) static MISSING_DIRECT_DEPENDENCY = {
+    pub static MISSING_DIRECT_DEPENDENCY = {
         summary: "detects imports of dependencies that are not declared directly",
         status: LintStatus::preview("0.0.76"),
         default_level: Level::Ignore,
@@ -1437,7 +1437,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unsupported-operator.md")]
-    pub(crate) static UNSUPPORTED_OPERATOR = {
+    pub static UNSUPPORTED_OPERATOR = {
         summary: "detects binary, unary, or comparison expressions where the operands don't support the operator",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1446,7 +1446,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unused-awaitable.md")]
-    pub(crate) static UNUSED_AWAITABLE = {
+    pub static UNUSED_AWAITABLE = {
         summary: "detects awaitable objects that are used as expression statements without being awaited",
         status: LintStatus::stable("0.0.21"),
         default_level: Level::Warn,
@@ -1455,7 +1455,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/zero-stepsize-in-slice.md")]
-    pub(crate) static ZERO_STEPSIZE_IN_SLICE = {
+    pub static ZERO_STEPSIZE_IN_SLICE = {
         summary: "detects a slice step size of zero",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1464,7 +1464,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/static-assert-error.md")]
-    pub(crate) static STATIC_ASSERT_ERROR = {
+    pub static STATIC_ASSERT_ERROR = {
         summary: "Failed static assertion",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1473,7 +1473,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-attribute-access.md")]
-    pub(crate) static INVALID_ATTRIBUTE_ACCESS = {
+    pub static INVALID_ATTRIBUTE_ACCESS = {
         summary: "Invalid attribute access",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Error,
@@ -1482,7 +1482,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/disjoint-cast.md")]
-    pub(crate) static DISJOINT_CAST = {
+    pub static DISJOINT_CAST = {
         summary: "detects `cast` calls between disjoint types",
         status: LintStatus::stable("0.0.78"),
         default_level: Level::Ignore,
@@ -1491,7 +1491,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/redundant-cast.md")]
-    pub(crate) static REDUNDANT_CAST = {
+    pub static REDUNDANT_CAST = {
         summary: "detects redundant `cast` calls",
         status: LintStatus::stable("0.0.1-alpha.1"),
         default_level: Level::Warn,
@@ -1500,7 +1500,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/redundant-final-classvar.md")]
-    pub(crate) static REDUNDANT_FINAL_CLASSVAR = {
+    pub static REDUNDANT_FINAL_CLASSVAR = {
         summary: "detects redundant combinations of `ClassVar` and `Final`",
         status: LintStatus::stable("0.0.18"),
         default_level: Level::Warn,
@@ -1509,7 +1509,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/shadowed-type-variable.md")]
-    pub(crate) static SHADOWED_TYPE_VARIABLE = {
+    pub static SHADOWED_TYPE_VARIABLE = {
         summary: "detects type variables that shadow type variables from outer scopes",
         status: LintStatus::stable("0.0.20"),
         default_level: Level::Error,
@@ -1518,7 +1518,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unresolved-global.md")]
-    pub(crate) static UNRESOLVED_GLOBAL = {
+    pub static UNRESOLVED_GLOBAL = {
         summary: "detects `global` statements with no definition in the global scope",
         status: LintStatus::stable("0.0.1-alpha.15"),
         default_level: Level::Warn,
@@ -1527,7 +1527,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/missing-typed-dict-key.md")]
-    pub(crate) static MISSING_TYPED_DICT_KEY = {
+    pub static MISSING_TYPED_DICT_KEY = {
         summary: "detects missing required keys in `TypedDict` constructors",
         status: LintStatus::stable("0.0.1-alpha.20"),
         default_level: Level::Error,
@@ -1536,7 +1536,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-typed-dict-statement.md")]
-    pub(crate) static INVALID_TYPED_DICT_STATEMENT = {
+    pub static INVALID_TYPED_DICT_STATEMENT = {
         summary: "detects invalid statements in `TypedDict` class bodies",
         status: LintStatus::stable("0.0.9"),
         default_level: Level::Error,
@@ -1545,7 +1545,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-typed-dict-field.md")]
-    pub(crate) static INVALID_TYPED_DICT_FIELD = {
+    pub static INVALID_TYPED_DICT_FIELD = {
         summary: "detects invalid `TypedDict` field declarations",
         status: LintStatus::stable("0.0.28"),
         default_level: Level::Error,
@@ -1554,7 +1554,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-typed-dict-header.md")]
-    pub(crate) static INVALID_TYPED_DICT_HEADER = {
+    pub static INVALID_TYPED_DICT_HEADER = {
         summary: "detects invalid statements in `TypedDict` class headers",
         status: LintStatus::stable("0.0.14"),
         default_level: Level::Error,
@@ -1563,7 +1563,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/incompatible-attribute-override.md")]
-    pub(crate) static INCOMPATIBLE_ATTRIBUTE_OVERRIDE = {
+    pub static INCOMPATIBLE_ATTRIBUTE_OVERRIDE = {
         summary: "detects attribute overrides that violate inherited type or access requirements",
         status: LintStatus::stable("0.0.33"),
         default_level: Level::Error,
@@ -1572,7 +1572,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/incompatible-property-override.md")]
-    pub(crate) static INCOMPATIBLE_PROPERTY_OVERRIDE = {
+    pub static INCOMPATIBLE_PROPERTY_OVERRIDE = {
         summary: "detects incompatible overrides involving properties",
         status: LintStatus::stable("0.0.81"),
         default_level: Level::Error,
@@ -1581,7 +1581,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/incompatible-mutable-override.md")]
-    pub(crate) static INCOMPATIBLE_MUTABLE_OVERRIDE = {
+    pub static INCOMPATIBLE_MUTABLE_OVERRIDE = {
         summary: "detects overrides that narrow writable attribute types",
         status: LintStatus::stable("0.0.81"),
         default_level: Level::Error,
@@ -1590,7 +1590,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/incompatible-method-override.md")]
-    pub(crate) static INCOMPATIBLE_METHOD_OVERRIDE = {
+    pub static INCOMPATIBLE_METHOD_OVERRIDE = {
         summary: "detects method definitions that violate the Liskov Substitution Principle",
         status: LintStatus::stable("0.0.1-alpha.20"),
         default_level: Level::Error,
@@ -1599,7 +1599,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/lost-keyword-for-regular-parameter.md")]
-    pub(crate) static LOST_KEYWORD_FOR_REGULAR_PARAMETER = {
+    pub static LOST_KEYWORD_FOR_REGULAR_PARAMETER = {
         summary: "detects method overrides that drop a positional parameter's keyword name",
         status: LintStatus::stable("0.0.100"),
         default_level: Level::Error,
@@ -1608,7 +1608,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-frozen-dataclass-subclass.md")]
-    pub(crate) static INVALID_FROZEN_DATACLASS_SUBCLASS = {
+    pub static INVALID_FROZEN_DATACLASS_SUBCLASS = {
         summary: "detects dataclasses with invalid frozen/non-frozen subclassing",
         status: LintStatus::stable("0.0.1-alpha.35"),
         default_level: Level::Error,
@@ -1617,7 +1617,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-total-ordering.md")]
-    pub(crate) static INVALID_TOTAL_ORDERING = {
+    pub static INVALID_TOTAL_ORDERING = {
         summary: "detects `@total_ordering` classes without an ordering method",
         status: LintStatus::stable("0.0.10"),
         default_level: Level::Error,
@@ -1626,7 +1626,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/invalid-legacy-positional-parameter.md")]
-    pub(crate) static INVALID_LEGACY_POSITIONAL_PARAMETER = {
+    pub static INVALID_LEGACY_POSITIONAL_PARAMETER = {
         summary: "detects incorrect usage of the legacy convention for specifying positional-only parameters",
         status: LintStatus::stable("0.0.15"),
         default_level: Level::Ignore,
@@ -1635,7 +1635,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/truthiness-test-of-none-union.md")]
-    pub(crate) static TRUTHINESS_TEST_OF_NONE_UNION = {
+    pub static TRUTHINESS_TEST_OF_NONE_UNION = {
         summary: "detects truthiness checks that conflate `None` with other falsy values",
         status: LintStatus::stable("0.0.84"),
         default_level: Level::Ignore,
@@ -1644,7 +1644,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/redundant-condition.md")]
-    pub(crate) static REDUNDANT_CONDITION = {
+    pub static REDUNDANT_CONDITION = {
         summary: "detects conditions that are always truthy or always falsey",
         status: LintStatus::stable("0.0.79"),
         default_level: Level::Warn,
@@ -1653,7 +1653,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/redundant-condition-strict.md")]
-    pub(crate) static REDUNDANT_CONDITION_STRICT = {
+    pub static REDUNDANT_CONDITION_STRICT = {
         summary: "detects conditions that are always truthy or always falsey (strict)",
         status: LintStatus::stable("0.0.79"),
         default_level: Level::Ignore,
@@ -1662,7 +1662,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/truthiness-test-of-callable.md")]
-    pub(crate) static TRUTHINESS_TEST_OF_CALLABLE = {
+    pub static TRUTHINESS_TEST_OF_CALLABLE = {
         summary: "detects truthiness tests of `Callable`-typed objects",
         status: LintStatus::stable("0.0.83"),
         default_level: Level::Warn,
@@ -1671,7 +1671,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/truthiness-test-of-iterable.md")]
-    pub(crate) static TRUTHINESS_TEST_OF_ITERABLE = {
+    pub static TRUTHINESS_TEST_OF_ITERABLE = {
         summary: "detects truthiness tests of `Iterable`-typed objects",
         status: LintStatus::stable("0.0.83"),
         default_level: Level::Warn,
@@ -1680,7 +1680,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/missing-union-attribute.md")]
-    pub(crate) static MISSING_UNION_ATTRIBUTE = {
+    pub static MISSING_UNION_ATTRIBUTE = {
         summary: "detects attribute accesses where some union members lack the attribute",
         status: LintStatus::stable("0.0.100"),
         default_level: Level::Error,
@@ -1689,7 +1689,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/non-literal-typed-dict-key.md")]
-    pub(crate) static NON_LITERAL_TYPED_DICT_KEY = {
+    pub static NON_LITERAL_TYPED_DICT_KEY = {
         summary: "detects non-literal string keys in TypedDict subscripts",
         status: LintStatus::stable("0.0.100"),
         default_level: Level::Error,
@@ -1698,7 +1698,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/unknown-typed-dict-constructor-key.md")]
-    pub(crate) static UNKNOWN_TYPED_DICT_CONSTRUCTOR_KEY = {
+    pub static UNKNOWN_TYPED_DICT_CONSTRUCTOR_KEY = {
         summary: "detects unknown keys when constructing a TypedDict",
         status: LintStatus::stable("0.0.100"),
         default_level: Level::Error,
@@ -1707,7 +1707,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/missing-overload-implementation.md")]
-    pub(crate) static MISSING_OVERLOAD_IMPLEMENTATION = {
+    pub static MISSING_OVERLOAD_IMPLEMENTATION = {
         summary: "detects overloaded functions missing a required implementation",
         status: LintStatus::stable("0.0.100"),
         default_level: Level::Error,
@@ -1716,7 +1716,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/inconsistent-overload-implementation.md")]
-    pub(crate) static INCONSISTENT_OVERLOAD_IMPLEMENTATION = {
+    pub static INCONSISTENT_OVERLOAD_IMPLEMENTATION = {
         summary: "detects implementations that are inconsistent with their overloads",
         status: LintStatus::stable("0.0.100"),
         default_level: Level::Error,
@@ -1725,7 +1725,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/inconsistent-overload-decorator.md")]
-    pub(crate) static INCONSISTENT_OVERLOAD_DECORATOR = {
+    pub static INCONSISTENT_OVERLOAD_DECORATOR = {
         summary: "detects inconsistent use of `@staticmethod` or `@classmethod` on overloaded methods",
         status: LintStatus::stable("0.0.100"),
         default_level: Level::Error,
@@ -1734,7 +1734,7 @@ declare_lint! {
 
 declare_lint! {
     #[doc = include_str!("../../resources/lint_docs/misplaced-overload-decorator.md")]
-    pub(crate) static MISPLACED_OVERLOAD_DECORATOR = {
+    pub static MISPLACED_OVERLOAD_DECORATOR = {
         summary: "detects misplaced `@final` or `@override` decorators on overloaded methods",
         status: LintStatus::stable("0.0.100"),
         default_level: Level::Error,
@@ -1761,7 +1761,7 @@ pub struct TypeCheckDiagnostics {
     used_suppressions: FxHashSet<FileSuppressionId>,
 }
 
-pub(crate) fn report_mismatched_type_name<'db>(
+pub fn report_mismatched_type_name<'db>(
     context: &InferContext<'db, '_>,
     rule: &'static LintMetadata,
     node: impl Ranged,
@@ -1790,17 +1790,17 @@ pub(crate) fn report_mismatched_type_name<'db>(
 }
 
 impl TypeCheckDiagnostics {
-    pub(crate) fn push(&mut self, diagnostic: Diagnostic) {
+    pub fn push(&mut self, diagnostic: Diagnostic) {
         self.diagnostics.push(diagnostic);
     }
 
-    pub(super) fn extend(&mut self, other: &TypeCheckDiagnostics) {
+    pub fn extend(&mut self, other: &TypeCheckDiagnostics) {
         self.diagnostics.extend_from_slice(&other.diagnostics);
         self.used_suppressions.extend(&other.used_suppressions);
     }
 
     /// Extend with selected diagnostics while retaining all used suppressions.
-    pub(super) fn extend_filtered(
+    pub fn extend_filtered(
         &mut self,
         other: &TypeCheckDiagnostics,
         mut include: impl FnMut(&Diagnostic) -> bool,
@@ -1814,32 +1814,32 @@ impl TypeCheckDiagnostics {
         self.used_suppressions.extend(&other.used_suppressions);
     }
 
-    pub(super) fn extend_diagnostics(&mut self, diagnostics: impl IntoIterator<Item = Diagnostic>) {
+    pub fn extend_diagnostics(&mut self, diagnostics: impl IntoIterator<Item = Diagnostic>) {
         self.diagnostics.extend(diagnostics);
     }
 
-    pub(crate) fn mark_used(&mut self, suppression_id: FileSuppressionId) {
+    pub fn mark_used(&mut self, suppression_id: FileSuppressionId) {
         self.used_suppressions.insert(suppression_id);
     }
 
-    pub(crate) fn is_used(&self, suppression_id: FileSuppressionId) -> bool {
+    pub fn is_used(&self, suppression_id: FileSuppressionId) -> bool {
         self.used_suppressions.contains(&suppression_id)
     }
 
-    pub(crate) fn used_len(&self) -> usize {
+    pub fn used_len(&self) -> usize {
         self.used_suppressions.len()
     }
 
-    pub(crate) fn shrink_to_fit(&mut self) {
+    pub fn shrink_to_fit(&mut self) {
         self.used_suppressions.shrink_to_fit();
         self.diagnostics.shrink_to_fit();
     }
 
-    pub(crate) fn into_diagnostics(self) -> Vec<Diagnostic> {
+    pub fn into_diagnostics(self) -> Vec<Diagnostic> {
         self.diagnostics
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.diagnostics.is_empty() && self.used_suppressions.is_empty()
     }
 
@@ -1878,7 +1878,7 @@ impl<'a> IntoIterator for &'a TypeCheckDiagnostics {
 }
 
 /// Emit a diagnostic declaring that an index is out of bounds for a tuple.
-pub(super) fn report_index_out_of_bounds(
+pub fn report_index_out_of_bounds(
     context: &InferContext,
     kind: &'static str,
     node: AnyNodeRef,
@@ -1898,7 +1898,7 @@ pub(super) fn report_index_out_of_bounds(
 }
 
 /// Emit a diagnostic declaring that a type does not support subscripting.
-pub(super) fn report_not_subscriptable(
+pub fn report_not_subscriptable(
     context: &InferContext,
     node: &ast::ExprSubscript,
     not_subscriptable_ty: Type,
@@ -1922,7 +1922,7 @@ pub(super) fn report_not_subscriptable(
     }
 }
 
-pub(super) fn report_slice_step_size_zero(context: &InferContext, node: AnyNodeRef) {
+pub fn report_slice_step_size_zero(context: &InferContext, node: AnyNodeRef) {
     let Some(builder) = context.report_lint(&ZERO_STEPSIZE_IN_SLICE, node) else {
         return;
     };
@@ -1931,7 +1931,7 @@ pub(super) fn report_slice_step_size_zero(context: &InferContext, node: AnyNodeR
 
 // We avoid emitting invalid assignment diagnostic for literal assignments to a `TypedDict`, as
 // they can only occur if we already failed to validate the dict (and emitted some diagnostic).
-pub(crate) fn is_invalid_typed_dict_literal<'db>(
+pub fn is_invalid_typed_dict_literal<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     target_ty: Type<'db>,
@@ -1944,7 +1944,7 @@ pub(crate) fn is_invalid_typed_dict_literal<'db>(
             .is_some()
 }
 
-pub(super) fn note_numbers_module_not_supported<'db>(
+pub fn note_numbers_module_not_supported<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     diag: &mut Diagnostic,
@@ -2012,7 +2012,7 @@ fn covariant_supertype_hint<'db>(
 
 /// Add a diagnostic hint for cases like an invalid `list[bool]` to `list[int]` assignment,
 /// that fails due to invariance.
-pub(super) fn add_invariant_generic_hints<'db>(
+pub fn add_invariant_generic_hints<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     diag: &mut Diagnostic,
@@ -2092,7 +2092,7 @@ enum DeclarationKind {
 }
 
 #[derive(Copy, Clone)]
-pub(super) enum AssignmentDeclaration<'db> {
+pub enum AssignmentDeclaration<'db> {
     /// The assignment has its own annotation or a separate declaration in the same file.
     Ordinary(Option<Definition<'db>>),
     /// A bare `ClassVar` on this assignment takes its value type from a base class.
@@ -2395,7 +2395,7 @@ fn set_assignment_primary_annotation(
     }
 }
 
-pub(super) fn report_invalid_assignment<'db>(
+pub fn report_invalid_assignment<'db>(
     context: &InferContext<'db, '_>,
     target_node: AnyNodeRef,
     definition: Definition<'db>,
@@ -2512,7 +2512,7 @@ pub(super) fn report_invalid_assignment<'db>(
 }
 
 /// Report an assignment whose value is not a subtype of its declared type.
-pub(super) fn report_unsound_assignment<'db>(
+pub fn report_unsound_assignment<'db>(
     context: &InferContext<'db, '_>,
     target_node: AnyNodeRef,
     definition: Definition<'db>,
@@ -2600,7 +2600,7 @@ pub(super) fn report_unsound_assignment<'db>(
     diagnostic.help("Consider using an `assert` to narrow the type before assigning it");
 }
 
-pub(super) fn report_invalid_attribute_assignment(
+pub fn report_invalid_attribute_assignment(
     context: &InferContext,
     range: TextRange,
     target_ty: Type,
@@ -2629,7 +2629,7 @@ pub(super) fn report_invalid_attribute_assignment(
 }
 
 /// Reports an invalid implicit call to a descriptor's `__get__` method.
-pub(super) fn report_bad_dunder_get_call<'db>(
+pub fn report_bad_dunder_get_call<'db>(
     context: &InferContext<'db, '_>,
     failure: &CallError<'db>,
     object_type: Type<'db>,
@@ -2688,13 +2688,13 @@ pub(super) fn report_bad_dunder_get_call<'db>(
 
 /// A special method invoked implicitly while accessing an attribute.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(super) enum AttributeAccessMethod {
+pub enum AttributeAccessMethod {
     GetAttr,
     GetAttribute,
 }
 
 impl AttributeAccessMethod {
-    pub(super) const fn as_str(self) -> &'static str {
+    pub const fn as_str(self) -> &'static str {
         match self {
             Self::GetAttr => "__getattr__",
             Self::GetAttribute => "__getattribute__",
@@ -2712,7 +2712,7 @@ impl AttributeAccessMethod {
 /// ```
 ///
 /// Preserves the underlying call diagnostic and explains why attribute access invoked the method.
-pub(super) fn report_bad_attribute_access_call<'db>(
+pub fn report_bad_attribute_access_call<'db>(
     context: &InferContext<'db, '_>,
     failure: &CallError<'db>,
     object_type: Type<'db>,
@@ -2743,7 +2743,7 @@ pub(super) fn report_bad_attribute_access_call<'db>(
 /// ```python
 /// from package import missing  # Calls package.__getattr__("missing").
 /// ```
-pub(super) fn report_bad_import_call<'db>(
+pub fn report_bad_import_call<'db>(
     context: &InferContext<'db, '_>,
     failure: &CallError<'db>,
     module: ModuleLiteralType<'db>,
@@ -2767,7 +2767,7 @@ pub(super) fn report_bad_import_call<'db>(
     );
 }
 
-pub(super) fn report_bad_dunder_set_call<'db>(
+pub fn report_bad_dunder_set_call<'db>(
     context: &InferContext<'db, '_>,
     dunder_set_failure: &CallError<'db>,
     object_type: Type<'db>,
@@ -2819,7 +2819,7 @@ pub(super) fn report_bad_dunder_set_call<'db>(
     }
 }
 
-pub(super) fn report_bad_dunder_delete_call<'db>(
+pub fn report_bad_dunder_delete_call<'db>(
     context: &InferContext<'db, '_>,
     dunder_delete_failure: &CallError<'db>,
     attribute: &str,
@@ -2862,7 +2862,7 @@ pub(super) fn report_bad_dunder_delete_call<'db>(
     }
 }
 
-pub(super) fn report_bad_dunder_delattr_call(
+pub fn report_bad_dunder_delattr_call(
     context: &InferContext<'_, '_>,
     attribute: &str,
     object_type: Type,
@@ -2891,7 +2891,7 @@ pub(super) fn report_bad_dunder_delattr_call(
     }
 }
 
-pub(super) fn report_dynamic_function_decorator_return<'db>(
+pub fn report_dynamic_function_decorator_return<'db>(
     context: &InferContext<'db, '_>,
     decorator: &ast::Decorator,
     decorated_ty: Type<'db>,
@@ -3045,7 +3045,7 @@ pub(super) fn report_dynamic_function_decorator_return<'db>(
     }
 }
 
-pub(super) fn report_invalid_explicit_return(
+pub fn report_invalid_explicit_return(
     context: &InferContext,
     object_range: impl Ranged,
     return_type_range: impl Ranged,
@@ -3079,7 +3079,7 @@ pub(super) fn report_invalid_explicit_return(
     error_context.attach_to(db, env, &mut diag);
 }
 
-pub(super) fn report_unsound_return(
+pub fn report_unsound_return(
     context: &InferContext,
     object_range: impl Ranged,
     return_type_range: impl Ranged,
@@ -3126,7 +3126,7 @@ pub(super) fn report_unsound_return(
     diag.help("Consider using an `assert` to narrow the type prior to the `return` statement");
 }
 
-pub(super) fn report_invalid_generator_function_return_type(
+pub fn report_invalid_generator_function_return_type(
     context: &InferContext,
     return_type_range: TextRange,
     inferred_return: KnownClass,
@@ -3165,12 +3165,12 @@ pub(super) fn report_invalid_generator_function_return_type(
 }
 
 #[derive(Copy, Clone)]
-pub(super) enum GeneratorMismatchKind {
+pub enum GeneratorMismatchKind {
     YieldType,
     SendType,
 }
 
-pub(super) fn report_invalid_generator_yield_type(
+pub fn report_invalid_generator_yield_type(
     context: &InferContext,
     object_range: impl Ranged,
     return_type_span: Option<Span>,
@@ -3230,7 +3230,7 @@ pub(super) fn report_invalid_generator_yield_type(
     error_context.attach_to(db, env, &mut diag);
 }
 
-pub(super) fn report_unsound_yield(
+pub fn report_unsound_yield(
     context: &InferContext,
     yield_value: impl Ranged,
     kind: YieldKind,
@@ -3288,7 +3288,7 @@ pub(super) fn report_unsound_yield(
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub(super) enum YieldKind {
+pub enum YieldKind {
     Yield,
     YieldFrom,
 }
@@ -3302,7 +3302,7 @@ impl std::fmt::Display for YieldKind {
     }
 }
 
-pub(super) fn report_implicit_return_type(
+pub fn report_implicit_return_type(
     context: &InferContext,
     range: impl Ranged,
     expected_ty: Type,
@@ -3376,7 +3376,7 @@ pub(super) fn report_implicit_return_type(
     }
 }
 
-pub(super) fn report_invalid_type_checking_constant(context: &InferContext, node: AnyNodeRef) {
+pub fn report_invalid_type_checking_constant(context: &InferContext, node: AnyNodeRef) {
     let Some(builder) = context.report_lint(&INVALID_TYPE_CHECKING_CONSTANT, node) else {
         return;
     };
@@ -3385,7 +3385,7 @@ pub(super) fn report_invalid_type_checking_constant(context: &InferContext, node
     );
 }
 
-pub(super) fn report_possibly_unresolved_reference(
+pub fn report_possibly_unresolved_reference(
     context: &InferContext,
     expr_name_node: &ast::ExprName,
 ) {
@@ -3397,7 +3397,7 @@ pub(super) fn report_possibly_unresolved_reference(
     builder.into_diagnostic(format_args!("Name `{id}` used when possibly not defined"));
 }
 
-pub(super) fn report_possibly_missing_attribute(
+pub fn report_possibly_missing_attribute(
     context: &InferContext,
     target: &ast::ExprAttribute,
     attribute: &str,
@@ -3430,7 +3430,7 @@ pub(super) fn report_possibly_missing_attribute(
 
 /// Selects a runtime typing module for a fix, checking declared dependencies and installed exports
 /// when the requested member needs a backport.
-pub(super) fn typing_module_for_fix(
+pub fn typing_module_for_fix(
     context: &InferContext,
     member: &str,
     minimum_version: PythonVersion,
@@ -3472,7 +3472,7 @@ pub(super) fn typing_module_for_fix(
     Some(module)
 }
 
-pub(super) fn import_literal_for_fix(context: &InferContext, at: TextSize) -> Option<ImportAction> {
+pub fn import_literal_for_fix(context: &InferContext, at: TextSize) -> Option<ImportAction> {
     let module = typing_module_for_fix(context, "Literal", PythonVersion::PY38)?;
     context.importer().import_for_diagnostic(
         ImportRequest::import_from(module.as_str(), "Literal"),
@@ -3484,7 +3484,7 @@ pub(super) fn import_literal_for_fix(context: &InferContext, at: TextSize) -> Op
 /// Wraps a literal in `Literal[...]`, preserving its spelling, quotes, and escapes.
 /// String annotations retain their original source offsets: `parse_string_annotation` rejects
 /// contents that require unescaping, and parses accepted strings directly from the source file.
-pub(super) fn autofix_with_literal(
+pub fn autofix_with_literal(
     context: &InferContext,
     diagnostic: &mut Diagnostic,
     node: impl Ranged,
@@ -3503,7 +3503,7 @@ pub(super) fn autofix_with_literal(
     ));
 }
 
-pub(super) fn report_undefined_reveal(context: &InferContext, name: &ast::ExprName) {
+pub fn report_undefined_reveal(context: &InferContext, name: &ast::ExprName) {
     let Some(builder) = context.report_lint(&UNDEFINED_REVEAL, name) else {
         return;
     };
@@ -3528,7 +3528,7 @@ pub(super) fn report_undefined_reveal(context: &InferContext, name: &ast::ExprNa
 
 /// Add an autofix to `diagnostic` that replaces the given node with `NotImplementedError`
 /// iff `NotImplementedError` definitely has a builtin binding from the given scope.
-pub(crate) fn autofix_with_notimplementederror(
+pub fn autofix_with_notimplementederror(
     context: &InferContext,
     diagnostic: &mut Diagnostic,
     node: &ast::Expr,
@@ -3544,7 +3544,7 @@ pub(crate) fn autofix_with_notimplementederror(
     }
 }
 
-pub(super) fn report_invalid_exception_tuple_caught<'db, 'ast>(
+pub fn report_invalid_exception_tuple_caught<'db, 'ast>(
     context: &InferContext<'db, 'ast>,
     node: &'ast ast::ExprTuple,
     node_type: Type<'db>,
@@ -3581,7 +3581,7 @@ pub(super) fn report_invalid_exception_tuple_caught<'db, 'ast>(
     );
 }
 
-pub(super) fn report_invalid_exception_caught(context: &InferContext, node: &ast::Expr, ty: Type) {
+pub fn report_invalid_exception_caught(context: &InferContext, node: &ast::Expr, ty: Type) {
     let db = context.db();
     let Some(builder) = context.report_lint(&INVALID_EXCEPTION_CAUGHT, node) else {
         return;
@@ -3615,7 +3615,7 @@ pub(super) fn report_invalid_exception_caught(context: &InferContext, node: &ast
     );
 }
 
-pub(crate) fn report_invalid_exception_raised(
+pub fn report_invalid_exception_raised(
     context: &InferContext,
     raised_node: &ast::Expr,
     raise_type: Type,
@@ -3639,7 +3639,7 @@ pub(crate) fn report_invalid_exception_raised(
     }
 }
 
-pub(crate) fn report_invalid_exception_cause(context: &InferContext, node: &ast::Expr, ty: Type) {
+pub fn report_invalid_exception_cause(context: &InferContext, node: &ast::Expr, ty: Type) {
     let db = context.db();
     let Some(builder) = context.report_lint(&INVALID_RAISE, node) else {
         return;
@@ -3664,7 +3664,7 @@ pub(crate) fn report_invalid_exception_cause(context: &InferContext, node: &ast:
     );
 }
 
-pub(crate) fn report_instance_layout_conflict(
+pub fn report_instance_layout_conflict(
     context: &InferContext,
     header_range: TextRange,
     base_nodes: Option<&[ast::Expr]>,
@@ -3759,7 +3759,7 @@ pub(crate) fn report_instance_layout_conflict(
 
 /// Emit a diagnostic for a metaclass conflict where both conflicting metaclasses
 /// are inherited from base classes.
-pub(super) fn report_conflicting_metaclass_from_bases(
+pub fn report_conflicting_metaclass_from_bases(
     context: &InferContext,
     node: AnyNodeRef,
     class_name: &str,
@@ -3791,15 +3791,10 @@ pub(super) fn report_conflicting_metaclass_from_bases(
 /// The inner data is an `IndexMap` to ensure that diagnostics regarding conflicting disjoint bases
 /// are reported in a stable order.
 #[derive(Debug, Default)]
-pub(super) struct IncompatibleBases<'db>(FxIndexMap<DisjointBase<'db>, IncompatibleBaseInfo<'db>>);
+pub struct IncompatibleBases<'db>(FxIndexMap<DisjointBase<'db>, IncompatibleBaseInfo<'db>>);
 
 impl<'db> IncompatibleBases<'db> {
-    pub(super) fn insert(
-        &mut self,
-        base: DisjointBase<'db>,
-        node_index: usize,
-        class: ClassLiteral<'db>,
-    ) {
+    pub fn insert(&mut self, base: DisjointBase<'db>, node_index: usize, class: ClassLiteral<'db>) {
         let info = IncompatibleBaseInfo {
             node_index,
             originating_base: class,
@@ -3814,7 +3809,7 @@ impl<'db> IncompatibleBases<'db> {
         format_enumeration(bad_base_names)
     }
 
-    pub(super) fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.0.len()
     }
 
@@ -3822,7 +3817,7 @@ impl<'db> IncompatibleBases<'db> {
     /// This method therefore removes any entry in `self` that is a superclass of one or more
     /// other entries also contained in `self`, keeping only the most-derived entries. If more
     /// than one entry remains, no remaining entry is a subclass of another, so they conflict.
-    pub(super) fn remove_redundant_entries(&mut self, db: &'db dyn Db) {
+    pub fn remove_redundant_entries(&mut self, db: &'db dyn Db) {
         self.0 = self
             .0
             .iter()
@@ -3856,7 +3851,7 @@ impl<'a, 'db> IntoIterator for &'a IncompatibleBases<'db> {
 
 /// Information about which class base the "disjoint base" stems from
 #[derive(Debug, Copy, Clone)]
-pub(super) struct IncompatibleBaseInfo<'db> {
+pub struct IncompatibleBaseInfo<'db> {
     /// The index of the problematic base in the [`ast::StmtClassDef`]'s bases list.
     node_index: usize,
 
@@ -3869,7 +3864,7 @@ pub(super) struct IncompatibleBaseInfo<'db> {
     originating_base: ClassLiteral<'db>,
 }
 
-pub(crate) fn report_invalid_arguments_to_annotated(
+pub fn report_invalid_arguments_to_annotated(
     context: &InferContext,
     subscript: &ast::ExprSubscript,
 ) {
@@ -3882,7 +3877,7 @@ pub(crate) fn report_invalid_arguments_to_annotated(
     );
 }
 
-pub(crate) fn report_invalid_argument_number_to_special_form(
+pub fn report_invalid_argument_number_to_special_form(
     context: &InferContext,
     subscript: &ast::ExprSubscript,
     special_form: impl Into<SpecialFormType>,
@@ -3903,7 +3898,7 @@ pub(crate) fn report_invalid_argument_number_to_special_form(
     }
 }
 
-pub(super) fn report_invalid_runtime_checkable(
+pub fn report_invalid_runtime_checkable(
     context: &InferContext,
     node: impl Ranged,
     class: ClassLiteral,
@@ -3924,7 +3919,7 @@ pub(super) fn report_invalid_runtime_checkable(
     );
 }
 
-pub(crate) fn report_bad_argument_to_get_protocol_members(
+pub fn report_bad_argument_to_get_protocol_members(
     context: &InferContext,
     call: &ast::ExprCall,
     class: ClassLiteral,
@@ -3959,7 +3954,7 @@ pub(crate) fn report_bad_argument_to_get_protocol_members(
     diagnostic.info("See https://typing.python.org/en/latest/spec/protocol.html#");
 }
 
-pub(crate) fn report_bad_argument_to_protocol_interface(
+pub fn report_bad_argument_to_protocol_interface(
     context: &InferContext,
     call: &ast::ExprCall,
     param_type: Type,
@@ -3995,7 +3990,7 @@ pub(crate) fn report_bad_argument_to_protocol_interface(
     diagnostic.info("See https://typing.python.org/en/latest/spec/protocol.html");
 }
 
-pub(crate) fn report_invalid_arguments_to_callable(
+pub fn report_invalid_arguments_to_callable(
     context: &InferContext,
     subscript: &ast::ExprSubscript,
 ) {
@@ -4007,7 +4002,7 @@ pub(crate) fn report_invalid_arguments_to_callable(
     ));
 }
 
-pub(crate) fn report_invalid_class_match_pattern<T: Ranged>(
+pub fn report_invalid_class_match_pattern<T: Ranged>(
     context: &InferContext,
     pattern_cls: T,
     cls_ty: Type,
@@ -4024,7 +4019,7 @@ pub(crate) fn report_invalid_class_match_pattern<T: Ranged>(
     diagnostic.set_primary_annotation_message("This will raise `TypeError` at runtime");
 }
 
-pub(crate) fn report_too_many_positional_patterns_for_class_pattern<T: Ranged>(
+pub fn report_too_many_positional_patterns_for_class_pattern<T: Ranged>(
     context: &InferContext,
     first_excess_pattern: T,
     positional_limit: usize,
@@ -4040,7 +4035,7 @@ pub(crate) fn report_too_many_positional_patterns_for_class_pattern<T: Ranged>(
     ));
 }
 
-pub(crate) fn report_invalid_match_args_type<T: Ranged>(
+pub fn report_invalid_match_args_type<T: Ranged>(
     context: &InferContext,
     pattern: T,
     match_args_ty: Type,
@@ -4058,7 +4053,7 @@ pub(crate) fn report_invalid_match_args_type<T: Ranged>(
     ));
 }
 
-pub(crate) fn add_type_expression_reference_link<'db, 'env>(
+pub fn add_type_expression_reference_link<'db, 'env>(
     mut diag: LintDiagnosticGuard<'db, 'env>,
 ) -> LintDiagnosticGuard<'db, 'env> {
     diag.info("See the following page for a reference on valid type expressions:");
@@ -4068,7 +4063,7 @@ pub(crate) fn add_type_expression_reference_link<'db, 'env>(
     diag
 }
 
-pub(crate) fn report_runtime_check_against_non_runtime_checkable_protocol(
+pub fn report_runtime_check_against_non_runtime_checkable_protocol(
     context: &InferContext,
     call: &ast::ExprCall,
     protocol: ProtocolClass,
@@ -4093,7 +4088,7 @@ pub(crate) fn report_runtime_check_against_non_runtime_checkable_protocol(
     diagnostic.info(format_args!("See {RUNTIME_CHECKABLE_DOCS_URL}"));
 }
 
-pub(crate) fn report_issubclass_check_against_protocol_with_non_method_members<'db>(
+pub fn report_issubclass_check_against_protocol_with_non_method_members<'db>(
     context: &'db InferContext<'db, '_>,
     call: &ast::ExprCall,
     protocol: ProtocolClass<'db>,
@@ -4154,7 +4149,7 @@ pub(crate) fn report_issubclass_check_against_protocol_with_non_method_members<'
     }
 }
 
-pub(crate) fn report_runtime_check_against_typed_dict(
+pub fn report_runtime_check_against_typed_dict(
     context: &InferContext,
     call: &ast::ExprCall,
     class: ClassLiteral,
@@ -4172,7 +4167,7 @@ pub(crate) fn report_runtime_check_against_typed_dict(
     diagnostic.set_primary_annotation_message("This call will raise `TypeError` at runtime");
 }
 
-pub(crate) fn report_match_pattern_against_non_runtime_checkable_protocol<T: Ranged>(
+pub fn report_match_pattern_against_non_runtime_checkable_protocol<T: Ranged>(
     context: &InferContext,
     pattern_cls: T,
     protocol: ProtocolClass,
@@ -4195,7 +4190,7 @@ pub(crate) fn report_match_pattern_against_non_runtime_checkable_protocol<T: Ran
     diagnostic.info(format_args!("See {RUNTIME_CHECKABLE_DOCS_URL}"));
 }
 
-pub(crate) fn report_match_pattern_against_typed_dict<T: Ranged>(
+pub fn report_match_pattern_against_typed_dict<T: Ranged>(
     context: &InferContext,
     pattern_cls: T,
     class: ClassLiteral,
@@ -4231,7 +4226,7 @@ fn add_non_runtime_checkable_protocol_context<'db>(
     diagnostic.sub(class_def_diagnostic);
 }
 
-pub(crate) fn report_attempted_protocol_instantiation(
+pub fn report_attempted_protocol_instantiation(
     context: &InferContext,
     call: &ast::ExprCall,
     protocol: ProtocolClass,
@@ -4256,7 +4251,7 @@ pub(crate) fn report_attempted_protocol_instantiation(
     diagnostic.sub(class_def_diagnostic);
 }
 
-pub(crate) fn report_call_to_abstract_method(
+pub fn report_call_to_abstract_method(
     context: &InferContext,
     call: &ast::ExprCall,
     function: FunctionType,
@@ -4281,7 +4276,7 @@ pub(crate) fn report_call_to_abstract_method(
     );
 }
 
-pub(crate) fn report_attempted_instantiation_of_abstract_class<'db>(
+pub fn report_attempted_instantiation_of_abstract_class<'db>(
     context: &InferContext<'db, '_>,
     call: &ast::ExprCall,
     class: ClassType<'db>,
@@ -4321,7 +4316,7 @@ pub(crate) fn report_attempted_instantiation_of_abstract_class<'db>(
     }
 }
 
-pub(super) fn abstract_method_span<'db>(
+pub fn abstract_method_span<'db>(
     db: &'db dyn Db,
     function: FunctionType<'db>,
     policy: AbstractMethodAnnotationPolicy,
@@ -4353,12 +4348,12 @@ pub(super) fn abstract_method_span<'db>(
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub(super) enum AbstractMethodAnnotationPolicy {
+pub enum AbstractMethodAnnotationPolicy {
     AlwaysIncludeBody,
     ExcludeVerboseBody,
 }
 
-pub(crate) fn report_undeclared_protocol_member(
+pub fn report_undeclared_protocol_member(
     context: &InferContext,
     definition: Definition,
     protocol_class: ProtocolClass,
@@ -4444,7 +4439,7 @@ pub(crate) fn report_undeclared_protocol_member(
     );
 }
 
-pub(crate) fn report_undeclared_protocol_attribute(
+pub fn report_undeclared_protocol_attribute(
     context: &InferContext,
     target: &ast::ExprAttribute,
     protocol_class: ProtocolClass,
@@ -4493,7 +4488,7 @@ fn add_undeclared_protocol_member_context(
     ));
 }
 
-pub(crate) fn report_duplicate_bases(
+pub fn report_duplicate_bases(
     context: &InferContext,
     class: StaticClassLiteral,
     duplicate_base_error: &DuplicateBaseError,
@@ -4535,7 +4530,7 @@ pub(crate) fn report_duplicate_bases(
     }
 }
 
-pub(crate) fn report_invalid_or_unsupported_base(
+pub fn report_invalid_or_unsupported_base(
     context: &InferContext,
     base_node: &ast::Expr,
     base_type: Type,
@@ -4660,7 +4655,7 @@ pub(crate) fn report_invalid_or_unsupported_base(
     }
 }
 
-pub(crate) fn report_unsupported_base(
+pub fn report_unsupported_base(
     context: &InferContext,
     base_node: &ast::Expr,
     base_type: Type,
@@ -4709,7 +4704,7 @@ fn report_invalid_base<'env, 'db>(
 /// Uses `non-literal-typed-dict-key` only when every alternative in the rejected key type is
 /// a string of unknown value. This keeps a misspelled literal or a non-string in a mixed union
 /// visible when non-literal key errors are suppressed.
-pub(super) fn typed_dict_subscript_key_lint<'db>(
+pub fn typed_dict_subscript_key_lint<'db>(
     context: &InferContext<'db, '_>,
     key: Type<'db>,
 ) -> &'static LintMetadata {
@@ -4740,7 +4735,7 @@ pub(super) fn typed_dict_subscript_key_lint<'db>(
     }
 }
 
-pub(crate) fn report_invalid_key_on_typed_dict<'db>(
+pub fn report_invalid_key_on_typed_dict<'db>(
     context: &InferContext<'db, '_>,
     typed_dict_node: AnyNodeRef,
     key_node: AnyNodeRef,
@@ -4840,7 +4835,7 @@ pub(crate) fn report_invalid_key_on_typed_dict<'db>(
     }
 }
 
-pub(super) fn report_namedtuple_field_without_default_after_field_with_default<'db>(
+pub fn report_namedtuple_field_without_default_after_field_with_default<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     (field, field_def): (&str, Option<Definition<'db>>),
@@ -4889,7 +4884,7 @@ pub(super) fn report_namedtuple_field_without_default_after_field_with_default<'
     }
 }
 
-pub(super) fn report_named_tuple_field_with_leading_underscore<'db>(
+pub fn report_named_tuple_field_with_leading_underscore<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     field_name: &str,
@@ -4928,7 +4923,7 @@ pub(super) fn report_named_tuple_field_with_leading_underscore<'db>(
 /// The diagnostic is anchored to the annotated assignment that introduced the qualifier. It does
 /// not claim that class creation fails at runtime because deferred and wrapped annotations can
 /// preserve the qualifier without passing it directly to `typing._type_check`.
-pub(super) fn report_invalid_named_tuple_field_qualifier<'db>(
+pub fn report_invalid_named_tuple_field_qualifier<'db>(
     context: &InferContext<'db, '_>,
     field_name: &str,
     qualifier: TypeQualifier,
@@ -4949,7 +4944,7 @@ pub(super) fn report_invalid_named_tuple_field_qualifier<'db>(
     ));
 }
 
-pub(crate) fn report_missing_typed_dict_key<'db>(
+pub fn report_missing_typed_dict_key<'db>(
     context: &InferContext<'db, '_>,
     constructor_node: AnyNodeRef,
     typed_dict_ty: Type<'db>,
@@ -4965,7 +4960,7 @@ pub(crate) fn report_missing_typed_dict_key<'db>(
     }
 }
 
-pub(crate) fn report_cannot_pop_required_field_on_typed_dict<'db>(
+pub fn report_cannot_pop_required_field_on_typed_dict<'db>(
     context: &InferContext<'db, '_>,
     key_node: AnyNodeRef,
     typed_dict_ty: Type<'db>,
@@ -4983,7 +4978,7 @@ pub(crate) fn report_cannot_pop_required_field_on_typed_dict<'db>(
 
 /// Enum representing the reason why a key cannot be deleted from a `TypedDict`.
 #[derive(Copy, Clone)]
-pub(crate) enum TypedDictDeleteErrorKind {
+pub enum TypedDictDeleteErrorKind {
     /// The key exists but is required (not `NotRequired`)
     RequiredKey,
     /// The key exists but is marked `ReadOnly`.
@@ -4994,7 +4989,7 @@ pub(crate) enum TypedDictDeleteErrorKind {
     UnknownKey,
 }
 
-pub(crate) fn report_cannot_delete_typed_dict_key<'db>(
+pub fn report_cannot_delete_typed_dict_key<'db>(
     context: &InferContext<'db, '_>,
     key_node: AnyNodeRef,
     typed_dict_ty: TypedDictType<'db>,
@@ -5068,7 +5063,7 @@ pub(crate) fn report_cannot_delete_typed_dict_key<'db>(
     }
 }
 
-pub(crate) fn report_invalid_type_param_order<'db>(
+pub fn report_invalid_type_param_order<'db>(
     context: &InferContext<'db, '_>,
     bases: &[ExpandedClassBaseEntry<'_, 'db>],
     typevar_with_default: TypeVarInstance<'db>,
@@ -5149,7 +5144,7 @@ pub(crate) fn report_invalid_type_param_order<'db>(
     }
 }
 
-pub(crate) fn report_invalid_typevar_default_reference<'db>(
+pub fn report_invalid_typevar_default_reference<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     typevar_with_bad_default: TypeVarInstance<'db>,
@@ -5225,7 +5220,7 @@ struct GenericBaseConstraint<'db> {
 ///
 /// Returns `true` if an inconsistency was found, even when it is inherited or the diagnostic is
 /// disabled.
-pub(crate) fn report_inconsistent_generic_bases<'db>(
+pub fn report_inconsistent_generic_bases<'db>(
     context: &InferContext<'db, '_>,
     header_range: TextRange,
     explicit_bases: &[Type<'db>],
@@ -5342,7 +5337,7 @@ pub(crate) fn report_inconsistent_generic_bases<'db>(
     false
 }
 
-pub(crate) fn report_shadowed_type_variable<'db>(
+pub fn report_shadowed_type_variable<'db>(
     context: &InferContext<'db, '_>,
     typevar_name: &ast::name::Name,
     kind: &str,
@@ -5397,7 +5392,7 @@ pub(crate) fn report_shadowed_type_variable<'db>(
 // I tried refactoring this function to placate Clippy,
 // but it did not improve readability! -- AW.
 #[expect(clippy::too_many_arguments)]
-pub(super) fn report_incompatible_method_override<'db>(
+pub fn report_incompatible_method_override<'db>(
     context: &InferContext<'db, '_>,
     violation: MethodOverrideViolation,
     member: &str,
@@ -5599,7 +5594,7 @@ pub(super) fn report_incompatible_method_override<'db>(
 }
 
 /// Reports an incompatible pair of source-defined methods in a resolved MRO.
-pub(super) fn report_incompatible_base_method<'db>(
+pub fn report_incompatible_base_method<'db>(
     context: &InferContext<'db, '_>,
     violation: MethodOverrideViolation,
     class: StaticClassLiteral<'db>,
@@ -5660,7 +5655,7 @@ pub(super) fn report_incompatible_base_method<'db>(
     }
 }
 
-pub(super) fn report_overridden_final_method<'db>(
+pub fn report_overridden_final_method<'db>(
     context: &InferContext<'db, '_>,
     member: &str,
     subclass_definition: Definition<'db>,
@@ -5845,7 +5840,7 @@ pub(super) fn report_overridden_final_method<'db>(
     }
 }
 
-pub(super) fn report_overridden_final_variable<'db>(
+pub fn report_overridden_final_variable<'db>(
     context: &InferContext<'db, '_>,
     member: &str,
     subclass_definition: Definition<'db>,
@@ -5899,7 +5894,7 @@ pub(super) fn report_overridden_final_variable<'db>(
     }
 }
 
-pub(super) fn report_unsupported_comparison<'db>(
+pub fn report_unsupported_comparison<'db>(
     context: &InferContext<'db, '_>,
     error: &UnsupportedComparisonError<'db>,
     range: TextRange,
@@ -6012,7 +6007,7 @@ pub(super) fn report_unsupported_comparison<'db>(
     }
 }
 
-pub(super) fn report_unsupported_augmented_assignment<'db>(
+pub fn report_unsupported_augmented_assignment<'db>(
     context: &InferContext<'db, '_>,
     stmt: &ast::StmtAugAssign,
     left_ty: Type<'db>,
@@ -6032,7 +6027,7 @@ pub(super) fn report_unsupported_augmented_assignment<'db>(
     );
 }
 
-pub(super) fn report_unsupported_binary_operation<'db>(
+pub fn report_unsupported_binary_operation<'db>(
     context: &InferContext<'db, '_>,
     binary_expression: &ast::ExprBinOp,
     left_ty: Type<'db>,
@@ -6115,7 +6110,7 @@ fn report_unsupported_binary_operation_impl<'a>(
     Some(diagnostic)
 }
 
-pub(super) fn report_bad_frozen_dataclass_inheritance<'db>(
+pub fn report_bad_frozen_dataclass_inheritance<'db>(
     context: &InferContext<'db, '_>,
     class: StaticClassLiteral<'db>,
     class_node: &ast::StmtClassDef,
@@ -6202,7 +6197,7 @@ pub(super) fn report_bad_frozen_dataclass_inheritance<'db>(
     }
 }
 
-pub(super) fn report_invalid_total_ordering(
+pub fn report_invalid_total_ordering(
     context: &InferContext<'_, '_>,
     class: ClassLiteral<'_>,
     decorator: &ast::Decorator,
@@ -6226,7 +6221,7 @@ pub(super) fn report_invalid_total_ordering(
 
 /// Reports an invalid `total_ordering(cls)` function call where the class
 /// does not define any ordering method.
-pub(super) fn report_invalid_total_ordering_call(
+pub fn report_invalid_total_ordering_call(
     context: &InferContext<'_, '_>,
     class: ClassLiteral<'_>,
     call_expression: &ast::ExprCall,
@@ -6259,7 +6254,7 @@ pub(super) fn report_invalid_total_ordering_call(
 /// misconfigured their Python version.
 ///
 /// The function returns `true` if a hint was added, `false` otherwise.
-pub(super) fn hint_if_stdlib_submodule_exists_on_other_versions(
+pub fn hint_if_stdlib_submodule_exists_on_other_versions(
     db: &dyn Db,
     file: File,
     env: &ProgramEnvironment<'_>,
@@ -6308,7 +6303,7 @@ pub(super) fn hint_if_stdlib_submodule_exists_on_other_versions(
 /// standard library and `foo.bar` *does* exist as an attribute on *other*
 /// Python versions, we add a hint to the diagnostic that the user may have
 /// misconfigured their Python version.
-pub(super) fn hint_if_stdlib_attribute_exists_on_other_versions(
+pub fn hint_if_stdlib_attribute_exists_on_other_versions(
     db: &dyn Db,
     source_file: ProgramFile<'_>,
     mut diagnostic: LintDiagnosticGuard,
@@ -6360,7 +6355,7 @@ pub(super) fn hint_if_stdlib_attribute_exists_on_other_versions(
     );
 }
 
-pub(super) fn report_invalid_concatenate_last_arg<'db>(
+pub fn report_invalid_concatenate_last_arg<'db>(
     context: &InferContext<'db, '_>,
     last_arg: &ast::Expr,
     last_arg_type: Type<'db>,
@@ -6379,7 +6374,7 @@ pub(super) fn report_invalid_concatenate_last_arg<'db>(
     }
 }
 
-pub(super) fn report_subclass_of_class_with_non_callable_init_subclass<'db>(
+pub fn report_subclass_of_class_with_non_callable_init_subclass<'db>(
     context: &InferContext<'db, '_>,
     call_error: CallError<'db>,
     class: StaticClassLiteral<'db>,

@@ -13,42 +13,42 @@ use ty_python_core::{
 /// The return type of certain member-lookup operations. Contains information
 /// about the type, type qualifiers, boundness/declaredness.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, get_size2::GetSize, Default, salsa::SalsaValue)]
-pub(super) struct Member<'db> {
+pub struct Member<'db> {
     /// Type, qualifiers, and boundness information of this member
-    pub(super) inner: PlaceAndQualifiers<'db>,
+    pub inner: PlaceAndQualifiers<'db>,
 }
 
 impl<'db> Member<'db> {
-    pub(super) fn unbound() -> Self {
+    pub fn unbound() -> Self {
         Self {
             inner: PlaceAndQualifiers::unbound(),
         }
     }
 
-    pub(super) fn definitely_declared(ty: Type<'db>) -> Self {
+    pub fn definitely_declared(ty: Type<'db>) -> Self {
         Self {
             inner: Place::declared(ty).into(),
         }
     }
 
     /// Returns the type qualifiers of this member.
-    pub(super) fn qualifiers(&self) -> crate::types::TypeQualifiers {
+    pub fn qualifiers(&self) -> crate::types::TypeQualifiers {
         self.inner.qualifiers
     }
 
     /// Returns `true` if the inner place is undefined (i.e. there is no such member).
-    pub(super) fn is_undefined(&self) -> bool {
+    pub fn is_undefined(&self) -> bool {
         self.inner.place.is_undefined()
     }
 
     /// Returns the inner type, unless it is definitely undefined.
-    pub(super) fn ignore_possibly_undefined(&self) -> Option<Type<'db>> {
+    pub fn ignore_possibly_undefined(&self) -> Option<Type<'db>> {
         self.inner.place.ignore_possibly_undefined()
     }
 
     /// Map a type transformation function over the type of this member.
     #[must_use]
-    pub(super) fn map_type(self, f: impl FnOnce(Type<'db>) -> Type<'db>) -> Self {
+    pub fn map_type(self, f: impl FnOnce(Type<'db>) -> Type<'db>) -> Self {
         Self {
             inner: self.inner.map_type(f),
         }
@@ -60,18 +60,18 @@ impl<'db> Member<'db> {
 /// The declaring class is retained even when several declarations contribute to the member's
 /// type, or an unannotated default inherits the annotation through an intermediate base.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct ClassBodyDeclaration<'db> {
-    pub(super) member: PlaceAndQualifiers<'db>,
-    pub(super) class: StaticClassLiteral<'db>,
+pub struct ClassBodyDeclaration<'db> {
+    pub member: PlaceAndQualifiers<'db>,
+    pub class: StaticClassLiteral<'db>,
 }
 
 /// Infer the public type of a class member/symbol (its type as seen from outside its scope) in the given
 /// `scope`.
-pub(super) fn class_member<'db>(db: &'db dyn Db, scope: ScopeId<'db>, name: &str) -> Member<'db> {
+pub fn class_member<'db>(db: &'db dyn Db, scope: ScopeId<'db>, name: &str) -> Member<'db> {
     class_member_with_symbol(db, scope, place_table(db, scope).symbol_id(name))
 }
 
-pub(super) fn class_member_with_symbol<'db>(
+pub fn class_member_with_symbol<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
     symbol: Option<ScopedSymbolId>,
@@ -150,7 +150,7 @@ pub(super) fn class_member_with_symbol<'db>(
 /// declaration. Both initializer inference and public member lookup use that declaration,
 /// while an explicit annotation or a new method definition supplies its own public type.
 #[salsa::tracked(returns(copy), cycle_initial=|_, _, _, _| None, heap_size=ruff_memory_usage::heap_size)]
-pub(super) fn inherited_class_body_declaration<'db>(
+pub fn inherited_class_body_declaration<'db>(
     db: &'db dyn Db,
     scope: ScopeId<'db>,
     symbol: ScopedSymbolId,
@@ -170,7 +170,7 @@ pub(super) fn inherited_class_body_declaration<'db>(
     class_body_declaration_from_bases(db, &env, class, table.symbol(symbol).name())
 }
 
-pub(super) fn class_body_declaration_from_bases<'db>(
+pub fn class_body_declaration_from_bases<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     class: StaticClassLiteral<'db>,

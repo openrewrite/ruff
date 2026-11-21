@@ -46,7 +46,7 @@ type ProcessSatisfied<'a, 'db, L, B> = dyn Fn(
 /// lazily, which is more efficient than actually constructing the negation and then walking it
 /// normally.)
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub(super) enum Polarity {
+pub enum Polarity {
     Positive,
     Negative,
 }
@@ -72,7 +72,7 @@ impl<B> Break<B> {
     }
 }
 
-pub(super) struct SolutionWalker<'db, L> {
+pub struct SolutionWalker<'db, L> {
     source_orders: FxIndexSet<AtomicConstraintId>,
     /// The relation before non-inferable variables are projected away. Used to recover the
     /// original upper bounds for diagnostics, since projected paths can contain derived bounds
@@ -120,7 +120,7 @@ struct PendingCandidateSolution<'db> {
 }
 
 impl<'db, L: SolutionLimits> SolutionWalker<'db, L> {
-    pub(super) fn new(
+    pub fn new(
         db: &'db dyn Db,
         storage: &mut ConstraintSetStorage<'db>,
         source_orders: FxIndexSet<AtomicConstraintId>,
@@ -146,12 +146,12 @@ impl<'db, L: SolutionLimits> SolutionWalker<'db, L> {
         }
     }
 
-    pub(super) fn with_search(mut self, search: CandidateSearch) -> Self {
+    pub fn with_search(mut self, search: CandidateSearch) -> Self {
         self.find_first_valid = matches!(search, CandidateSearch::FirstValid);
         self
     }
 
-    pub(super) fn with_unspecialized_type_var_policy(
+    pub fn with_unspecialized_type_var_policy(
         mut self,
         unspecialized_type_var_policy: UnspecializedTypeVarPolicy,
     ) -> Self {
@@ -170,7 +170,7 @@ impl<'db, L: SolutionLimits> SolutionWalker<'db, L> {
 
     /// With every atom on this path false, the diagram reaches its false terminal.
     /// Add those assignments to the path and check whether they can hold together.
-    pub(super) fn has_all_negative_counterexample(
+    pub fn has_all_negative_counterexample(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -191,7 +191,7 @@ impl<'db, L: SolutionLimits> SolutionWalker<'db, L> {
             .is_some()
     }
 
-    pub(super) fn is_never_satisfied(
+    pub fn is_never_satisfied(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -207,7 +207,7 @@ impl<'db, L: SolutionLimits> SolutionWalker<'db, L> {
     /// Visit a BDD node and all of its descendants. We will add pending candidate solutions for
     /// any satisfiable path we discover from the node.
     #[expect(clippy::too_many_arguments)]
-    pub(super) fn visit_node(
+    pub fn visit_node(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1866,7 +1866,7 @@ impl<'db, L: SolutionLimits> SolutionWalker<'db, L> {
         ControlFlow::Continue(())
     }
 
-    pub(super) fn finish(mut self) -> CandidateSolutions<'db> {
+    pub fn finish(mut self) -> CandidateSolutions<'db> {
         if self.pending.is_empty() {
             return CandidateSolutions::Unsatisfiable;
         }

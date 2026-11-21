@@ -6,10 +6,10 @@ use crate::ProgramEnvironment;
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct TypeFormType<'db> {
     #[returns(copy)]
-    pub(crate) type_argument: Type<'db>,
+    pub type_argument: Type<'db>,
 }
 
-pub(super) fn walk_typeform_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_typeform_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     typeform_type: TypeFormType<'db>,
     visitor: &V,
@@ -21,7 +21,7 @@ pub(super) fn walk_typeform_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
 impl get_size2::GetSize for TypeFormType<'_> {}
 
 impl<'db> TypeFormType<'db> {
-    pub(crate) fn from_type_expression(db: &'db dyn Db, ty: Type<'db>) -> Type<'db> {
+    pub fn from_type_expression(db: &'db dyn Db, ty: Type<'db>) -> Type<'db> {
         Type::TypeForm(Self::new(db, ty))
     }
 }
@@ -34,11 +34,7 @@ impl<'db> Type<'db> {
     /// bounds or constraints, using cycle detection for recursive types. Union and intersection
     /// elements that do not represent type forms are ignored, as are negative intersection
     /// elements. If no type-form component can be projected, this returns the original type.
-    pub(crate) fn project_type_form(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn project_type_form(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         struct TypeFormArgument;
         type TypeFormArgumentVisitor<'db> =
             CycleDetector<'db, TypeFormArgument, Type<'db>, Option<Type<'db>>, 3>;

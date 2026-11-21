@@ -4,9 +4,9 @@ use std::sync::{Arc, Mutex, OnceLock};
 static CACHED_DB: OnceLock<Arc<Mutex<TestDb>>> = OnceLock::new();
 
 /// The path to the module containing definitions for property testing.
-pub(crate) const PROPERTY_TEST_MODULE_PATH: &str = "/src/type_candidates.py";
+pub const PROPERTY_TEST_MODULE_PATH: &str = "/src/type_candidates.py";
 
-pub(crate) fn get_cached_db() -> TestDb {
+pub fn get_cached_db() -> TestDb {
     let db = CACHED_DB.get_or_init(|| {
         let db = TestDbBuilder::new()
             .with_file(

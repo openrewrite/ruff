@@ -13,7 +13,7 @@ use crate::place_load::{
 use crate::reachability::ReachabilityConstraintsExtension;
 
 /// Returns the definitions that may supply a module global at the end of its scope.
-pub(crate) fn definitions_for_module_global<'db>(
+pub fn definitions_for_module_global<'db>(
     db: &'db dyn Db,
     file: ProgramFile<'db>,
     name: &str,
@@ -48,14 +48,14 @@ impl<'db> DefinitionResolution<'db> {
         }
     }
 
-    pub(crate) fn from_resolver(db: &'db dyn Db, resolver: PlaceLoadResolver<'db, '_>) -> Self {
+    pub fn from_resolver(db: &'db dyn Db, resolver: PlaceLoadResolver<'db, '_>) -> Self {
         let mut resolution = Self::new();
         let resolved_load = resolver.resolve(|source| resolution.add_source(db, source));
         resolution.crosses_scope_declaration = resolved_load.crosses_scope_declaration;
         resolution
     }
 
-    pub(crate) fn from_bindings(
+    pub fn from_bindings(
         db: &'db dyn Db,
         bindings: BindingWithConstraintsIterator<'db, 'db>,
     ) -> Self {

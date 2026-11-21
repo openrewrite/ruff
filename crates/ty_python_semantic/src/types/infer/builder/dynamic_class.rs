@@ -21,7 +21,7 @@ use crate::types::{ClassBase, KnownClass, Type, extract_fixed_length_iterable_el
 /// `__mro_entries__`, so enum-specific restrictions only apply to `type()`, while
 /// `Generic` and `TypedDict` bases are rejected for both entry points.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(super) enum DynamicClassKind {
+pub enum DynamicClassKind {
     TypeCall,
     NewClass,
 }
@@ -37,10 +37,7 @@ impl DynamicClassKind {
 
 impl<'db> TypeInferenceBuilder<'db, '_> {
     /// Identify a dangling dynamic-class call without retaining an absolute source position.
-    pub(super) fn dynamic_class_scope_offset(
-        &self,
-        call: &ast::ExprCall,
-    ) -> DynamicClassScopeOffset {
+    pub fn dynamic_class_scope_offset(&self, call: &ast::ExprCall) -> DynamicClassScopeOffset {
         let scope_anchor = self
             .scope()
             .node(self.db())
@@ -79,7 +76,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// Emits a diagnostic if `bases_type` is not a valid bases iterable for the given kind.
     ///
     /// Returns `None` if the bases cannot be extracted.
-    pub(super) fn extract_explicit_bases(
+    pub fn extract_explicit_bases(
         &mut self,
         bases_node: &ast::Expr,
         bases_type: Type<'db>,
@@ -120,7 +117,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// are handled by `DynamicMroErrorKind::InvalidBases`.
     ///
     /// Returns disjoint bases found (for instance-layout-conflict checking).
-    pub(super) fn validate_dynamic_type_bases(
+    pub fn validate_dynamic_type_bases(
         &mut self,
         bases_node: &ast::Expr,
         bases: &[Type<'db>],
@@ -253,7 +250,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
 /// Report MRO errors for a dynamic class.
 ///
 /// Returns `true` if the MRO is valid, `false` if there were errors.
-pub(super) fn report_dynamic_mro_errors<'db>(
+pub fn report_dynamic_mro_errors<'db>(
     context: &InferContext<'db, '_>,
     dynamic_class: DynamicClassLiteral<'db>,
     call_expr: &ast::ExprCall,
@@ -285,7 +282,7 @@ pub(super) fn report_dynamic_mro_errors<'db>(
 ///
 /// For example, `type("C", (A, B), {})` is invalid if `A` inherits `G[int]`
 /// while `B` inherits `G[str]`, just as an equivalent `class C(A, B): ...` is.
-pub(super) fn report_inconsistent_dynamic_generic_bases<'db>(
+pub fn report_inconsistent_dynamic_generic_bases<'db>(
     context: &InferContext<'db, '_>,
     dynamic_class: DynamicClassLiteral<'db>,
     bases: &ast::Expr,
@@ -318,7 +315,7 @@ pub(super) fn report_inconsistent_dynamic_generic_bases<'db>(
 /// `bases_display` is an optional pre-formatted string of the bases list
 /// (e.g. `"<class 'X'>, <class 'Y'>"`). When provided, the `UnresolvableMro`
 /// message includes `with bases [...]`.
-pub(super) fn report_mro_error_kind<'db>(
+pub fn report_mro_error_kind<'db>(
     context: &InferContext<'db, '_>,
     error: &DynamicMroError<'db>,
     class_name: &Name,

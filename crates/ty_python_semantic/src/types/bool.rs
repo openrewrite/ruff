@@ -22,7 +22,7 @@ impl<'db> Type<'db> {
     /// Uninhabited types return [`Truthiness::Uninhabited`]: neither boolean outcome is possible.
     /// This describes the value type; a compound expression can also fail to complete because
     /// of its operands, even when its inferred result type is inhabited.
-    pub(crate) fn bool(&self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Truthiness {
+    pub fn bool(&self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Truthiness {
         self.try_bool_impl(
             db,
             env,
@@ -38,7 +38,7 @@ impl<'db> Type<'db> {
     /// when `bool(x)` is called on an object `x`.
     ///
     /// Returns an error if the type doesn't implement `__bool__` correctly.
-    pub(crate) fn try_bool(
+    pub fn try_bool(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -388,7 +388,7 @@ type TryBoolVisitor<'db> =
 struct TryBool;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum BoolError<'db> {
+pub enum BoolError<'db> {
     /// The type has a `__bool__` attribute but it can't be called.
     NotCallable { not_boolable_type: Type<'db> },
 
@@ -419,7 +419,7 @@ pub(crate) enum BoolError<'db> {
 }
 
 impl<'db> BoolError<'db> {
-    pub(super) fn fallback_truthiness(&self) -> Truthiness {
+    pub fn fallback_truthiness(&self) -> Truthiness {
         match self {
             BoolError::NotCallable { .. }
             | BoolError::IncorrectReturnType { .. }
@@ -445,7 +445,7 @@ impl<'db> BoolError<'db> {
         }
     }
 
-    pub(super) fn report_diagnostic(&self, context: &InferContext, condition: impl Ranged) {
+    pub fn report_diagnostic(&self, context: &InferContext, condition: impl Ranged) {
         self.report_diagnostic_impl(context, condition.range());
     }
 

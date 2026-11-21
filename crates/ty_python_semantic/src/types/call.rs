@@ -10,22 +10,20 @@ use ruff_python_ast as ast;
 
 mod ambiguous;
 mod arguments;
-pub(crate) mod bind;
-pub(super) use arguments::{Argument, CallArguments};
-pub(super) use bind::{
-    Binding, Bindings, CallDiagnosticOverride, CallableBinding, MatchedArgument,
-};
+pub mod bind;
+pub use arguments::{Argument, CallArguments};
+pub use bind::{Binding, Bindings, CallDiagnosticOverride, CallableBinding, MatchedArgument};
 
 /// The return type and deprecations retained from operator resolution.
 #[derive(Clone, Debug, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct OperatorResult<'db> {
-    pub(crate) return_type: Type<'db>,
+pub struct OperatorResult<'db> {
+    pub return_type: Type<'db>,
     /// Deprecated implementations or overloads selected for the operation.
-    pub(crate) deprecated_functions: Box<[OverloadLiteral<'db>]>,
+    pub deprecated_functions: Box<[OverloadLiteral<'db>]>,
 }
 
 impl<'db> OperatorResult<'db> {
-    pub(super) fn from_bindings(
+    pub fn from_bindings(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         bindings: &Bindings<'db>,
@@ -153,7 +151,7 @@ impl<'db> Type<'db> {
     /// A strict subclass on the right takes precedence over the normal method on the left.
     /// The caller remains responsible for operator-specific fallbacks such as identity-based
     /// equality when neither comparison method is available.
-    pub(super) fn try_call_rich_comparison_dunder(
+    pub fn try_call_rich_comparison_dunder(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         left: Type<'db>,
@@ -215,7 +213,7 @@ impl<'db> Type<'db> {
     /// Memoize the return type and deprecations from binary dunder resolution, without retaining
     /// the full call bindings or repeating overload selection at each expression.
     /// Returns `None` if resolution fails; callers remain responsible for call-site diagnostics.
-    pub(crate) fn try_call_bin_op_result(
+    pub fn try_call_bin_op_result(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         left_ty: Type<'db>,
@@ -239,7 +237,7 @@ impl<'db> Type<'db> {
         try_call_bin_op_result_impl(db, env.program(db), left_ty, op, right_ty).as_ref()
     }
 
-    pub(crate) fn try_call_bin_op(
+    pub fn try_call_bin_op(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         left_ty: Type<'db>,
@@ -256,7 +254,7 @@ impl<'db> Type<'db> {
         )
     }
 
-    pub(crate) fn try_call_bin_op_with_policy(
+    pub fn try_call_bin_op_with_policy(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         left_ty: Type<'db>,
@@ -372,18 +370,16 @@ impl<'db> Type<'db> {
 ///
 /// The bindings are boxed so that we do not pass around large `Err` variants on the stack.
 #[derive(Debug)]
-pub(crate) struct CallError<'db>(pub(crate) CallErrorKind, pub(crate) Box<Bindings<'db>>);
+pub struct CallError<'db>(pub CallErrorKind, pub Box<Bindings<'db>>);
 
 impl<'db> CallError<'db> {
-    pub(crate) fn return_type(&self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn return_type(&self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         self.1.return_type(db, env)
     }
 
     /// Returns `Some(property)` if the call error was caused by an attempt to read a property
     /// that has no getter, and `None` otherwise.
-    pub(crate) fn as_attempt_to_get_property_with_no_getter(
-        &self,
-    ) -> Option<PropertyInstanceType<'db>> {
+    pub fn as_attempt_to_get_property_with_no_getter(&self) -> Option<PropertyInstanceType<'db>> {
         if self.0 != CallErrorKind::BindingError {
             return None;
         }
@@ -399,9 +395,7 @@ impl<'db> CallError<'db> {
 
     /// Returns `Some(property)` if the call error was caused by an attempt to set a property
     /// that has no setter, and `None` otherwise.
-    pub(crate) fn as_attempt_to_set_property_with_no_setter(
-        &self,
-    ) -> Option<PropertyInstanceType<'db>> {
+    pub fn as_attempt_to_set_property_with_no_setter(&self) -> Option<PropertyInstanceType<'db>> {
         if self.0 != CallErrorKind::BindingError {
             return None;
         }
@@ -417,7 +411,7 @@ impl<'db> CallError<'db> {
 
     /// Returns `Some(property)` if the call error was caused by an attempt to delete a property
     /// that has no deleter, and `None` otherwise.
-    pub(crate) fn as_attempt_to_delete_property_with_no_deleter(
+    pub fn as_attempt_to_delete_property_with_no_deleter(
         &self,
     ) -> Option<PropertyInstanceType<'db>> {
         if self.0 != CallErrorKind::BindingError {
@@ -433,7 +427,7 @@ impl<'db> CallError<'db> {
             })
     }
 
-    pub(crate) fn report_diagnostics_with_override(
+    pub fn report_diagnostics_with_override(
         &self,
         context: &InferContext<'db, '_>,
         node: ast::AnyNodeRef,
@@ -446,7 +440,7 @@ impl<'db> CallError<'db> {
 
 /// The reason why calling a type failed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum CallErrorKind {
+pub enum CallErrorKind {
     /// The type is not callable. For a union type, _none_ of the union elements are callable.
     NotCallable,
 
@@ -463,7 +457,7 @@ pub(crate) enum CallErrorKind {
 }
 
 #[derive(Debug)]
-pub(super) enum CallDunderError<'db> {
+pub enum CallDunderError<'db> {
     /// The dunder attribute exists but it can't be called with the given arguments.
     ///
     /// This includes non-callable dunder attributes that are possibly unbound.
@@ -489,7 +483,7 @@ pub(super) enum CallDunderError<'db> {
 impl<'db> CallDunderError<'db> {
     /// A method can be deprecated even when it is missing on some union members or its
     /// signature rejects the implicit call.
-    pub(super) fn deprecated_functions(
+    pub fn deprecated_functions(
         &self,
         db: &'db dyn Db,
     ) -> impl Iterator<Item = OverloadLiteral<'db>> {
@@ -506,25 +500,21 @@ impl<'db> CallDunderError<'db> {
         })
     }
 
-    pub(super) fn provenance(&self) -> Provenance<'db> {
+    pub fn provenance(&self) -> Provenance<'db> {
         match self {
             Self::CallError(_, _, provenance) => *provenance,
             Self::PossiblyUnbound { .. } | Self::MethodNotAvailable => Provenance::Unknown,
         }
     }
 
-    pub(super) fn with_provenance(self, provenance: Provenance<'db>) -> Self {
+    pub fn with_provenance(self, provenance: Provenance<'db>) -> Self {
         match self {
             Self::CallError(kind, bindings, _) => Self::CallError(kind, bindings, provenance),
             Self::PossiblyUnbound { .. } | Self::MethodNotAvailable => self,
         }
     }
 
-    pub(super) fn return_type(
-        &self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Option<Type<'db>> {
+    pub fn return_type(&self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Option<Type<'db>> {
         match self {
             Self::MethodNotAvailable | Self::CallError(CallErrorKind::NotCallable, _, _) => None,
             Self::CallError(_, bindings, _) => Some(bindings.return_type(db, env)),
@@ -532,7 +522,7 @@ impl<'db> CallDunderError<'db> {
         }
     }
 
-    pub(super) fn fallback_return_type(
+    pub fn fallback_return_type(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -542,7 +532,7 @@ impl<'db> CallDunderError<'db> {
 }
 
 #[derive(Debug)]
-pub(crate) enum CallBinOpError {
+pub enum CallBinOpError {
     /// The dunder attribute exists but it can't be called with the given arguments.
     ///
     /// This includes non-callable dunder attributes that are possibly unbound.

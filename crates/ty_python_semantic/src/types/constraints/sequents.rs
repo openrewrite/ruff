@@ -33,9 +33,9 @@ use crate::{Db, Program, ProgramEnvironment};
 /// A constraint can occur in many cached pairs and their derived sequents. Intern it once instead
 /// of retaining a full copy in every query key and sequent.
 #[salsa::interned(debug, heap_size = ruff_memory_usage::heap_size)]
-pub(super) struct InternedSequentConstraint<'db> {
+pub struct InternedSequentConstraint<'db> {
     #[returns(copy)]
-    pub(super) constraint: AtomicConstraint<'db>,
+    pub constraint: AtomicConstraint<'db>,
 }
 
 // The Salsa heap is tracked separately.
@@ -61,11 +61,11 @@ impl get_size2::GetSize for InternedSequentConstraint<'_> {}
 /// also share the work of calculating the sequent map across `PathAssignments` for _different_
 /// constraint sets.)
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct SequentMap<'db> {
+pub struct SequentMap<'db> {
     /// The sequents that were discovered while creating this sequent map. Some of those sequents
     /// will be "grouped", so that [`PathAssignments`][super::paths::PathAssignments] can add them
     /// to a [`ConstraintSetBuilder`] in a way that respects the builder's typevar ordering.
-    pub(super) sequents: Box<[SequentGroup<'db>]>,
+    pub sequents: Box<[SequentGroup<'db>]>,
 }
 
 struct SequentMapBuilder<'db> {
@@ -93,7 +93,7 @@ struct SequentMapBuilder<'db> {
 /// substitution separately. This allows `PathAssignments` to choose which substitution direction
 /// to import first, based on its builder's local typevar ordering.
 #[derive(Clone, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) enum SequentGroup<'db> {
+pub enum SequentGroup<'db> {
     Ungrouped(Box<[Sequent<InternedSequentConstraint<'db>>]>),
     // Grouped sequents are uncommon; keeping their extra metadata out of line makes the common
     // ungrouped entries smaller.
@@ -101,16 +101,16 @@ pub(super) enum SequentGroup<'db> {
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct GroupedSequents<'db> {
-    pub(super) equivalence: TypeVarEquivalenceBound<'db>,
-    pub(super) leftwards: Box<[Sequent<InternedSequentConstraint<'db>>]>,
-    pub(super) rightwards: Box<[Sequent<InternedSequentConstraint<'db>>]>,
+pub struct GroupedSequents<'db> {
+    pub equivalence: TypeVarEquivalenceBound<'db>,
+    pub leftwards: Box<[Sequent<InternedSequentConstraint<'db>>]>,
+    pub rightwards: Box<[Sequent<InternedSequentConstraint<'db>>]>,
 }
 
 /// Describes one rule for deriving new implicit constraints from existing constraints in a BDD
 /// path. Fuel costs are filled in when cached sequents are imported into a builder.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) enum Sequent<C, FuelCost = ()> {
+pub enum Sequent<C, FuelCost = ()> {
     /// Sequent of the form `¬C → false`
     ///
     /// This indicates that `C` is always true. Any path that assumes it is false is impossible and
@@ -379,7 +379,7 @@ impl<'db> SequentMap<'db> {
     /// constraint.
     ///
     /// Returns `None` without caching if we can quickly determine that there are no sequents.
-    pub(super) fn for_constraint(
+    pub fn for_constraint(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         constraint: AtomicConstraint<'db>,
@@ -449,7 +449,7 @@ impl<'db> SequentMap<'db> {
     /// (Note that this method is _not_ commutative; you should provide `left` and `right` in the
     /// order that they appear in the source code, so that we can construct derived constraints
     /// that retain that ordering.)
-    pub(super) fn for_constraint_pair(
+    pub fn for_constraint_pair(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         left: AtomicConstraint<'db>,
@@ -2204,7 +2204,7 @@ impl<'db> ConstraintSetStorage<'db> {
     /// type constructors. Each sequent is charged the _increase_ in that complexity between its
     /// antecedents and its consequent. (Measuring growth rather than absolute depth avoids
     /// penalizing a complex concrete bound that is merely propagated unchanged.)
-    pub(super) fn sequent_fuel_cost(
+    pub fn sequent_fuel_cost(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,

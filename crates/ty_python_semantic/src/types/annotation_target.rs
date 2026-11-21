@@ -32,7 +32,7 @@ pub fn is_valid_annotation_target(db: &dyn Db, file: ProgramFile, target: &ast::
 }
 
 /// Whether this method can initialize a `Final` instance attribute of its defining class.
-pub(super) fn is_final_attribute_initializer(
+pub fn is_final_attribute_initializer(
     db: &dyn Db,
     index: &SemanticIndex,
     method: &ast::StmtFunctionDef,
@@ -54,7 +54,7 @@ pub(super) fn is_final_attribute_initializer(
 /// The index marks attributes on the first parameter of the enclosing method, provided the
 /// parameter is visible through any intervening scopes. Static methods also have a first
 /// parameter, so check whether the enclosing function has an implicit receiver.
-pub(super) fn is_instance_attribute_assignment(
+pub fn is_instance_attribute_assignment(
     db: &dyn Db,
     index: &SemanticIndex,
     scope: ScopeId,
@@ -83,7 +83,7 @@ pub(super) fn is_instance_attribute_assignment(
 ///         def inner():
 ///             self.attribute = 1
 /// ```
-pub(super) fn receiver_method_scope(
+pub fn receiver_method_scope(
     db: &dyn Db,
     index: &SemanticIndex,
     scope: ScopeId,

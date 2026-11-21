@@ -9,7 +9,7 @@ use crate::{Db, ProgramEnvironment};
 ///
 /// These unions conservatively include overwritten entries. They do not describe the dictionary's
 /// length, iteration order, or the relationship between individual keys and values.
-pub(super) fn dict_literal_key_value_types<'db>(
+pub fn dict_literal_key_value_types<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     dict: &ast::ExprDict,

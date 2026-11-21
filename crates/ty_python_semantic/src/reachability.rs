@@ -238,7 +238,7 @@ use ty_python_core::{
 /// Controls whether the inferred match subject type is expanded before narrowing it by preceding
 /// patterns.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) enum PatternSubjectExpansion {
+pub enum PatternSubjectExpansion {
     /// Use the inferred subject type directly when inferring pattern bindings.
     Raw,
     /// Expand the subject into a union of possible subtypes when analyzing pattern reachability.
@@ -251,7 +251,7 @@ pub(crate) enum PatternSubjectExpansion {
 /// Caching the subject type narrowed by the patterns before each case lets the next case reuse it
 /// instead of rebuilding it from the union of all preceding patterns, which can repeatedly
 /// distribute the same intersections.
-pub(crate) fn type_narrowed_by_previous_patterns<'db>(
+pub fn type_narrowed_by_previous_patterns<'db>(
     db: &'db dyn Db,
     predicate: PatternPredicate<'db>,
     expansion: PatternSubjectExpansion,
@@ -981,7 +981,7 @@ fn evaluate_reachability_checkpoint<'db>(
     )
 }
 
-pub(crate) trait ReachabilityConstraintsExtension<'db> {
+pub trait ReachabilityConstraintsExtension<'db> {
     /// Analyze the statically known reachability for a given constraint.
     fn evaluate(
         &self,
@@ -1018,7 +1018,7 @@ impl<'db> ReachabilityConstraintsExtension<'db> for ReachabilityConstraints {
     }
 }
 
-pub(crate) fn narrow_type_by_constraint<'db>(
+pub fn narrow_type_by_constraint<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     evaluator: &NarrowingEvaluator<'_, 'db>,
@@ -1192,7 +1192,7 @@ fn evaluate_projected_narrowing_checkpoint<'db>(
 }
 
 /// Narrows bindings of one place while reusing their shared constraint suffixes.
-pub(crate) struct NarrowingProjector<'a, 'db> {
+pub struct NarrowingProjector<'a, 'db> {
     db: &'db dyn Db,
     env: &'a ProgramEnvironment<'db>,
     constraints: &'a NarrowingConstraints,
@@ -1208,7 +1208,7 @@ pub(crate) struct NarrowingProjector<'a, 'db> {
 
 impl<'a, 'db> NarrowingProjector<'a, 'db> {
     /// Creates a projector for narrowing `place`.
-    pub(crate) fn new(
+    pub fn new(
         db: &'db dyn Db,
         env: &'a ProgramEnvironment<'db>,
         constraints: &'a NarrowingConstraints,
@@ -1231,7 +1231,7 @@ impl<'a, 'db> NarrowingProjector<'a, 'db> {
         }
     }
 
-    pub(crate) fn with_reachability_cache(
+    pub fn with_reachability_cache(
         mut self,
         cache: Option<&'a ReachabilityEvaluationCache<'db>>,
         constraints: &ReachabilityConstraints,
@@ -1243,7 +1243,7 @@ impl<'a, 'db> NarrowingProjector<'a, 'db> {
     }
 
     /// Narrows a binding while reusing projections and shared suffixes from earlier bindings.
-    pub(crate) fn narrow(
+    pub fn narrow(
         &mut self,
         constraint: ScopedNarrowingConstraint,
         base_ty: Type<'db>,
@@ -1952,7 +1952,7 @@ fn analyze_non_terminal_call<'db>(db: &'db dyn Db, call: CallableAndCallExpr<'db
 
 /// Shares terminal-call classification between scope reachability and defensive-check exemptions.
 /// The result type is only needed when overload selection, generics, or awaiting can affect it.
-pub(crate) fn is_non_terminal_call<'db>(
+pub fn is_non_terminal_call<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     ty: Type<'db>,
@@ -2119,7 +2119,7 @@ fn analyze_single(db: &dyn Db, env: &ProgramEnvironment<'_>, predicate: &Predica
 
 /// Check whether a diagnostic emitted at `range` is in reachable code, considering both
 /// scope reachability and statement-level reachability within the scope.
-pub(crate) fn is_range_reachable<'db>(
+pub fn is_range_reachable<'db>(
     db: &'db dyn Db,
     index: &SemanticIndex<'db>,
     scope_id: FileScopeId,
@@ -2138,12 +2138,12 @@ pub(crate) fn is_range_reachable<'db>(
 /// Returns whether control flow can reach the end of `scope`.
 ///
 /// This can be used to check if a function can implicitly return `None`.
-pub(crate) fn is_end_of_scope_reachable<'db>(db: &'db dyn Db, scope: ScopeId<'db>) -> bool {
+pub fn is_end_of_scope_reachable<'db>(db: &'db dyn Db, scope: ScopeId<'db>) -> bool {
     let use_def = use_def_map(db, scope);
     is_reachable(db, use_def, use_def.end_of_scope_reachability())
 }
 
-pub(crate) fn is_reachable<'db>(
+pub fn is_reachable<'db>(
     db: &'db dyn Db,
     use_def: &UseDefMap<'db>,
     reachability: ScopedReachabilityConstraintId,
@@ -2151,7 +2151,7 @@ pub(crate) fn is_reachable<'db>(
     evaluate_reachability(db, use_def, reachability).may_be_true()
 }
 
-pub(crate) fn binding_reachability<'db, 'map>(
+pub fn binding_reachability<'db, 'map>(
     db: &'db dyn Db,
     use_def: &'map UseDefMap<'db>,
     binding: &BindingWithConstraints<'map, 'db>,
@@ -2159,7 +2159,7 @@ pub(crate) fn binding_reachability<'db, 'map>(
     evaluate_reachability(db, use_def, binding.reachability_constraint)
 }
 
-pub(crate) fn evaluate_reachability(
+pub fn evaluate_reachability(
     db: &dyn Db,
     use_def: &UseDefMap,
     reachability: ScopedReachabilityConstraintId,
@@ -2201,7 +2201,7 @@ impl TruthinessCache {
 /// from other use-def maps are less common and are stored separately, keyed by the address of their
 /// [`ReachabilityConstraints`] graph plus the local constraint id. The graph address is part of the
 /// key because scoped constraint ids are only unique within one graph.
-pub(crate) struct ReachabilityEvaluationCache<'db> {
+pub struct ReachabilityEvaluationCache<'db> {
     primary_scope: ScopeId<'db>,
     primary_constraints: usize,
     primary_entries: TruthinessCache,
@@ -2215,10 +2215,7 @@ impl<'db> ReachabilityEvaluationCache<'db> {
     /// `primary_constraints` must be the reachability graph for `primary_scope`'s use-def map. The
     /// cache uses this graph's address to decide whether an evaluation can use the dense primary
     /// storage or must fall back to the secondary map for another graph.
-    pub(crate) fn new(
-        primary_scope: ScopeId<'db>,
-        primary_constraints: &ReachabilityConstraints,
-    ) -> Self {
+    pub fn new(primary_scope: ScopeId<'db>, primary_constraints: &ReachabilityConstraints) -> Self {
         Self {
             primary_scope,
             primary_constraints: std::ptr::from_ref(primary_constraints).addr(),
@@ -2275,7 +2272,7 @@ impl<'db> ReachabilityEvaluationCache<'db> {
 }
 
 /// Evaluates a reachability constraint, optionally using an inference-local cache.
-pub(crate) fn evaluate_reachability_with_cache<'db>(
+pub fn evaluate_reachability_with_cache<'db>(
     db: &'db dyn Db,
     cache: Option<&ReachabilityEvaluationCache<'db>>,
     constraints: &ReachabilityConstraints,
@@ -2289,7 +2286,7 @@ pub(crate) fn evaluate_reachability_with_cache<'db>(
     }
 }
 
-pub(crate) trait DeclarationsIteratorExtension<'db> {
+pub trait DeclarationsIteratorExtension<'db> {
     /// Returns whether every reachable declaration is an annotated assignment.
     ///
     /// Unbound entries and unreachable definitions do not affect the result. This distinguishes

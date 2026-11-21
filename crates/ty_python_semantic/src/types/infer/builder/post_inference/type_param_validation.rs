@@ -8,7 +8,7 @@ use crate::types::{
 };
 
 #[derive(Clone, Copy)]
-pub(crate) enum TypeParameterOwner<'a> {
+pub enum TypeParameterOwner<'a> {
     GenericClass(&'a Name),
     TypeAlias(&'a Name),
 }
@@ -18,7 +18,7 @@ pub(crate) enum TypeParameterOwner<'a> {
 /// Classes and type aliases can be explicitly specialized, so multiple `TypeVarTuple`s would make
 /// it ambiguous which pack consumes each type argument. Generic functions cannot be explicitly
 /// specialized and intentionally do not use this validation.
-pub(crate) fn check_single_typevar_tuple_pep695(
+pub fn check_single_typevar_tuple_pep695(
     context: &InferContext<'_, '_>,
     type_params: &ast::TypeParams,
     owner: TypeParameterOwner<'_>,
@@ -65,7 +65,7 @@ pub(crate) fn check_single_typevar_tuple_pep695(
     }
 }
 
-pub(crate) fn check_no_default_after_typevar_tuple_pep695(
+pub fn check_no_default_after_typevar_tuple_pep695(
     context: &InferContext<'_, '_>,
     type_params: &ast::TypeParams,
 ) {
@@ -87,7 +87,7 @@ pub(crate) fn check_no_default_after_typevar_tuple_pep695(
 
 /// A defaulted `TypeVar` anywhere after a pack makes it ambiguous how many arguments
 /// belong to the pack. A `ParamSpec` can follow it because its argument list is distinct.
-pub(in crate::types::infer::builder) fn check_no_default_after_typevar_tuple<'a, P>(
+pub fn check_no_default_after_typevar_tuple<'a, P>(
     context: &InferContext<'_, '_>,
     mut parameters: impl Iterator<Item = P>,
     as_pack: impl FnMut(P) -> Option<(&'a Name, TextRange)>,

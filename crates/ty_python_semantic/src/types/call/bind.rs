@@ -95,7 +95,7 @@ use ruff_python_ast::{self as ast, AnyNodeRef, ArgOrKeyword, PythonVersion};
 use ty_python_core::definition::Definition;
 use ty_python_core::{Program, ProgramFile, semantic_index};
 
-pub(crate) use self::constructor::ConstructorCallableKind;
+pub use self::constructor::ConstructorCallableKind;
 
 /// Overrides the lint and headline message for a call diagnostic emitted from an implicit call.
 ///
@@ -103,11 +103,11 @@ pub(crate) use self::constructor::ConstructorCallableKind;
 /// does not supply its own annotation message, or as an info sub-diagnostic otherwise. `info`
 /// explains why the call happened. `argument_ranges` maps synthetic call arguments back to source
 /// ranges.
-pub(crate) struct CallDiagnosticOverride<'a> {
-    pub(crate) lint: &'static LintMetadata,
-    pub(crate) message: String,
-    pub(crate) info: &'a str,
-    pub(crate) argument_ranges: &'a [TextRange],
+pub struct CallDiagnosticOverride<'a> {
+    pub lint: &'static LintMetadata,
+    pub message: String,
+    pub info: &'a str,
+    pub argument_ranges: &'a [TextRange],
 }
 
 struct CallDiagnosticContext<'context, 'overrides, 'db, 'ast> {
@@ -627,7 +627,7 @@ impl<'db> BindingsElement<'db> {
 /// where the call fails. If at least one binding succeeds, the element succeeds. Return types
 /// are combined using intersection.
 #[derive(Debug, Clone, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct Bindings<'db> {
+pub struct Bindings<'db> {
     /// The type that is (hopefully) callable.
     callable_type: Type<'db>,
 
@@ -649,10 +649,10 @@ pub(crate) struct Bindings<'db> {
 ///
 /// This set is kept stable across fixpoint iterations during generic call inference, ensuring
 /// that all inferred argument types are available during overload evaluation.
-pub(crate) type OverloadSet = SmallVec<[SmallVec<[usize; 1]>; 1]>;
+pub type OverloadSet = SmallVec<[SmallVec<[usize; 1]>; 1]>;
 
 /// Returns whether overload evaluation is required for the given set of overload candidates.
-pub(crate) fn requires_overload_evaluation(candidates: &OverloadSet) -> bool {
+pub fn requires_overload_evaluation(candidates: &OverloadSet) -> bool {
     // TODO: This only recognizes overloads within the same callable binding, ignoring intersections
     // that may need to be evaluated. `OverloadSet` should preserve the union-of-intersections
     // representation of callables.
@@ -661,7 +661,7 @@ pub(crate) fn requires_overload_evaluation(candidates: &OverloadSet) -> bool {
 
 /// Controls the behavior of a given call to [`Bindings::check_types`].
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum CheckTypesMode {
+pub enum CheckTypesMode {
     /// After checking, retain only the callable bindings that contribute to the call
     /// evaluation.
     Finalize,
@@ -784,7 +784,7 @@ impl<'db> Bindings<'db> {
     /// Creates a new `Bindings` from an iterator of [`Bindings`]s for a union type.
     /// Each input `Bindings` becomes a union element, preserving any intersection structure.
     /// Panics if the iterator is empty.
-    pub(crate) fn from_union<I>(callable_type: Type<'db>, bindings_iter: I) -> Self
+    pub fn from_union<I>(callable_type: Type<'db>, bindings_iter: I) -> Self
     where
         I: IntoIterator<Item = Bindings<'db>>,
     {
@@ -819,7 +819,7 @@ impl<'db> Bindings<'db> {
     /// Creates a new `Bindings` from an iterator of [`Bindings`]s for an intersection type.
     /// All input bindings are combined into a single intersection element.
     /// Panics if the iterator is empty.
-    pub(crate) fn from_intersection<I>(callable_type: Type<'db>, bindings_iter: I) -> Self
+    pub fn from_intersection<I>(callable_type: Type<'db>, bindings_iter: I) -> Self
     where
         I: IntoIterator<Item = Bindings<'db>>,
     {
@@ -850,7 +850,7 @@ impl<'db> Bindings<'db> {
         }
     }
 
-    pub(crate) fn replace_callable_type(&mut self, before: Type<'db>, after: Type<'db>) {
+    pub fn replace_callable_type(&mut self, before: Type<'db>, after: Type<'db>) {
         if self.callable_type == before {
             self.callable_type = after;
         }
@@ -865,7 +865,7 @@ impl<'db> Bindings<'db> {
     }
 
     /// Set the overall receiver without replacing individual callables.
-    pub(crate) fn with_callable_type(mut self, callable_type: Type<'db>) -> Self {
+    pub fn with_callable_type(mut self, callable_type: Type<'db>) -> Self {
         self.callable_type = callable_type;
         for element in &mut self.elements {
             element.callable_type = callable_type;
@@ -873,7 +873,7 @@ impl<'db> Bindings<'db> {
         self
     }
 
-    pub(crate) fn with_constructed_instance_type(
+    pub fn with_constructed_instance_type(
         mut self,
         db: &'db dyn Db,
         constructor_instance_type: Type<'db>,
@@ -882,7 +882,7 @@ impl<'db> Bindings<'db> {
         self
     }
 
-    pub(crate) fn into_constructor_bindings(
+    pub fn into_constructor_bindings(
         mut self,
         constructor_instance_type: Type<'db>,
         constructor_kind: ConstructorCallableKind,
@@ -897,7 +897,7 @@ impl<'db> Bindings<'db> {
         self
     }
 
-    pub(crate) fn with_generic_context(
+    pub fn with_generic_context(
         mut self,
         db: &'db dyn Db,
         generic_context: Option<GenericContext<'db>>,
@@ -910,7 +910,7 @@ impl<'db> Bindings<'db> {
     }
 
     /// Releases excess capacity in a constructor template before Salsa retains it.
-    pub(crate) fn shrink_to_fit(&mut self) {
+    pub fn shrink_to_fit(&mut self) {
         self.elements.shrink_to_fit();
         for element in &mut self.elements {
             element.items.shrink_to_fit();
@@ -925,43 +925,43 @@ impl<'db> Bindings<'db> {
         }
     }
 
-    pub(crate) fn with_call_site_scope(mut self, scope: ScopeId<'db>) -> Self {
+    pub fn with_call_site_scope(mut self, scope: ScopeId<'db>) -> Self {
         self.call_site_scope = Some(scope);
         self
     }
 
-    pub(crate) fn set_downstream_constructor(&mut self, bindings: &Bindings<'db>) {
+    pub fn set_downstream_constructor(&mut self, bindings: &Bindings<'db>) {
         for item in self.iter_callable_items_mut() {
             item.set_downstream_constructor(bindings);
         }
     }
 
-    pub(crate) fn set_dunder_call_is_possibly_unbound(&mut self) {
+    pub fn set_dunder_call_is_possibly_unbound(&mut self) {
         for binding in self.iter_flat_mut() {
             binding.dunder_call_is_possibly_unbound = true;
         }
     }
 
     /// Record that these bindings were reached through an implicit method lookup.
-    pub(crate) fn set_implicitly_invoked(&mut self) {
+    pub fn set_implicitly_invoked(&mut self) {
         for binding in self.iter_flat_mut() {
             binding.is_implicitly_invoked = true;
         }
     }
 
-    pub(crate) fn set_implicit_dunder_new_is_possibly_unbound(&mut self) {
+    pub fn set_implicit_dunder_new_is_possibly_unbound(&mut self) {
         self.implicit_dunder_new_is_possibly_unbound = true;
     }
 
-    pub(crate) fn set_implicit_dunder_init_is_possibly_unbound(&mut self) {
+    pub fn set_implicit_dunder_init_is_possibly_unbound(&mut self) {
         self.implicit_dunder_init_is_possibly_unbound = true;
     }
 
-    pub(crate) fn has_implicit_dunder_new_is_possibly_unbound(&self) -> bool {
+    pub fn has_implicit_dunder_new_is_possibly_unbound(&self) -> bool {
         self.implicit_dunder_new_is_possibly_unbound
     }
 
-    pub(crate) fn has_implicit_dunder_init_is_possibly_unbound(&self) -> bool {
+    pub fn has_implicit_dunder_init_is_possibly_unbound(&self) -> bool {
         self.implicit_dunder_init_is_possibly_unbound
     }
 
@@ -985,7 +985,7 @@ impl<'db> Bindings<'db> {
     ///
     /// C()  # No initializer deprecation: `__new__` returns an unrelated type.
     /// ```
-    pub(crate) fn deprecated_functions(
+    pub fn deprecated_functions(
         &self,
         db: &'db dyn Db,
     ) -> impl Iterator<Item = (&CallableBinding<'db>, OverloadLiteral<'db>)> {
@@ -1029,7 +1029,7 @@ impl<'db> Bindings<'db> {
     /// implementations are checked at references, while overloads and implicit methods are only
     /// known after applying the decorator. Filter after collecting all deprecations so that
     /// intersection members retain their usual role in suppressing a warning.
-    pub(crate) fn deprecated_decorator_functions(
+    pub fn deprecated_decorator_functions(
         &self,
         db: &'db dyn Db,
     ) -> impl Iterator<Item = OverloadLiteral<'db>> {
@@ -1044,7 +1044,7 @@ impl<'db> Bindings<'db> {
     /// Note: This loses the union/intersection distinction. The returned iterator yields
     /// all `CallableBinding`s from all elements, which can then be further flattened to
     /// individual `Binding`s via `CallableBinding`'s `IntoIterator` implementation.
-    pub(crate) fn iter_flat(&self) -> impl Iterator<Item = &CallableBinding<'db>> {
+    pub fn iter_flat(&self) -> impl Iterator<Item = &CallableBinding<'db>> {
         self.elements.iter().flat_map(BindingsElement::callables)
     }
 
@@ -1052,7 +1052,7 @@ impl<'db> Bindings<'db> {
     ///
     /// Note: This loses the union/intersection distinction. Use only when you need to
     /// modify all bindings regardless of their union/intersection grouping.
-    pub(crate) fn iter_flat_mut(&mut self) -> impl Iterator<Item = &mut CallableBinding<'db>> {
+    pub fn iter_flat_mut(&mut self) -> impl Iterator<Item = &mut CallableBinding<'db>> {
         self.elements
             .iter_mut()
             .flat_map(BindingsElement::callables_mut)
@@ -1074,7 +1074,7 @@ impl<'db> Bindings<'db> {
     }
 
     /// Return whether every callable uses ordinary constructor binding semantics.
-    pub(crate) fn has_only_constructor_items(&self) -> bool {
+    pub fn has_only_constructor_items(&self) -> bool {
         self.iter_callable_items()
             .all(|item| item.as_constructor().is_some())
     }
@@ -1086,7 +1086,7 @@ impl<'db> Bindings<'db> {
 
     /// Return `true` if `argument_index` is matched to the keyword-variadic parameter of an
     /// `__init__` constructor.
-    pub(crate) fn constructor_init_argument_matches_keyword_variadic(
+    pub fn constructor_init_argument_matches_keyword_variadic(
         &self,
         argument_index: usize,
     ) -> bool {
@@ -1108,7 +1108,7 @@ impl<'db> Bindings<'db> {
 
     /// Visits the callables that should contribute argument type context, including deferred
     /// constructor callables that are relevant to the matched upstream constructor path.
-    pub(crate) fn visit_type_context_callables<'a>(
+    pub fn visit_type_context_callables<'a>(
         &'a self,
         visit: &mut impl FnMut(&'a CallableBinding<'db>),
     ) {
@@ -1125,7 +1125,7 @@ impl<'db> Bindings<'db> {
 
     /// Visits the given set of overload candidates, invoking the provided callback for each
     /// binding.
-    pub(crate) fn visit_overload_set<'a>(
+    pub fn visit_overload_set<'a>(
         &'a self,
         candidates: &'a OverloadSet,
         visit: &mut impl FnMut(&'a Binding<'db>, &'a CallableBinding<'db>),
@@ -1152,7 +1152,7 @@ impl<'db> Bindings<'db> {
 
     /// Returns `true` if every element of the union contains an intersection element with a matching
     /// overload that satisfies the provided closure, or `false` otherwise.
-    pub(crate) fn satisfies(&self, f: impl Fn(&Binding<'db>) -> bool) -> bool {
+    pub fn satisfies(&self, f: impl Fn(&Binding<'db>) -> bool) -> bool {
         self.elements.iter().all(|element| {
             element
                 .callables()
@@ -1166,7 +1166,7 @@ impl<'db> Bindings<'db> {
     ///
     /// - callable bindings inside an element are intersected
     /// - elements are unioned
-    pub(crate) fn map_types(
+    pub fn map_types(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1319,7 +1319,7 @@ impl<'db> Bindings<'db> {
         }
     }
 
-    pub(crate) fn map(self, f: impl Fn(CallableBinding<'db>) -> CallableBinding<'db>) -> Self {
+    pub fn map(self, f: impl Fn(CallableBinding<'db>) -> CallableBinding<'db>) -> Self {
         self.map_with(&f)
     }
 
@@ -1343,7 +1343,7 @@ impl<'db> Bindings<'db> {
     ///
     /// Once you have argument types available, you can call [`check_types`][Self::check_types] to
     /// verify that each argument type is assignable to the corresponding parameter type.
-    pub(crate) fn match_parameters(
+    pub fn match_parameters(
         mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1378,7 +1378,7 @@ impl<'db> Bindings<'db> {
     /// can remain in [`CallableBinding::overloads`] with no bound parameter types and only
     /// [`BindingError::UnmatchedOverload`]. Call [`Self::check_types_impl`] with
     /// [`CheckTypesMode::SignatureDetails`] for inferred types from every arity-compatible overload.
-    pub(crate) fn check_types(
+    pub fn check_types(
         mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1402,7 +1402,7 @@ impl<'db> Bindings<'db> {
     }
 
     #[expect(clippy::too_many_arguments)]
-    pub(crate) fn check_types_impl(
+    pub fn check_types_impl(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1460,7 +1460,7 @@ impl<'db> Bindings<'db> {
 
     /// Finalize the bindings after a provisional check, retaining only those that contribute
     /// to the final call evaluation.
-    pub(crate) fn finalize_argument_inference(
+    pub fn finalize_argument_inference(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -1490,7 +1490,7 @@ impl<'db> Bindings<'db> {
     }
 
     /// Returns true if this is a single callable (not a union or intersection).
-    pub(crate) fn is_single(&self) -> bool {
+    pub fn is_single(&self) -> bool {
         match &*self.elements {
             [single] => single.items.len() == 1,
             _ => false,
@@ -1498,7 +1498,7 @@ impl<'db> Bindings<'db> {
     }
 
     /// Returns the single `CallableBinding` if this is not a union or intersection.
-    pub(crate) fn single_element(&self) -> Option<&CallableBinding<'db>> {
+    pub fn single_element(&self) -> Option<&CallableBinding<'db>> {
         if self.is_single() {
             self.elements
                 .first()
@@ -1517,14 +1517,14 @@ impl<'db> Bindings<'db> {
         }
     }
 
-    pub(crate) fn callable_type(&self) -> Type<'db> {
+    pub fn callable_type(&self) -> Type<'db> {
         self.callable_type
     }
 
     /// Returns the return type of the call. For successful calls, this is the actual return type.
     /// For calls with binding errors, this is a type that best approximates the return type. For
     /// types that are not callable, returns `Type::Unknown`.
-    pub(crate) fn return_type(&self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn return_type(&self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         UnionType::from_elements(
             db,
             env,
@@ -1535,7 +1535,7 @@ impl<'db> Bindings<'db> {
     }
 
     /// Returns the inferred type for the argument at the specified index.
-    pub(crate) fn type_for_argument<'a>(
+    pub fn type_for_argument<'a>(
         &'a self,
         call_arguments: &'a CallArguments<'a, 'db>,
         argument_index: usize,
@@ -1561,11 +1561,7 @@ impl<'db> Bindings<'db> {
     /// Report diagnostics for all of the errors that occurred when trying to match actual
     /// arguments to formal parameters. If the callable is a union, or has multiple overloads, we
     /// report a single diagnostic if we couldn't match any union element or overload.
-    pub(crate) fn report_diagnostics(
-        &self,
-        context: &InferContext<'db, '_>,
-        node: ast::AnyNodeRef,
-    ) {
+    pub fn report_diagnostics(&self, context: &InferContext<'db, '_>, node: ast::AnyNodeRef) {
         self.report_diagnostics_impl(
             &CallDiagnosticContext {
                 context,
@@ -1576,7 +1572,7 @@ impl<'db> Bindings<'db> {
         );
     }
 
-    pub(crate) fn report_diagnostics_with_override(
+    pub fn report_diagnostics_with_override(
         &self,
         context: &InferContext<'db, '_>,
         node: ast::AnyNodeRef,
@@ -3523,14 +3519,14 @@ impl<'db> From<Binding<'db>> for Bindings<'db> {
 /// specific errors that occurred when trying to match them up. If the callable has multiple
 /// overloads, we store this error information for each overload.
 #[derive(Debug, Clone, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct CallableBinding<'db> {
+pub struct CallableBinding<'db> {
     /// The type that is (hopefully) callable.
-    pub(crate) callable_type: Type<'db>,
+    pub callable_type: Type<'db>,
 
     /// The type we'll use for error messages referring to details of the called signature. For
     /// calls to functions this will be the same as `callable_type`; for other callable instances
     /// it may be a `__call__` method.
-    pub(crate) signature_type: Type<'db>,
+    pub signature_type: Type<'db>,
 
     /// Whether the callable is reached through an implicit `__call__` or constructor lookup,
     /// rather than being called directly. Its implementation cannot be checked at the reference.
@@ -3541,7 +3537,7 @@ pub(crate) struct CallableBinding<'db> {
     dunder_call_is_possibly_unbound: bool,
 
     /// The type of the bound `self` or `cls` parameter if this signature is for a bound method.
-    pub(crate) bound_type: Option<Type<'db>>,
+    pub bound_type: Option<Type<'db>>,
 
     /// The result of evaluating this overloaded callable when a single overload does not
     /// determine its return type.
@@ -3714,7 +3710,7 @@ impl<'db> OverloadFilter<'db> {
 }
 
 impl<'db> CallableBinding<'db> {
-    pub(crate) fn from_overloads(
+    pub fn from_overloads(
         signature_type: Type<'db>,
         overloads: impl IntoIterator<Item = Signature<'db>>,
     ) -> Self {
@@ -3757,7 +3753,7 @@ impl<'db> CallableBinding<'db> {
         }
     }
 
-    pub(crate) fn not_callable(signature_type: Type<'db>) -> Self {
+    pub fn not_callable(signature_type: Type<'db>) -> Self {
         Self {
             callable_type: signature_type,
             signature_type,
@@ -3772,7 +3768,7 @@ impl<'db> CallableBinding<'db> {
 
     /// Rewrites overload signatures as if an implicit bound receiver argument had already been
     /// consumed, preserving the corresponding source-parameter offset for diagnostics.
-    pub(crate) fn bake_bound_type_into_overloads(
+    pub fn bake_bound_type_into_overloads(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -3988,7 +3984,7 @@ impl<'db> CallableBinding<'db> {
         .map(|callable| smallvec_inline![callable])
     }
 
-    pub(crate) fn with_bound_type(mut self, bound_type: Type<'db>) -> Self {
+    pub fn with_bound_type(mut self, bound_type: Type<'db>) -> Self {
         self.bound_type = Some(bound_type);
         self
     }
@@ -4408,7 +4404,7 @@ impl<'db> CallableBinding<'db> {
     /// Overloads removed by provisional arity matching are typically ignored. However, they remain
     /// candidates in the presence of an expandable `*args` argument, that may lead to overload
     /// evaluation retrying with the expanded argument.
-    pub(crate) fn candidate_overload_indices(
+    pub fn candidate_overload_indices(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -4731,14 +4727,12 @@ impl<'db> CallableBinding<'db> {
     }
 
     /// Returns all overloads for this call binding, including overloads that did not match.
-    pub(crate) fn overloads(&self) -> &[Binding<'db>] {
+    pub fn overloads(&self) -> &[Binding<'db>] {
         self.overloads.as_slice()
     }
 
     /// Returns an iterator over all the overloads that matched for this call binding.
-    pub(crate) fn matching_overloads(
-        &self,
-    ) -> impl Iterator<Item = (usize, &Binding<'db>)> + Clone {
+    pub fn matching_overloads(&self) -> impl Iterator<Item = (usize, &Binding<'db>)> + Clone {
         self.overloads
             .iter()
             .enumerate()
@@ -4802,7 +4796,7 @@ impl<'db> CallableBinding<'db> {
 
     /// Returns the overload which call arguments should be inferred against, if every overload is
     /// non-matching.
-    pub(crate) fn best_failing_overload(&self) -> Option<&Binding<'db>> {
+    pub fn best_failing_overload(&self) -> Option<&Binding<'db>> {
         self.best_failing_overload_index(FailingOverloadSelection::AffectsOverloadResolution)
             .and_then(|index| self.overloads.get(index))
     }
@@ -4822,9 +4816,7 @@ impl<'db> CallableBinding<'db> {
     }
 
     /// Returns an iterator over all the mutable overloads that matched for this call binding.
-    pub(crate) fn matching_overloads_mut(
-        &mut self,
-    ) -> impl Iterator<Item = (usize, &mut Binding<'db>)> {
+    pub fn matching_overloads_mut(&mut self) -> impl Iterator<Item = (usize, &mut Binding<'db>)> {
         self.overloads
             .iter_mut()
             .enumerate()
@@ -4841,7 +4833,7 @@ impl<'db> CallableBinding<'db> {
     ///
     /// For an invalid call to an overloaded function, we return `Type::unknown`, since we cannot
     /// make any useful conclusions about which overload was intended to be called.
-    fn return_type(&self) -> Type<'db> {
+    pub fn return_type(&self) -> Type<'db> {
         if let Some(overload_call_result) = &self.overload_call_result {
             return match overload_call_result {
                 OverloadCallResult::ArgumentTypeExpansion(expanded) => expanded.return_type,
@@ -5151,7 +5143,7 @@ impl<'db> ExpandedCallEvaluation<'db> {
 }
 
 #[derive(Debug)]
-pub(crate) enum MatchingOverloadIndex {
+pub enum MatchingOverloadIndex {
     /// No matching overloads found.
     None,
 
@@ -8412,7 +8404,7 @@ fn nested_union_members<'db>(
 
 /// Specializations shared by all arguments of one overload during an inference pass.
 #[derive(Default)]
-pub(crate) struct ArgumentContextCache<'db> {
+pub struct ArgumentContextCache<'db> {
     ordinary: OnceCell<Cow<'db, ArgumentContextSpecialization<'db>>>,
     nested: OnceCell<Option<Specialization<'db>>>,
 }
@@ -8441,7 +8433,7 @@ impl<'db> ArgumentContextSpecialization<'db> {
 
 /// The type context to use when inferring a call-site argument, for a given binding.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum ArgumentTypeContext<'db> {
+pub enum ArgumentTypeContext<'db> {
     Standard {
         /// The raw parameter type from the overload signature.
         raw_parameter_type: Type<'db>,
@@ -8482,7 +8474,7 @@ impl<'db> ArgumentTypeContext<'db> {
     }
 
     /// Returns the type context used for inferring the argument expression.
-    pub(crate) fn type_context(self) -> TypeContext<'db> {
+    pub fn type_context(self) -> TypeContext<'db> {
         match self {
             Self::Standard { context, .. } => context,
             Self::ParamSpec { declared_type, .. } => TypeContext::preference(Some(declared_type)),
@@ -8495,7 +8487,7 @@ impl<'db> ArgumentTypeContext<'db> {
     /// for that type. `ParamSpec` arguments are cached by the concrete forwarded parameter type,
     /// but still inserted through their full context so the original `P.args` or `P.kwargs` lookup
     /// key is populated too.
-    pub(crate) fn inference_cache_key(self) -> TypeContext<'db> {
+    pub fn inference_cache_key(self) -> TypeContext<'db> {
         match self {
             Self::Standard {
                 raw_parameter_type,
@@ -8510,7 +8502,7 @@ impl<'db> ArgumentTypeContext<'db> {
     /// For a forwarded `ParamSpec` argument, the expression is inferred against the specialized
     /// wrapped parameter but may still be looked up through the original `P.args` or `P.kwargs`
     /// annotation during the outer wrapper call check.
-    pub(crate) fn insert_inferred_type_into(
+    pub fn insert_inferred_type_into(
         self,
         arguments_types: &mut CallArguments<'_, 'db>,
         argument_index: usize,
@@ -8613,7 +8605,7 @@ fn select_paramspec_arguments<'a, 'db>(
 
 /// Indicates that a parameter of the given name was not found.
 #[derive(Debug, Clone, Copy)]
-pub(crate) struct UnknownParameterNameError;
+pub struct UnknownParameterNameError;
 
 #[derive(Clone)]
 struct ParamSpecArgumentContext<'a, 'call, 'db> {
@@ -8628,7 +8620,7 @@ struct ParamSpecArgumentContext<'a, 'call, 'db> {
 }
 
 /// Returns the number of occurrences of inferable type variables in the provided type.
-pub(crate) fn inferable_typevar_occurrences<'db>(
+pub fn inferable_typevar_occurrences<'db>(
     db: &'db dyn Db,
     env: &ProgramEnvironment<'db>,
     ty: Type<'db>,
@@ -8702,8 +8694,8 @@ pub(crate) fn inferable_typevar_occurrences<'db>(
 
 /// Binding information for one of the overloads of a callable.
 #[derive(Debug, Clone, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct Binding<'db> {
-    pub(crate) signature: Signature<'db>,
+pub struct Binding<'db> {
+    pub signature: Signature<'db>,
 
     /// The overload's position in the underlying function definition list.
     ///
@@ -8727,7 +8719,7 @@ pub(crate) struct Binding<'db> {
     signature_type: Type<'db>,
 
     /// Return type of the call.
-    pub(crate) return_ty: Type<'db>,
+    pub return_ty: Type<'db>,
 
     /// Constructor metadata used to normalize the declared return type before type checking.
     constructor_context: Option<ConstructorContext<'db>>,
@@ -8813,7 +8805,7 @@ impl<'db> Binding<'db> {
         }
     }
 
-    pub(crate) fn single(signature_type: Type<'db>, signature: Signature<'db>) -> Binding<'db> {
+    pub fn single(signature_type: Type<'db>, signature: Signature<'db>) -> Binding<'db> {
         let return_ty = signature.return_ty;
         Binding {
             signature,
@@ -9035,7 +9027,7 @@ impl<'db> Binding<'db> {
     /// wrapper(put_tags, [{"Key": "k", "Value": "v"}])  # forwarded list gets `list[Tag]`
     /// ```
     #[expect(clippy::too_many_arguments)]
-    pub(crate) fn argument_type_context(
+    pub fn argument_type_context(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -9629,17 +9621,17 @@ impl<'db> Binding<'db> {
         }
     }
 
-    pub(crate) fn set_return_type(&mut self, return_ty: Type<'db>) {
+    pub fn set_return_type(&mut self, return_ty: Type<'db>) {
         self.return_ty = return_ty;
     }
 
-    fn return_type(&self) -> Type<'db> {
+    pub fn return_type(&self) -> Type<'db> {
         self.return_ty
     }
 
     /// Returns the bound types for each parameter, in parameter source order, or `None` if no
     /// argument was matched to that parameter.
-    pub(crate) fn parameter_types(&self) -> &[Option<Type<'db>>] {
+    pub fn parameter_types(&self) -> &[Option<Type<'db>>] {
         &self.parameter_tys
     }
 
@@ -9812,7 +9804,7 @@ impl<'db> Binding<'db> {
         }
     }
 
-    pub(crate) fn arguments_for_parameter<'a>(
+    pub fn arguments_for_parameter<'a>(
         &'a self,
         call_arguments: &'a CallArguments<'a, 'db>,
         parameter_index: usize,
@@ -9909,18 +9901,18 @@ impl<'db> Binding<'db> {
 
     /// Returns a vector where each index corresponds to an argument position,
     /// and the value is the parameter index that argument maps to (if any).
-    pub(crate) fn argument_matches(&self) -> &[MatchedArgument<'db>] {
+    pub fn argument_matches(&self) -> &[MatchedArgument<'db>] {
         &self.argument_matches
     }
 
-    pub(crate) fn merged_specialization(&self, db: &'db dyn Db) -> Option<Specialization<'db>> {
+    pub fn merged_specialization(&self, db: &'db dyn Db) -> Option<Specialization<'db>> {
         self.inference
             .map(|inference| inference.merged_specialization(db))
     }
 
     /// Returns the merged specialization for this call while retaining missing bindings as
     /// unspecialized.
-    pub(crate) fn partial_specialization(
+    pub fn partial_specialization(
         &self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -9936,7 +9928,7 @@ impl<'db> Binding<'db> {
         })
     }
 
-    pub(crate) fn errors(&self) -> &[BindingError<'db>] {
+    pub fn errors(&self) -> &[BindingError<'db>] {
         &self.errors
     }
 
@@ -10058,7 +10050,7 @@ impl CallableBindingSnapshotter {
 
 /// Describes a callable for the purposes of diagnostics.
 #[derive(Debug, Clone, PartialEq, Eq, get_size2::GetSize)]
-pub(crate) struct CallableDescription<'a> {
+pub struct CallableDescription<'a> {
     name: Cow<'a, str>,
     kind: Option<&'static str>,
 }
@@ -10068,7 +10060,7 @@ impl<'db> CallableDescription<'db> {
     /// Describe a function definition without inferring its signature, qualifying methods by
     /// their defining class. Cache the syntax lookup to avoid direct AST dependencies in callers.
     #[salsa::tracked(returns(ref), heap_size=ruff_memory_usage::heap_size)]
-    pub(crate) fn from_overload(
+    pub fn from_overload(
         db: &'db dyn Db,
         function: OverloadLiteral<'db>,
     ) -> CallableDescription<'static> {
@@ -10090,10 +10082,7 @@ impl<'db> CallableDescription<'db> {
         }
     }
 
-    pub(crate) fn defining_class(
-        db: &'db dyn Db,
-        callable_type: Type<'db>,
-    ) -> Option<ClassLiteral<'db>> {
+    pub fn defining_class(db: &'db dyn Db, callable_type: Type<'db>) -> Option<ClassLiteral<'db>> {
         let function = match callable_type {
             Type::FunctionLiteral(function) => function,
             Type::BoundMethod(method) => method.function(db)?,
@@ -10108,18 +10097,15 @@ impl<'db> CallableDescription<'db> {
         original_class_type(db, semantic_index.expect_single_definition(class_node))
     }
 
-    pub(crate) fn new(
-        db: &'db dyn Db,
-        callable_type: Type<'db>,
-    ) -> Option<CallableDescription<'db>> {
+    pub fn new(db: &'db dyn Db, callable_type: Type<'db>) -> Option<CallableDescription<'db>> {
         Self::new_with_settings(db, callable_type, None)
     }
 
-    pub(crate) fn name(&self) -> &str {
+    pub fn name(&self) -> &str {
         &self.name
     }
 
-    pub(crate) fn kind(&self) -> Option<&'static str> {
+    pub fn kind(&self) -> Option<&'static str> {
         self.kind
     }
 
@@ -10235,7 +10221,7 @@ impl std::fmt::Display for CallableDescription<'_> {
 
 /// Information needed to emit a diagnostic regarding a parameter.
 #[derive(Clone, Debug, PartialEq, Eq, get_size2::GetSize)]
-pub(crate) struct ParameterContext {
+pub struct ParameterContext {
     name: Option<ParameterDisplayName<Name>>,
 
     /// Position in the current, possibly specialized or expanded signature.
@@ -10278,7 +10264,7 @@ impl std::fmt::Display for ParameterContext {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, get_size2::GetSize)]
-pub(crate) struct ParameterContexts(Vec<ParameterContext>);
+pub struct ParameterContexts(Vec<ParameterContext>);
 
 impl std::fmt::Display for ParameterContexts {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -10296,7 +10282,7 @@ impl std::fmt::Display for ParameterContexts {
 
 /// The function and source offsets used to locate a forwarded `ParamSpec` parameter.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct ForwardedParameterSource<'db> {
+pub struct ForwardedParameterSource<'db> {
     function: FunctionType<'db>,
     is_bound_method: bool,
     parameter_index_offset: usize,
@@ -10353,7 +10339,7 @@ impl<'db> ForwardedParameterSource<'db> {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum InvalidArgumentTypeProvenance<'db> {
+pub enum InvalidArgumentTypeProvenance<'db> {
     Argument,
     OpenTypedDictExtraItems,
     UnpackedKeyword(StringLiteralType<'db>),
@@ -10364,7 +10350,7 @@ pub(crate) enum InvalidArgumentTypeProvenance<'db> {
 /// Each variant represents a combination that causes the returned decorator to raise when applied
 /// to a class.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, get_size2::GetSize)]
-pub(crate) enum InvalidDataclassArgument {
+pub enum InvalidDataclassArgument {
     /// `order=True` combined with `eq=False`.
     OrderRequiresEq,
     /// `weakref_slot=True` combined with `slots=False`.
@@ -10376,7 +10362,7 @@ pub(crate) enum InvalidDataclassArgument {
 /// This preserves the expected type, the provided type when available, and the parameter
 /// definition so diagnostics can explain the failed inference in terms of the original call.
 #[derive(Clone, Debug, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct SpecializationErrorContext<'db> {
+pub struct SpecializationErrorContext<'db> {
     parameter_definition: Option<Definition<'db>>,
     provenance: InvalidArgumentTypeProvenance<'db>,
     expected_ty: Type<'db>,
@@ -10385,7 +10371,7 @@ pub(crate) struct SpecializationErrorContext<'db> {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) enum BindingError<'db> {
+pub enum BindingError<'db> {
     /// The type of an argument is not assignable to the annotated type of its corresponding
     /// parameter.
     InvalidArgumentType {
@@ -10466,7 +10452,7 @@ pub(crate) enum BindingError<'db> {
 }
 
 #[derive(Clone, Debug, get_size2::GetSize, salsa::SalsaValue)]
-pub(crate) struct PropertyAccessorCallError<'db> {
+pub struct PropertyAccessorCallError<'db> {
     bindings: Box<Bindings<'db>>,
     argument_index_offset: usize,
 }
@@ -10588,7 +10574,7 @@ impl BindingError<'_> {
 
 /// The target of an invalid `@dataclass` application.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, get_size2::GetSize)]
-pub(crate) enum InvalidDataclassTarget {
+pub enum InvalidDataclassTarget {
     NamedTuple,
     TypedDict,
     Enum,

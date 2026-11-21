@@ -39,7 +39,7 @@ impl<'db> StaticClassLiteral<'db> {
     ///
     /// Here, `value` remains undefined until MRO lookup finds an independent class or instance
     /// attribute. The same rule applies to `cls.value` in a classmethod.
-    pub(super) fn implicit_attribute_bindings(
+    pub fn implicit_attribute_bindings(
         self,
         db: &'db dyn Db,
         name: &str,
@@ -57,16 +57,13 @@ impl<'db> StaticClassLiteral<'db> {
     }
 
     /// Names assigned to a method's receiver, in sorted order.
-    pub(in crate::types) fn implicit_attribute_definition_names(
-        self,
-        db: &'db dyn Db,
-    ) -> &'db [Name] {
+    pub fn implicit_attribute_definition_names(self, db: &'db dyn Db) -> &'db [Name] {
         &self.member_sources(db).implicit_names
     }
 
     /// The class-body table and receiver assignments used by lookups on this class.
     #[salsa::tracked(returns(ref), heap_size=ruff_memory_usage::heap_size)]
-    pub(super) fn member_sources(self, db: &'db dyn Db) -> ClassMemberSources<'db> {
+    pub fn member_sources(self, db: &'db dyn Db) -> ClassMemberSources<'db> {
         let scope = self.body_scope(db);
         let index = semantic_index(db, scope.program_file(db));
         ClassMemberSources {
@@ -329,18 +326,18 @@ impl<'db> StaticClassLiteral<'db> {
 /// directly. Augmented assignments first require an existing instance or class attribute to supply
 /// the value they read.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct ImplicitAttribute<'db> {
+pub struct ImplicitAttribute<'db> {
     /// The attribute established by assignments that do not depend on an existing value.
-    pub(super) member: Member<'db>,
+    pub member: Member<'db>,
     /// Augmented assignments that require an existing instance or class attribute.
-    pub(super) augmented_bindings: Option<AugmentedBindings<'db>>,
+    pub augmented_bindings: Option<AugmentedBindings<'db>>,
 }
 
 /// Augmented assignments deferred until MRO lookup finds the attribute they read.
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
-pub(super) struct AugmentedBindings<'db> {
+pub struct AugmentedBindings<'db> {
     #[returns(deref)]
-    pub(super) definitions: Box<[Definition<'db>]>,
+    pub definitions: Box<[Definition<'db>]>,
 }
 
 // The Salsa heap is tracked separately.
@@ -459,7 +456,7 @@ fn implicit_attribute_binding_type<'db>(
 }
 
 #[salsa::tracked(returns(deref), heap_size=ruff_memory_usage::heap_size)]
-pub(super) fn implicit_attribute_names<'db>(
+pub fn implicit_attribute_names<'db>(
     db: &'db dyn Db,
     class_body_scope: ScopeId<'db>,
 ) -> Box<[Name]> {
@@ -468,9 +465,9 @@ pub(super) fn implicit_attribute_names<'db>(
 
 /// Syntax-derived sources for an explicit class member or an implicit receiver attribute.
 #[derive(Debug, Eq, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
-pub(super) struct ClassMemberSources<'db> {
-    pub(super) scope: ScopeId<'db>,
-    pub(super) table: Arc<ty_python_core::place::PlaceTable>,
+pub struct ClassMemberSources<'db> {
+    pub scope: ScopeId<'db>,
+    pub table: Arc<ty_python_core::place::PlaceTable>,
     implicit_names: Box<[Name]>,
 }
 
@@ -496,7 +493,7 @@ impl<'db> ClassMemberSources<'db> {
     }
 
     /// Does a method establish instance storage for an attribute already typed by the class?
-    pub(super) fn has_implicit_instance_attribute(&self, db: &'db dyn Db, name: &str) -> bool {
+    pub fn has_implicit_instance_attribute(&self, db: &'db dyn Db, name: &str) -> bool {
         self.implicit_attribute_name(db, name, MethodDecorator::None, false)
             .is_some_and(|attribute| {
                 StaticClassLiteral::has_implicit_attribute_inner(db, attribute)
@@ -507,7 +504,7 @@ impl<'db> ClassMemberSources<'db> {
     /// "implicitly" defined (`self.x = …`, `cls.x = …`) in a method of this class.
     /// The `target_method_decorator` parameter is used to skip methods that do not have the
     /// expected decorator.
-    pub(super) fn implicit_attribute(
+    pub fn implicit_attribute(
         &self,
         db: &'db dyn Db,
         name: &str,
@@ -520,7 +517,7 @@ impl<'db> ClassMemberSources<'db> {
     }
 
     /// Writes outside the initializer cannot establish the type of a class-body `Final`.
-    pub(super) fn final_initializer(&self, db: &'db dyn Db, name: &str) -> Member<'db> {
+    pub fn final_initializer(&self, db: &'db dyn Db, name: &str) -> Member<'db> {
         self.implicit_attribute_name(db, name, MethodDecorator::None, true)
             .map_or_else(Member::unbound, |attribute| {
                 StaticClassLiteral::implicit_attribute_inner(db, attribute).member

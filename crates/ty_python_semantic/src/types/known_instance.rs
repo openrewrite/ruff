@@ -31,21 +31,21 @@ use ty_python_core::definition::Definition;
 #[salsa::interned(debug, constructor=new_internal, heap_size=ruff_memory_usage::heap_size)]
 pub struct InternedConstraintSet<'db> {
     #[returns(ref)]
-    pub(super) constraints: OwnedConstraintSet<'db>,
+    pub constraints: OwnedConstraintSet<'db>,
 
     #[returns(copy)]
-    pub(super) detailed_display: bool,
+    pub detailed_display: bool,
 }
 
 // The Salsa heap is tracked separately.
 impl get_size2::GetSize for InternedConstraintSet<'_> {}
 
 impl<'db> InternedConstraintSet<'db> {
-    pub(super) fn new(db: &'db dyn Db, constraints: OwnedConstraintSet<'db>) -> Self {
+    pub fn new(db: &'db dyn Db, constraints: OwnedConstraintSet<'db>) -> Self {
         Self::new_internal(db, constraints, false)
     }
 
-    pub(super) fn with_detailed_display(self, db: &'db dyn Db) -> Self {
+    pub fn with_detailed_display(self, db: &'db dyn Db) -> Self {
         Self::new_internal(db, self.constraints(db), true)
     }
 }
@@ -54,7 +54,7 @@ impl<'db> InternedConstraintSet<'db> {
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct InternedConstraintSetSolution<'db> {
     #[returns(ref)]
-    pub(super) bindings: Box<[TypeVarSolution<'db>]>,
+    pub bindings: Box<[TypeVarSolution<'db>]>,
 }
 
 // The Salsa heap is tracked separately.
@@ -80,9 +80,9 @@ impl get_size2::GetSize for FunctoolsPartialInstance<'_> {}
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct MethodWrapper<'db> {
     #[returns(copy)]
-    pub(super) wrapped: Type<'db>,
+    pub wrapped: Type<'db>,
     #[returns(copy)]
-    pub(super) kind: MethodWrapperKind,
+    pub kind: MethodWrapperKind,
 }
 
 impl get_size2::GetSize for MethodWrapper<'_> {}
@@ -97,7 +97,7 @@ impl<'db> MethodWrapper<'db> {
     /// Construct a method descriptor, retaining function and callable representations that
     /// already encode the matching descriptor binding. Other callables need a separate wrapper
     /// to expose the descriptor's own attributes.
-    pub(super) fn wrap(
+    pub fn wrap(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         wrapped: Type<'db>,
@@ -148,22 +148,18 @@ impl<'db> MethodWrapper<'db> {
         }
     }
 
-    pub(super) fn class(self, db: &'db dyn Db) -> KnownClass {
+    pub fn class(self, db: &'db dyn Db) -> KnownClass {
         match self.kind(db) {
             MethodWrapperKind::Staticmethod => KnownClass::Staticmethod,
             MethodWrapperKind::Classmethod => KnownClass::Classmethod,
         }
     }
 
-    pub(super) fn instance_fallback(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn instance_fallback(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         self.class(db).to_instance(db, env)
     }
 
-    pub(super) fn callables(
+    pub fn callables(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -305,7 +301,7 @@ pub enum KnownInstanceType<'db> {
     MethodWrapper(MethodWrapper<'db>),
 }
 
-pub(super) fn walk_known_instance_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
+pub fn walk_known_instance_type<'db, V: visitor::TypeVisitor<'db> + ?Sized>(
     db: &'db dyn Db,
     known_instance: KnownInstanceType<'db>,
     visitor: &V,
@@ -395,7 +391,7 @@ impl<'db> VarianceInferable<'db> for KnownInstanceType<'db> {
 }
 
 impl<'db> KnownInstanceType<'db> {
-    pub(super) fn recursive_type_normalized_impl(
+    pub fn recursive_type_normalized_impl(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -468,7 +464,7 @@ impl<'db> KnownInstanceType<'db> {
         }
     }
 
-    pub(super) fn class(self, db: &'db dyn Db) -> KnownClass {
+    pub fn class(self, db: &'db dyn Db) -> KnownClass {
         match self {
             Self::SubscriptedProtocol(_) | Self::SubscriptedGeneric(_) => KnownClass::SpecialForm,
             Self::TypeVar(typevar_instance) if typevar_instance.is_paramspec(db) => {
@@ -504,7 +500,7 @@ impl<'db> KnownInstanceType<'db> {
         }
     }
 
-    pub(super) fn to_meta_type(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
+    pub fn to_meta_type(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         self.class(db).to_class_literal(db, env)
     }
 
@@ -513,11 +509,7 @@ impl<'db> KnownInstanceType<'db> {
     /// For example, an alias created using the `type` statement is an instance of
     /// `typing.TypeAliasType`, so `KnownInstanceType::TypeAliasType(_).instance_fallback(db, python_version)`
     /// returns `Type::NominalInstance(NominalInstanceType { class: <typing.TypeAliasType> })`.
-    pub(super) fn instance_fallback(
-        self,
-        db: &'db dyn Db,
-        env: &ProgramEnvironment<'db>,
-    ) -> Type<'db> {
+    pub fn instance_fallback(self, db: &'db dyn Db, env: &ProgramEnvironment<'db>) -> Type<'db> {
         if let Self::MethodWrapper(wrapper) = self {
             wrapper.instance_fallback(db, env)
         } else {
@@ -529,7 +521,7 @@ impl<'db> KnownInstanceType<'db> {
     ///
     /// This is the scope-independent subset of `Type::in_type_expression` used when a value
     /// reaches a `TypeForm` position after it has already been inferred in value context.
-    pub(crate) fn type_form_argument(
+    pub fn type_form_argument(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -551,7 +543,7 @@ impl<'db> KnownInstanceType<'db> {
     }
 
     /// Return whether this known instance can represent a type expression at runtime.
-    pub(crate) fn is_type_form_value(self) -> bool {
+    pub fn is_type_form_value(self) -> bool {
         matches!(
             self,
             Self::TypeAliasType(_)
@@ -567,7 +559,7 @@ impl<'db> KnownInstanceType<'db> {
     }
 
     /// Return `true` if this symbol is an instance of `class`.
-    pub(super) fn is_instance_of(
+    pub fn is_instance_of(
         self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -577,7 +569,7 @@ impl<'db> KnownInstanceType<'db> {
     }
 
     /// Return the repr of the symbol at runtime
-    pub(super) fn repr<'env>(
+    pub fn repr<'env>(
         self,
         db: &'db dyn Db,
         env: &'env ProgramEnvironment<'db>,
@@ -585,7 +577,7 @@ impl<'db> KnownInstanceType<'db> {
         self.display_with(db, env, DisplaySettings::default())
     }
 
-    pub(super) fn apply_type_mapping_impl(
+    pub fn apply_type_mapping_impl(
         self,
         db: &'db dyn Db,
         type_mapping: &TypeMapping<'_, 'db>,
@@ -703,7 +695,7 @@ pub struct SentinelInstance<'db> {
 impl get_size2::GetSize for SentinelInstance<'_> {}
 
 impl<'db> SentinelInstance<'db> {
-    pub(crate) fn is_same_sentinel(self, db: &'db dyn Db, other: Self) -> bool {
+    pub fn is_same_sentinel(self, db: &'db dyn Db, other: Self) -> bool {
         let self_definition = self.definition(db);
         let other_definition = other.definition(db);
 
@@ -717,7 +709,7 @@ impl<'db> SentinelInstance<'db> {
 #[derive(Copy, Clone, Debug, Eq, Hash, PartialEq, get_size2::GetSize, salsa::SalsaValue)]
 pub struct DeprecatedInstance<'db> {
     /// The message for the deprecation
-    pub(crate) message: Option<StringLiteralType<'db>>,
+    pub message: Option<StringLiteralType<'db>>,
 }
 
 /// Contains information about instances of `dataclasses.Field`, typically created using
@@ -909,7 +901,7 @@ impl<'db> FunctoolsPartialInstance<'db> {
 #[salsa::interned(debug, heap_size=ruff_memory_usage::heap_size)]
 pub struct InternedType<'db> {
     #[returns(copy)]
-    pub(super) inner: Type<'db>,
+    pub inner: Type<'db>,
 }
 
 impl get_size2::GetSize for InternedType<'_> {}

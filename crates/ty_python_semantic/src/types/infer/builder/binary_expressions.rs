@@ -56,9 +56,9 @@ const MAX_TUPLE_ADDITION_ELEMENTS: usize = 4096;
 
 /// State shared across the alternatives of one binary or augmented operation.
 #[derive(Default)]
-pub(super) struct BinaryInferenceState<'db> {
+pub struct BinaryInferenceState<'db> {
     emitted_division_by_zero_diagnostic: bool,
-    pub(super) deprecated_functions: Vec<OverloadLiteral<'db>>,
+    pub deprecated_functions: Vec<OverloadLiteral<'db>>,
     used_tuple_addition: bool,
 }
 
@@ -78,7 +78,7 @@ impl<'db> BinaryInferenceState<'db> {
 
     /// Limit intermediate unions as well as the final result: waiting until all operands
     /// have been expanded can first construct an exponentially large union of tuples.
-    pub(super) fn try_map_union<E>(
+    pub fn try_map_union<E>(
         &mut self,
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
@@ -156,7 +156,7 @@ impl<'db> BinaryInferenceState<'db> {
 }
 
 impl<'db> TypeInferenceBuilder<'db, '_> {
-    pub(super) fn infer_binary_expression(
+    pub fn infer_binary_expression(
         &mut self,
         binary: &ast::ExprBinOp,
         tcx: TypeContext<'db>,
@@ -183,7 +183,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     }
 
     /// Evaluate a binary operator whose operands have already been inferred in their type contexts.
-    pub(super) fn infer_binary_expression_from_types(
+    pub fn infer_binary_expression_from_types(
         &mut self,
         binary: &ast::ExprBinOp,
         left_ty: Type<'db>,
@@ -348,7 +348,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     /// outcome without those side effects.
     ///
     /// Returns `Some` after handling either a compatible or incompatible operand.
-    pub(super) fn try_infer_typed_dict_pep_584_augmented_assignment(
+    pub fn try_infer_typed_dict_pep_584_augmented_assignment(
         &mut self,
         assignment: &ast::StmtAugAssign,
         target_type: Type<'db>,
@@ -400,7 +400,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
     ///
     /// Returns the original `TypeVar` if each result is equivalent to its input constraint;
     /// otherwise returns the union of all results.
-    pub(super) fn map_constrained_typevar_constraints(
+    pub fn map_constrained_typevar_constraints(
         db: &'db dyn Db,
         env: &ProgramEnvironment<'db>,
         typevar: Type<'db>,
@@ -448,7 +448,7 @@ impl<'db> TypeInferenceBuilder<'db, '_> {
 
     /// Infer the result type and collect deprecated methods for the enclosing operation.
     /// The caller reports them together after expanding union operands and in-place fallbacks.
-    pub(super) fn infer_binary_expression_type(
+    pub fn infer_binary_expression_type(
         &mut self,
         node: AnyNodeRef<'_>,
         left_ty: Type<'db>,
